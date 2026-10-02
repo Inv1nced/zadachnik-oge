@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Графики движения · тренажёр</title>
+<title>Графики движения и ускорение · тренажёр</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
@@ -112,6 +112,12 @@ h1 .grad{background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,var(--pi
 @keyframes pop{from{transform:scale(.85);opacity:0}}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(40px);opacity:0;background:var(--panel2);border:1px solid var(--line2);padding:10px 16px;border-radius:12px;transition:.3s;z-index:50;font-weight:600}
 .toast.show{transform:translateX(-50%);opacity:1}
+.accrow{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;margin-top:10px}
+.speedos{display:flex;gap:8px}
+.speedo{width:190px;height:auto;display:block;background:var(--bg2);border:1px solid var(--line);border-radius:14px}
+.note{margin:12px 0 0;padding:12px 14px;border-left:3px solid var(--cyan);background:rgba(59,227,255,.07);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55}
+.note[hidden]{display:none}
+@media (max-width:820px){.accrow{grid-template-columns:1fr}.speedos{justify-content:center}.speedo{width:min(46vw,190px)}}
 @media (max-width:820px){.graphs,.qgrid{grid-template-columns:1fr}.readout{grid-template-columns:repeat(2,1fr)}.fields label span{min-width:0;flex:1 0 100%}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -123,6 +129,7 @@ h1 .grad{background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,var(--pi
   <a class="brand" href="./" title="В задачник"><i></i>ОГЭ · Графики движения</a>
   <nav class="tabs" id="tabs" role="tablist">
    <button class="tab" data-v="watch" role="tab">Смотри</button>
+   <button class="tab" data-v="acc" role="tab">Ускорение</button>
    <button class="tab" data-v="guess" role="tab">Угадай</button>
    <button class="tab" data-v="build" role="tab">Построй</button>
    <button class="tab" data-v="where" role="tab">Где машина?</button>
@@ -145,19 +152,23 @@ function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");cl
 
 /* ---------- модель движения: старт x0 + участки {d секунд, v м/с} ---------- */
 const TT=st=>st.segs.reduce((s,g)=>s+g.d,0);
-function xAt(st,t){let x=st.x0,a=0;for(const g of st.segs){if(t<=a+g.d)return x+g.v*(t-a);x+=g.v*g.d;a+=g.d}return x}
-function vAt(st,t){let a=0;for(const g of st.segs){if(t<a+g.d)return g.v;a+=g.d}return st.segs.length?st.segs[st.segs.length-1].v:0}
-function sAt(st,t){let s=0,a=0;for(const g of st.segs){s+=Math.abs(g.v)*Math.max(0,Math.min(g.d,t-a));a+=g.d}return s}
-function xs(st){const p=[st.x0];let x=st.x0;for(const g of st.segs){x+=g.v*g.d;p.push(x)}return p}
+const A_=g=>g.a||0;
+function xAt(st,t){let x=st.x0,a=0;for(const g of st.segs){if(t<=a+g.d){const dt=t-a;return x+g.v*dt+A_(g)*dt*dt/2}x+=g.v*g.d+A_(g)*g.d*g.d/2;a+=g.d}return x}
+function vAt(st,t){let a=0;for(const g of st.segs){if(t<a+g.d)return g.v+A_(g)*(t-a);a+=g.d}const l=st.segs[st.segs.length-1];return l?l.v+A_(l)*l.d:0}
+function absInt(v0,ac,T){if(T<=0)return 0;const v1=v0+ac*T;if(v0*v1>=0)return Math.abs((v0+v1)/2*T);const tau=-v0/ac;return Math.abs(v0*tau/2)+Math.abs(v1*(T-tau)/2)}
+function sAt(st,t){let s=0,a=0;for(const g of st.segs){s+=absInt(g.v,A_(g),Math.max(0,Math.min(g.d,t-a)));a+=g.d}return s}
+function xs(st){const p=[st.x0];let x=st.x0;for(const g of st.segs){x+=g.v*g.d+A_(g)*g.d*g.d/2;p.push(x)}return p}
+function xExt(st){const T=TT(st);let lo=Infinity,hi=-Infinity;for(let i=0;i<=240;i++){const x=xAt(st,T*i/240);lo=Math.min(lo,x);hi=Math.max(hi,x)}return [lo,hi]}
+function vVals(st){const o=[];for(const g of st.segs)o.push(g.v,g.v+A_(g)*g.d);return o}
 function segAt(st,i){let a=0;for(let k=0;k<i;k++)a+=st.segs[k].d;return [a,a+st.segs[i].d]}
-function merge(segs){const o=[];for(const g of segs){if(g.d<=0)continue;const l=o[o.length-1];if(l&&l.v===g.v)l.d+=g.d;else o.push({d:g.d,v:g.v})}return o}
+function merge(segs){const o=[];for(const g of segs){if(g.d<=0)continue;const l=o[o.length-1];if(l&&l.v===g.v&&!A_(l)&&!A_(g))l.d+=g.d;else o.push({d:g.d,v:g.v})}return o}
 function unitOf(vals){const all=vals.map(Math.abs).filter(v=>v>0);for(const u of [5,2,1])if(all.every(v=>v%u===0))return u;return 1}
 function range(lo,hi,u,maxLines){lo=Math.min(0,lo);hi=Math.max(0,hi);let minor=u;while((hi-lo)/minor>maxLines)minor*=minor===1||minor===10?2:2.5;
  lo=Math.floor(lo/minor+1e-9)*minor;hi=Math.ceil(hi/minor-1e-9)*minor;if(hi-lo<minor*3)hi=lo+minor*4;hi+=minor;if(lo<0)lo-=minor;
  const n=(hi-lo)/minor;let L=1;for(const k of [1,2,4,5,10])if(n/k<=8){L=k;break}
  return {lo,hi,minor,step:minor*L}}
-function rangesFor(st){const p=xs(st),v=st.segs.map(g=>g.v);const u=st.u||unitOf(p.concat(v));
- return {rx:range(Math.min(...p),Math.max(...p),u,16),rv:range(Math.min(0,...v),Math.max(0,...v),unitOf(v)||1,12)}}
+function rangesFor(st,st2){const all=[st].concat(st2?[st2]:[]);let lo=Infinity,hi=-Infinity;const vv=[0],pts=[];for(const s of all){const [a,b]=xExt(s);lo=Math.min(lo,a);hi=Math.max(hi,b);vv.push(...vVals(s));pts.push(...xs(s))}
+ const u=st.u||unitOf(pts.concat(vv));return {rx:range(lo,hi,u,16),rv:range(Math.min(...vv),Math.max(...vv),unitOf(vv)||1,12)}}
 
 /* ---------- тексты историй ---------- */
 function segText(g){if(g.v===0)return `${g.d} с стоит на месте`;return g.v>0?`${g.d} с едет вперёд со скоростью ${fmt(g.v)} м/с`:`${g.d} с едет назад со скоростью ${fmt(-g.v)} м/с`}
@@ -180,7 +191,7 @@ function genStory(o={}){const u=o.u||pick([1,2,5]);const ks=o.ks||[-2,-1,0,1,2];
 /* ---------- рисование графика (SVG) ---------- */
 const GW=430,GH=280,ML=50,MR=30,MT=30,MB=38;
 function gsvg(o){const {kind,st,rng}=o;const T=o.T;const pw=GW-ML-MR,ph=GH-MT-MB;
- const X=t=>ML+t/T*pw,Y=v=>MT+(rng.hi-v)/(rng.hi-rng.lo)*ph;const col=kind==="x"?"var(--xc)":"var(--vc)";
+ const X=t=>ML+t/T*pw,Y=v=>MT+(rng.hi-v)/(rng.hi-rng.lo)*ph;const kc=kind==="x"?"var(--xc)":"var(--vc)";const col=o.col||kc;
  let s=`<svg viewBox="0 0 ${GW} ${GH}" role="img" aria-label="${kind==="x"?"График координаты":"График скорости"}">`;
  for(let t=0;t<=T;t++)s+=`<line x1="${X(t)}" y1="${MT}" x2="${X(t)}" y2="${MT+ph}" stroke="#1F2C52" stroke-width="1"/>`;
  for(let v=rng.lo;v<=rng.hi+1e-9;v+=rng.minor){const major=Math.abs(v/rng.step-Math.round(v/rng.step))<1e-9;s+=`<line x1="${ML}" y1="${Y(v)}" x2="${ML+pw}" y2="${Y(v)}" stroke="${major?"#26375F":"#18223F"}" stroke-width="1"/>`}
@@ -191,24 +202,27 @@ function gsvg(o){const {kind,st,rng}=o;const T=o.T;const pw=GW-ML-MR,ph=GH-MT-MB
  s+=`<text x="${ML-7}" y="${y0+16}" fill="#A4B1D6" font-size="12" font-family="JetBrains Mono,monospace" text-anchor="end">0</text>`;
  for(let v=Math.ceil(rng.lo/rng.step)*rng.step;v<=rng.hi+1e-9;v+=rng.step){if(Math.abs(v)<1e-9)continue;s+=`<text x="${ML-7}" y="${Y(v)+4}" fill="#A4B1D6" font-size="12" font-family="JetBrains Mono,monospace" text-anchor="end">${fmt(v)}</text>`}
  s+=`<text x="${ML+pw+20}" y="${y0-8}" fill="#E9EEFF" font-size="14" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="end">t, с</text>`;
- s+=`<text x="${ML+8}" y="${MT-8}" fill="${col}" font-size="15" font-weight="700" font-family="JetBrains Mono,monospace">${kind==="x"?"x, м":"v, м/с"}</text>`;
+ s+=`<text x="${ML+8}" y="${MT-8}" fill="${kc}" font-size="15" font-weight="700" font-family="JetBrains Mono,monospace">${kind==="x"?"x, м":"v, м/с"}</text>`;
  const upto=o.upto==null?T:Math.min(o.upto,T);
  if(st&&!o.noCurve){
-  if(o.area&&kind==="v"&&upto>0){let d=`M${X(0)} ${y0}`;let a=0;for(const g of st.segs){const b=Math.min(a+g.d,upto);if(b<=a)break;d+=` L${X(a)} ${Y(g.v)} L${X(b)} ${Y(g.v)}`;a+=g.d}d+=` L${X(upto)} ${y0} Z`;
+  if(o.area&&kind==="v"&&upto>0){let d=`M${X(0)} ${y0}`;let a=0;for(const g of st.segs){const b=Math.min(a+g.d,upto);if(b<=a)break;d+=` L${X(a)} ${Y(g.v)} L${X(b)} ${Y(g.v+A_(g)*(b-a))}`;a+=g.d}d+=` L${X(upto)} ${y0} Z`;
    s+=`<path d="${d}" fill="rgba(255,190,85,.22)" stroke="none"/>`;s+=`<text x="${X(upto/2)}" y="${(y0+Y(vAt(st,Math.max(0,upto-1e-6))))/2+5}" fill="#FFBE55" font-size="13" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="middle">путь ${fmt(sAt(st,upto))} м</text>`}
   s+=curve(kind,st,upto,X,Y,col,o.overlayOnly?0:3.2);
+  if(o.st2)s+=curve(kind,o.st2,upto,X,Y,o.col2||"#FFBE55",3.2);
  }
  if(o.overlay)s+=curve(kind,o.overlay,T,X,Y,"#35F2A2",2.4,"6 5");
  if(o.handles)s+=handlesSVG(kind,o.handles,X,Y,o.bad||[],T);
  if(o.cursor!=null&&st){const t=Math.min(o.cursor,T);const val=kind==="x"?xAt(st,t):vAt(st,Math.min(t,T-1e-6));
-  s+=`<line x1="${X(t)}" y1="${MT}" x2="${X(t)}" y2="${MT+ph}" stroke="#FFBE55" stroke-width="1.3" stroke-dasharray="4 4"/><circle cx="${X(t)}" cy="${Y(val)}" r="6.5" fill="${col}" stroke="#060A17" stroke-width="2"/>`}
+  s+=`<line x1="${X(t)}" y1="${MT}" x2="${X(t)}" y2="${MT+ph}" stroke="${o.st2?"#A4B1D6":"#FFBE55"}" stroke-width="1.3" stroke-dasharray="4 4"/><circle cx="${X(t)}" cy="${Y(val)}" r="6.5" fill="${col}" stroke="#060A17" stroke-width="2"/>`;
+  if(o.st2){const v2=kind==="x"?xAt(o.st2,t):vAt(o.st2,Math.min(t,T-1e-6));s+=`<circle cx="${X(t)}" cy="${Y(v2)}" r="6.5" fill="${o.col2||"#FFBE55"}" stroke="#060A17" stroke-width="2"/>`}}
  if(o.mark){const [a,b]=o.mark;s+=`<rect x="${X(a)}" y="${MT}" width="${X(b)-X(a)}" height="${ph}" fill="rgba(142,114,255,.13)" stroke="rgba(142,114,255,.6)" stroke-dasharray="4 4"/>`}
  return s+"</svg>"}
 function curve(kind,st,upto,X,Y,col,w,dash){let s="";const da=dash?` stroke-dasharray="${dash}"`:"";
- if(kind==="x"){const pts=[[0,st.x0]];let a=0,x=st.x0;for(const g of st.segs){const b=a+g.d;if(b<=upto){x+=g.v*g.d;pts.push([b,x])}else{if(upto>a)pts.push([upto,x+g.v*(upto-a)]);break}a=b}
+ if(kind==="x"){const pts=[[0,st.x0]];let a=0;for(const g of st.segs){if(a>=upto)break;const b=Math.min(a+g.d,upto);const n=A_(g)?30:1;for(let i=1;i<=n;i++){const tt=a+(b-a)*i/n;pts.push([tt,xAt(st,tt)])}a+=g.d}
   s+=`<polyline points="${pts.map(p=>X(p[0])+","+Y(p[1])).join(" ")}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"${da}/>`}
- else{let a=0,prev=null;for(const g of st.segs){if(a>=upto)break;const b=Math.min(a+g.d,upto);if(prev!==null&&prev!==g.v)s+=`<line x1="${X(a)}" y1="${Y(prev)}" x2="${X(a)}" y2="${Y(g.v)}" stroke="${col}" stroke-width="1.2" stroke-dasharray="3 4" opacity=".7"/>`;
-  s+=`<line x1="${X(a)}" y1="${Y(g.v)}" x2="${X(b)}" y2="${Y(g.v)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"${da}/>`;prev=g.v;a+=g.d}}
+ else{let a=0,prev=null;for(const g of st.segs){if(a>=upto)break;const b=Math.min(a+g.d,upto);const v1=g.v,v2=g.v+A_(g)*(b-a);
+  if(prev!==null&&Math.abs(prev-v1)>1e-9)s+=`<line x1="${X(a)}" y1="${Y(prev)}" x2="${X(a)}" y2="${Y(v1)}" stroke="${col}" stroke-width="1.2" stroke-dasharray="3 4" opacity=".7"/>`;
+  s+=`<line x1="${X(a)}" y1="${Y(v1)}" x2="${X(b)}" y2="${Y(v2)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"${da}/>`;prev=g.v+A_(g)*g.d;a+=g.d}}
  return s}
 function handlesSVG(kind,h,X,Y,bad,T){let s="";
  if(kind==="x"){const set=h.map((v,t)=>[t,v]).filter(p=>p[1]!=null);if(set.length>1)s+=`<polyline points="${set.map(p=>X(p[0])+","+Y(p[1])).join(" ")}" fill="none" stroke="var(--xc)" stroke-width="3" stroke-linejoin="round"/>`;
@@ -219,19 +233,23 @@ function handlesSVG(kind,h,X,Y,bad,T){let s="";
 
 /* ---------- дорога с машиной ---------- */
 let RW=900;const RH=132;
-function roadSVG(st,rng,t,opt={}){RW=window.innerWidth<640?470:900;const L=30,R=70;const Xr=x=>L+(x-rng.lo)/(rng.hi-rng.lo)*(RW-L-R);
- let s=`<svg class="road" viewBox="0 0 ${RW} ${RH}" role="img" aria-label="Дорога с отметками">`;
+function roadSVG(st,rng,t,opt={}){RW=window.innerWidth<640?470:900;const L=30,R=70;const Xr=x=>L+(x-rng.lo)/(rng.hi-rng.lo)*(RW-L-R);const off=opt.st2?40:0;
+ let s=`<svg class="road" viewBox="0 0 ${RW} ${RH+off}" role="img" aria-label="Дорога с отметками"><g transform="translate(0 ${off})">`;
  s+=`<rect x="${L-10}" y="74" width="${RW-L-R+20}" height="30" rx="6" fill="#131F3D"/><line x1="${L-4}" y1="89" x2="${RW-R+4}" y2="89" stroke="#2C3D6E" stroke-width="2" stroke-dasharray="14 12"/>`;
  for(let x=Math.ceil(rng.lo/rng.minor)*rng.minor;x<=rng.hi+1e-9;x+=rng.minor){const major=Math.abs(x/rng.step-Math.round(x/rng.step))<1e-9;const X=Xr(x);
   s+=`<line x1="${X}" y1="104" x2="${X}" y2="${major?118:112}" stroke="${major?"#A4B1D6":"#4A5C8C"}" stroke-width="${major?2:1.4}"/>`;
   if(major)s+=`<text x="${X}" y="130" fill="#A4B1D6" font-size="${RW<600?16:13}" font-family="JetBrains Mono,monospace" text-anchor="middle">${fmt(x)}</text>`}
  s+=`<line x1="${L-10}" y1="111" x2="${RW-R+26}" y2="111" stroke="#A4B1D6" stroke-width="1.4"/><path d="M${RW-R+30} 111 l-9 -4.5 v9z" fill="#A4B1D6"/><text x="${RW-4}" y="100" fill="var(--xc)" font-size="14" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="end">x, м</text>`;
  if(st){const X0=Xr(st.x0);s+=`<line x1="${X0}" y1="40" x2="${X0}" y2="74" stroke="#8E72FF" stroke-width="2"/><path d="M${X0} 40 h18 l-5 6 5 6 h-18z" fill="#8E72FF"/><text x="${X0+22}" y="50" fill="#8E72FF" font-size="12" font-family="JetBrains Mono,monospace">старт</text>`;
-  const x=xAt(st,t);let dir=1;{let a=0;for(const g of st.segs){if(g.v!==0)dir=Math.sign(g.v);if(t<a+g.d)break;a+=g.d}}const v=vAt(st,Math.min(t,TT(st)-1e-6));if(v!==0)dir=Math.sign(v);
-  const cx=Xr(x);s+=`<g transform="translate(${cx} 0) scale(${dir} 1)">${CAR}</g>`;
-  s+=`<line x1="${cx}" y1="76" x2="${cx}" y2="111" stroke="#FFBE55" stroke-width="1.5" stroke-dasharray="3 3"/><circle cx="${cx}" cy="111" r="4.5" fill="#FFBE55"/>`;
-  if(opt.label!==false)s+=`<text x="${cx}" y="18" fill="#E9EEFF" font-size="14" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="middle">x = ${fmt(x)} м</text>`}
- return s+"</svg>"}
+  if(opt.st2)s+=carAt(opt.st2,t,Xr,"#FFBE55",-36,"B");
+  s+=carAt(st,t,Xr,"#3BE3FF",0,opt.st2?"A":null);
+  if(opt.label!==false&&!opt.st2){const cx=Xr(xAt(st,t));s+=`<text x="${cx}" y="18" fill="#E9EEFF" font-size="14" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="middle">x = ${fmt(xAt(st,t))} м</text>`}}
+ return s+"</g></svg>"}
+function carAt(st,t,Xr,color,dy,tag){const x=xAt(st,t);let dir=1;{let a=0;for(const g of st.segs){const ve=g.v+A_(g)*g.d;if(g.v!==0)dir=Math.sign(g.v);if(t<a+g.d)break;if(ve!==0)dir=Math.sign(ve);a+=g.d}}const v=vAt(st,Math.min(t,TT(st)-1e-6));if(Math.abs(v)>1e-9)dir=Math.sign(v);
+ const cx=Xr(x);let s=`<g transform="translate(${cx} ${dy}) scale(${dir} 1)">${CAR.replace('fill="#3BE3FF"',`fill="${color}"`)}</g>`;
+ s+=`<line x1="${cx}" y1="${76+dy}" x2="${cx}" y2="111" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity=".8"/><circle cx="${cx}" cy="111" r="4.5" fill="${color}"/>`;
+ if(tag)s+=`<text x="${cx+(dir>0?38:-38)}" y="${66+dy}" fill="${color}" font-size="15" font-weight="800" font-family="JetBrains Mono,monospace" text-anchor="middle">${tag}</text>`;
+ return s}
 const CAR=`<g transform="translate(-30 50)"><path d="M4 20 q0-7 7-8 l10-1 8-8 q2-2 5-2 h10 q4 0 6 3 l6 7 q8 1 8 9 v4 H4z" fill="#3BE3FF"/><path d="M24 11 l6-6 h6 v6z M39 5 h5 q2 0 3 2 l4 4 h-12z" fill="#0B1226"/><circle cx="16" cy="25" r="5.5" fill="#060A17" stroke="#A4B1D6" stroke-width="2"/><circle cx="46" cy="25" r="5.5" fill="#060A17" stroke="#A4B1D6" stroke-width="2"/><rect x="58" y="14" width="4" height="3" rx="1" fill="#FFBE55"/></g>`;
 
 /* ---------- проигрыватель ---------- */
@@ -247,7 +265,7 @@ let active=null;function stopActive(){if(active){active.pause();active=null}}
 
 /* ---------- навигация ---------- */
 let view="watch";
-function setView(v){stopActive();view=v;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));({watch:renderWatch,guess:renderGuess,build:renderBuild,where:renderWhere})[v]();try{history.replaceState(null,"","#"+v)}catch(e){}window.scrollTo({top:0,behavior:"smooth"})}
+function setView(v){stopActive();view=v;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));({watch:renderWatch,acc:renderAcc,guess:renderGuess,build:renderBuild,where:renderWhere})[v]();try{history.replaceState(null,"","#"+v)}catch(e){}window.scrollTo({top:0,behavior:"smooth"})}
 $("#tabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)});
 function hero(k,h,lead){return `<div class="hero"><div class="kicker">${k}</div><h1>${h}</h1><p class="lead">${lead}</p></div>`}
 
@@ -426,7 +444,96 @@ function renderWhere(){if(!H.st)newWhere();const st=H.st;
   const legs=st.segs.map((g,i)=>g.v===0?`стоял ${g.d} с`:`${g.v>0?"вперёд":"назад"} ${fmt(Math.abs(p[i+1]-p[i]))} м`).join(", ");
   $("#wfb").innerHTML=`<div class="fb ${all?"ok":"no"} pop"><b class="h">${all?"✓ Всё верно!":"Разбор:"}</b>Поездка: старт у столба ${fmt(st.x0)} м, ${legs}.<br>• <b>Координата</b> — где стоит сейчас: у столба <b>${fmt(xe)} м</b>.<br>• <b>Путь</b> — всё, что проехал, по кусочкам: ${st.segs.filter(g=>g.v!==0).map((g)=>fmt(Math.abs(g.v*g.d))).join(" + ")} = <b>${fmt(s)} м</b>.<br>• <b>Перемещение</b> — от старта до финиша по прямой: |${fmt(xe)} − ${fmt(st.x0)}| = <b>${fmt(d)} м</b>. Путь всегда не меньше перемещения.</div>`}}
 
+/* =================== 5. УСКОРЕНИЕ =================== */
+function acc(x0,v0,parts){let v=v0;return {x0,segs:parts.map(([d,a])=>{const g={d,v,a};v+=a*d;return g})}}
+const aAt=(st,t)=>{let a=0;for(const g of st.segs){if(t<a+g.d)return A_(g);a+=g.d}const l=st.segs[st.segs.length-1];return l?A_(l):0};
+const ACC=[
+ {n:"Разгон с места",st:acc(0,0,[[5,2]]),note:"Каждую секунду скорость растёт на 2 м/с — это и есть ускорение 2 м/с². Включи «Таблицу» и смотри строку «на сколько выросла за секунду». График скорости — прямая, идущая вверх."},
+ {n:"Разгон не с нуля",st:acc(0,4,[[4,2]]),note:"Начальная скорость 4 м/с, и каждую секунду +2. Через t секунд v = v₀ + at = 4 + 2t. График скорости начинается не из нуля, а с 4."},
+ {n:"Торможение до остановки",st:acc(0,10,[[5,-2]]),note:"Скорость каждую секунду уменьшается на 2 м/с — ускорение −2 м/с². Минус значит «тормозит», а не «едет назад»: машина всё время едет вперёд, координата растёт."},
+ {n:"Разгон → равномерно → торможение",st:acc(0,0,[[3,2],[3,0],[3,-2]]),note:"Три участка на графике скорости: вверх — разгоняется (a > 0), горизонтально — едет равномерно (a = 0, но НЕ стоит!), вниз — тормозит (a < 0)."},
+ {n:"Разворот (как мяч вверх)",st:acc(0,8,[[8,-2]]),note:"Скорость падает, в момент 4 с становится 0 — машина на миг останавливается и дальше едет назад: линия скорости уходит ниже нуля. Пересечение нуля на графике скорости = смена направления."},
+ {n:"Две машины: у кого ускорение больше",st:acc(0,0,[[4,3]]),st2:acc(0,0,[[4,1]]),note:"Обе стартуют с места. За одно и то же время скорость A выросла на 12 м/с, а B — только на 4. Значит, у A ускорение больше: её линия на графике скорости идёт круче."},
+ {n:"Две машины: пересечение ≠ встреча",st:acc(0,0,[[7,2]]),st2:acc(0,6,[[7,0]]),note:"В 3 с графики СКОРОСТИ пересеклись — у машин одинаковая скорость (6 м/с), но они далеко друг от друга! Встреча — это пересечение графиков КООРДИНАТЫ (в 6 с). Это частая ловушка в ОГЭ."}];
+const AC={pi:0,st:null,st2:null,prog:true,area:false,hid:{x:false,v:false},table:true,cust:false};
+function setAcc(st,st2,note){AC.st=st;AC.st2=st2||null;AC.note=note||"";const r=rangesFor(st,st2);AC.rx=r.rx;AC.rv=r.rv;AC.T=Math.max(TT(st),st2?TT(st2):0);
+ const m=Math.max(...vVals(st).map(Math.abs),...(st2?vVals(st2).map(Math.abs):[0]));AC.vmax=Math.max(10,Math.ceil(m/5)*5)}
+function accText(st){const p=[`Старт у столба ${fmt(st.x0)} м, начальная скорость ${fmt(st.segs[0].v)} м/с.`];
+ for(const g of st.segs){const v2=g.v+A_(g)*g.d;const cross=g.v*v2<0;const verb=A_(g)>0?(g.v>=0?"разгоняется":cross?"тормозит до остановки и разгоняется вперёд":"тормозит, двигаясь назад,"):(g.v>0?(cross?"тормозит до остановки и разгоняется назад":"тормозит"):"разгоняется назад");
+  p.push(A_(g)===0?(g.v===0?`${g.d} с стоит.`:`${g.d} с едет равномерно ${g.v>0?"вперёд":"назад"} со скоростью ${fmt(Math.abs(g.v))} м/с.`):`${g.d} с ${verb}: скорость меняется с ${fmt(g.v)} до ${fmt(v2)} м/с (a = ${fmt(A_(g))} м/с²).`)}
+ return p.join(" ")}
+function speedo(v,max,color,tag){const cx=110,cy=100,R=84;const fr=Math.min(1,Math.abs(v)/max);const th=Math.PI*(1-fr);const ex=cx+R*Math.cos(th),ey=cy-R*Math.sin(th);
+ let s=`<svg viewBox="0 0 220 152" class="speedo" role="img" aria-label="Спидометр">`;
+ s+=`<path d="M${cx-R} ${cy} A${R} ${R} 0 0 1 ${cx+R} ${cy}" fill="none" stroke="#1F2C52" stroke-width="12" stroke-linecap="round"/>`;
+ if(fr>0.004)s+=`<path d="M${cx-R} ${cy} A${R} ${R} 0 0 1 ${ex} ${ey}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round"/>`;
+ for(let k=0;k<=5;k++){const a=Math.PI*(1-k/5),c=Math.cos(a),sn=Math.sin(a);s+=`<line x1="${cx+(R-20)*c}" y1="${cy-(R-20)*sn}" x2="${cx+(R-10)*c}" y2="${cy-(R-10)*sn}" stroke="#6D7BA6" stroke-width="2"/><text x="${cx+(R-32)*c}" y="${cy-(R-32)*sn+4}" fill="#6D7BA6" font-size="11" font-family="JetBrains Mono,monospace" text-anchor="middle">${fmt(max*k/5)}</text>`}
+ const nc=Math.cos(th),ns=Math.sin(th);s+=`<line x1="${cx}" y1="${cy}" x2="${cx+(R-24)*nc}" y2="${cy-(R-24)*ns}" stroke="#E9EEFF" stroke-width="3" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="#E9EEFF"/>`;
+ s+=`<text x="${cx}" y="${cy+30}" fill="${color}" font-size="24" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="middle">${fmt(Math.abs(v))} <tspan font-size="13" fill="#6D7BA6">м/с</tspan></text>`;if(v<-1e-9)s+=`<text x="${cx}" y="${cy+46}" fill="#FF5C7A" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="middle">едет назад</text>`;
+ if(tag)s+=`<text x="8" y="16" fill="${color}" font-size="15" font-weight="800" font-family="JetBrains Mono,monospace">${tag}</text>`;
+ return s+"</svg>"}
+function renderAcc(){if(!AC.st){const p=ACC[0];setAcc(p.st,p.st2,p.note)}
+ V.innerHTML=`<section class="view">${hero("Режим · ускорение","Разгон и <span class='grad'>торможение</span>","Машина разгоняется и тормозит. Спидометр показывает скорость, а графики рисуются вместе с движением. Ускорение — это на сколько меняется скорость за каждую секунду.")}
+ <div class="panel">
+  <div class="chips" id="apre">${ACC.map((p,i)=>`<button class="chip" data-i="${i}" aria-pressed="${AC.pi===i}">${p.n}</button>`).join("")}<button class="chip" data-i="cust" aria-pressed="${AC.pi==="cust"}">✎ Своя история</button></div>
+  <div id="acust"></div>
+  <p class="story" id="aText"></p>
+  <div id="aroad"></div>
+  <div class="accrow"><div class="speedos" id="aspd"></div><div class="readout" style="margin-top:0"><div class="ro"><small>время t</small><b id="aT">0 с</b></div><div class="ro x"><small>координата x</small><b id="aX">0 м</b></div><div class="ro v"><small>ускорение a</small><b id="aA">0</b></div><div class="ro s"><small>путь s</small><b id="aS">0 м</b></div></div></div>
+  <div class="ctrl"><button class="btn primary" id="aplay">▶ Пуск</button><button class="btn" id="arew" title="В начало">⟲</button><input type="range" id="ascrub" min="0" max="1000" value="0" aria-label="Время"><span class="chips" id="aspdc"><button class="chip" data-s="0.5">0,5×</button><button class="chip" data-s="1" aria-pressed="true">1×</button><button class="chip" data-s="2">2×</button></span></div>
+  <div class="ctrl"><button class="btn small" id="aProg" aria-pressed="${AC.prog}">Рисовать по ходу</button><button class="btn small" id="aHide">Спрятать графики</button><button class="btn small" id="aArea" aria-pressed="${AC.area}">Площадь под v(t) = путь</button><button class="btn small" id="aTbl" aria-pressed="${AC.table}">Таблица скоростей</button></div>
+  <div class="tblwrap" id="atbl"></div>
+  <div class="graphs"><div class="gcard x"><h3>График координаты x(t)</h3><div id="agx"></div><div class="cover" id="acx" hidden><div><b>Нарисуй сам</b>Какой будет график координаты? Нарисуй на доске, потом нажми сюда</div></div></div>
+   <div class="gcard v"><h3>График скорости v(t)</h3><div id="agv"></div><div class="cover" id="acv" hidden><div><b>Нарисуй сам</b>Какой будет график скорости? Нарисуй на доске, потом нажми сюда</div></div></div></div>
+  <div id="aleg"></div>
+  <p class="note" id="aNote"></p>
+ </div></section>`;
+ const P=active=Player(frameAcc);P.T=AC.T;
+ P.ui=()=>{$("#aplay").textContent=P.playing?"❚❚ Пауза":(P.t>=P.T?"▶ Ещё раз":"▶ Пуск")};
+ $("#apre").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const i=b.dataset.i;if(i==="cust"){AC.pi="cust";AC.cust=true;renderAcc();return}AC.cust=false;AC.pi=+i;const p=ACC[+i];setAcc(p.st,p.st2,p.note);AC.hid={x:false,v:false};renderAcc()};
+ $("#aplay").onclick=()=>P.toggle();$("#arew").onclick=()=>{P.pause();P.seek(0);P.ui()};
+ $("#ascrub").oninput=e=>{P.pause();P.seek(e.target.value/1000*P.T);P.ui()};
+ $("#aspdc").onclick=e=>{const b=e.target.closest("[data-s]");if(!b)return;P.speed=+b.dataset.s;$("#aspdc").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b))};
+ $("#aProg").onclick=e=>{AC.prog=!AC.prog;e.currentTarget.setAttribute("aria-pressed",AC.prog);frameAcc(P.t)};
+ $("#aArea").onclick=e=>{AC.area=!AC.area;e.currentTarget.setAttribute("aria-pressed",AC.area);frameAcc(P.t)};
+ $("#aTbl").onclick=e=>{AC.table=!AC.table;e.currentTarget.setAttribute("aria-pressed",AC.table);frameAcc(P.t)};
+ $("#aHide").onclick=()=>{AC.hid={x:true,v:true};frameAcc(P.t);toast("Графики спрятаны — нарисуй их сам")};
+ $("#acx").onclick=()=>{AC.hid.x=false;frameAcc(P.t)};$("#acv").onclick=()=>{AC.hid.v=false;frameAcc(P.t)};
+ if(AC.cust)renderAccCust();
+ $("#aText").textContent=AC.st2?`Машина A (голубая): ${accText(AC.st)} Машина B (жёлтая): ${accText(AC.st2)}`:accText(AC.st);
+ $("#aNote").textContent=AC.note||"";$("#aNote").hidden=!AC.note;
+ $("#aleg").innerHTML=AC.st2?`<div class="row" style="margin-top:8px;font:600 13px var(--f-m)"><span style="color:#3BE3FF">━ машина A</span><span style="color:#FFBE55">━ машина B</span></div>`:"";
+ frameAcc(0);P.ui()}
+function frameAcc(t){const st=AC.st,s2=AC.st2;if(!$("#aroad"))return;const T=AC.T,tc=Math.min(t,T-1e-6);
+ $("#aroad").innerHTML=roadSVG(st,AC.rx,t,{st2:s2});
+ $("#aspd").innerHTML=speedo(vAt(st,tc),AC.vmax,"#3BE3FF",s2?"A":"")+(s2?speedo(vAt(s2,tc),AC.vmax,"#FFBE55","B"):"");
+ const two=(f,u)=>s2?`<span style="color:#3BE3FF">A ${f(st)}</span><br><span style="color:#FFBE55">B ${f(s2)}</span>`:f(st)+" "+u;
+ document.querySelectorAll(".accrow .ro b").forEach(b=>b.style.fontSize=s2?"16px":"");
+ $("#aT").textContent=fmt(t)+" с";$("#aX").innerHTML=two(s=>fmt(xAt(s,t)),"м");$("#aA").innerHTML=two(s=>{const a=aAt(s,tc);return (a>0?"+":"")+fmt(a)},"м/с²");$("#aS").innerHTML=two(s=>fmt(sAt(s,t)),"м");
+ if(s2){const L=document.querySelectorAll(".accrow .ro small");["время t","координата x, м","ускорение a, м/с²","путь s, м"].forEach((x,i)=>L[i].textContent=x)}
+ const upto=AC.prog?t:null;const dual=s2?{st2:s2,col:"#3BE3FF",col2:"#FFBE55"}:{};
+ $("#agx").innerHTML=gsvg({kind:"x",st,rng:AC.rx,T,upto,cursor:t,...dual});
+ $("#agv").innerHTML=gsvg({kind:"v",st,rng:AC.rv,T,upto,cursor:t,area:AC.area&&!s2,...dual});
+ $("#acx").hidden=!AC.hid.x;$("#acv").hidden=!AC.hid.v;
+ const sc=$("#ascrub");if(sc&&document.activeElement!==sc)sc.value=Math.round(t/T*1000);
+ if(AC.table){const n=Math.floor(T+1e-9);const row=(s,lab,col)=>{let v=`<tr><th style="color:${col}">${lab}</th>`,d=`<tr><th>на сколько выросла за секунду</th>`;
+   for(let k=0;k<=n;k++){const show=k<=t+1e-6;v+=`<td class="${show?"":"hid"}${Math.abs(k-t)<.5?" now":""}" style="${show?`color:${col}`:""}">${show?fmt(vAt(s,Math.min(k,T-1e-6))):"?"}</td>`;
+    if(k===0)d+=`<td class="hid">—</td>`;else{const dv=vAt(s,Math.min(k,T-1e-6))-vAt(s,k-1);d+=`<td class="${show?"":"hid"}" style="${show?"color:#FFBE55":""}">${show?(dv>0?"+":"")+fmt(dv):"?"}</td>`}}
+   return v+"</tr>"+d+"</tr>"};
+  let h=`<table class="tbl"><tr><th>t, с</th>`;for(let k=0;k<=n;k++)h+=`<th>${k}</th>`;h+="</tr>";
+  h+=row(st,s2?"v машины A, м/с":"v, м/с","#FF5FD2");if(s2)h+=row(s2,"v машины B, м/с","#FFBE55");$("#atbl").innerHTML=h+"</table>"}else $("#atbl").innerHTML=""}
+function renderAccCust(){const box=$("#acust");const st=AC.st;
+ const parts=st.segs.map(g=>({d:g.d,a:A_(g)}));
+ box.innerHTML=`<div class="cust panel" style="margin-top:12px;padding:12px"><div class="seg">Старт у столба <input type="number" id="ax0" value="${st.x0}" step="1"> м, начальная скорость <input type="number" id="av0" value="${st.segs[0].v}" step="1"> м/с</div><div id="asegs"></div><div class="row"><button class="btn small" id="aadd">+ участок</button><button class="btn small primary" id="aapply">Показать</button><span class="muted" style="font-size:13px">Ускорение больше нуля — скорость растёт, меньше нуля — падает, 0 — едет равномерно.</span></div></div>`;
+ const draw=()=>{$("#asegs").innerHTML=parts.map((g,i)=>`<div class="seg">Участок ${i+1}: <input type="number" data-i="${i}" data-f="d" value="${g.d}" min="1" max="10" step="1"> с, ускорение <input type="number" data-i="${i}" data-f="a" value="${g.a}" step="0.5"> м/с² ${parts.length>1?`<button class="btn small" data-del="${i}">✕</button>`:""}</div>`).join("")};draw();
+ $("#asegs").oninput=e=>{const i=e.target.dataset.i;if(i==null)return;parts[+i][e.target.dataset.f]=num(e.target.value)};
+ $("#asegs").onclick=e=>{const d=e.target.closest("[data-del]");if(d){parts.splice(+d.dataset.del,1);draw()}};
+ $("#aadd").onclick=()=>{if(parts.length>=5)return;parts.push({d:2,a:0});draw()};
+ $("#aapply").onclick=()=>{const x0=num($("#ax0").value),v0=num($("#av0").value);const tot=parts.reduce((s,g)=>s+g.d,0);
+  const ok=parts.every(g=>Number.isFinite(g.d)&&g.d>0&&g.d<=10&&Number.isFinite(g.a)&&Math.abs(g.a)<=20)&&Number.isFinite(x0)&&Number.isFinite(v0)&&Math.abs(v0)<=50;
+  if(!ok||tot>12){toast("Проверь числа: время 1–10 с, всего до 12 с");return}
+  setAcc(acc(x0,v0,parts.map(g=>[Math.round(g.d),g.a])),null,"Своя история: проверь, что получилось на графиках, — где скорость растёт, где падает, где пересекает ноль.");AC.cust=true;renderAcc()}}
+
 /* ---------- старт ---------- */
 document.addEventListener("keydown",e=>{if(e.key===" "&&active&&!e.target.matches("input,textarea,button")){e.preventDefault();active.toggle()}});
-setView(["watch","guess","build","where"].includes(location.hash.slice(1))?location.hash.slice(1):"watch");
+setView(["watch","acc","guess","build","where"].includes(location.hash.slice(1))?location.hash.slice(1):"watch");
 </script></body></html>
