@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Выражаем величину · тренажёр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#060A17;--bg2:#0B1226;--panel:#0F1830;--panel2:#131F3D;--line:#1F2C52;--line2:#2C3D6E;--text:#E9EEFF;--text2:#A4B1D6;--muted:#6D7BA6;--cyan:#3BE3FF;--violet:#8E72FF;--pink:#FF5FD2;--ok:#35F2A2;--ok-bg:rgba(53,242,162,.12);--err:#FF5C7A;--err-bg:rgba(255,92,122,.12);--amber:#FFBE55;
+--f-d:"Unbounded","Arial Black",system-ui,sans-serif;--f-b:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-m:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f-b);font-size:16px;line-height:1.55}
+.gridbg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(59,227,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(59,227,255,.045) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 80%)}
+.app{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:0 18px 80px}
+.topbar{position:sticky;top:0;z-index:20;margin:0 -18px;padding:12px 18px;background:rgba(6,10,23,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font:700 13px var(--f-m);letter-spacing:.12em;text-transform:uppercase;color:var(--text2);text-decoration:none}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.topbar .sp{flex:1}.topbar a.lk{color:var(--text2);text-decoration:none;border:1px solid var(--line2);border-radius:9px;padding:6px 10px;font:600 13px var(--f-b)}.topbar a.lk:hover{color:var(--cyan);border-color:var(--cyan)}
+.tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tab{border:0;background:transparent;color:var(--text2);font:600 14px var(--f-b);padding:8px 14px;border-radius:9px;cursor:pointer}
+.tab[aria-selected="true"]{background:linear-gradient(135deg,var(--cyan),#7FF0FF);color:#04111A}
+.hero{padding:28px 0 12px}.kicker{font:12px var(--f-m);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+h1{font-family:var(--f-d);font-weight:800;font-size:clamp(26px,5vw,44px);line-height:1.05;margin:8px 0 10px;letter-spacing:-.02em}
+h1 .grad{background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--text2);margin:0;max-width:70ch}
+.panel{background:linear-gradient(180deg,rgba(19,31,61,.85),rgba(12,20,40,.85));border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:14px}
+h2{font:700 18px var(--f-d);margin:0 0 10px}
+.f{font:600 17px var(--f-m);color:var(--cyan)}
+.rule{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.rule:first-of-type{border-top:0}
+.num{width:30px;height:30px;border-radius:9px;background:rgba(142,114,255,.2);color:var(--violet);display:grid;place-items:center;font:700 14px var(--f-m)}
+.ex{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:8px;font:500 15px var(--f-m);line-height:1.9}
+.ex .c{color:var(--muted);font-family:var(--f-b);font-size:13.5px}
+.ex b{color:var(--ok)}
+.tri{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.tri svg{width:170px;height:auto}
+.q{font:700 22px var(--f-m);margin:6px 0 4px}
+.q .t{color:var(--amber)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.opt{border:1px solid var(--line2);background:var(--bg2);color:var(--text);font:600 18px var(--f-m);padding:14px;border-radius:12px;cursor:pointer;transition:.15s}
+.opt:hover:not([disabled]){border-color:var(--cyan)}.opt.ok{border-color:var(--ok);background:var(--ok-bg)}.opt.no{border-color:var(--err);background:var(--err-bg)}.opt[disabled]{cursor:default}
+.fb{margin-top:14px;padding:12px 14px;border-radius:12px}.fb.ok{background:var(--ok-bg);border:1px solid rgba(53,242,162,.35)}.fb.no{background:var(--err-bg);border:1px solid rgba(255,92,122,.35)}
+.steps{font:500 16px var(--f-m);line-height:2;margin:6px 0}.steps .c{color:var(--muted);font:500 13.5px var(--f-b);margin-left:8px}
+.chk{font-size:14.5px;color:var(--text2);margin-top:6px}
+.btn{border:0;background:linear-gradient(135deg,var(--cyan),#7FF0FF);color:#04111A;font:700 14px var(--f-b);padding:10px 16px;border-radius:11px;cursor:pointer}
+.btn.g{background:var(--panel2);color:var(--text);border:1px solid var(--line2)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{border:1px solid var(--line2);background:var(--bg2);color:var(--text2);font:600 13px var(--f-b);border-radius:999px;padding:6px 12px;cursor:pointer}.chip[aria-pressed="true"]{background:var(--cyan);color:#04111A;border-color:var(--cyan)}
+.score{font:600 13px var(--f-m);color:var(--text2)}.score b{color:var(--ok)}
+.hint{font-size:14px;color:var(--amber);font-weight:600}
+@media (max-width:640px){.opts{grid-template-columns:1fr}.q{font-size:19px}}
+</style></head><body><div class="gridbg"></div><div class="app">
+<header class="topbar"><a class="brand" href="./"><i></i>ОГЭ · Формулы</a><nav class="tabs" id="tabs"><button class="tab" data-v="rules">Правила</button><button class="tab" data-v="drill">Тренажёр</button></nav><span class="sp"></span><a class="lk" href="grafiki.html">Тренажёр движения</a><a class="lk" href="./">Задачник</a></header>
+<main id="view"></main></div>
+<script>
+const $=s=>document.querySelector(s);const V=$("#view");
+const R=`<section><div class="hero"><div class="kicker">Как выразить величину</div><h1>Выражаем <span class="grad">из формулы</span></h1><p class="lead">Формула — это весы: что делаешь с одной частью, то же делаешь и с другой. Тогда равенство не ломается. Всего четыре приёма.</p></div>
+<div class="panel"><h2>Четыре приёма</h2>
+<div class="rule"><span class="num">1</span><div><b>Слагаемое переносим в другую часть — со сменой знака.</b> Было «+», стало «−», и наоборот.
+<div class="ex">v = v₀ + at<br>v − v₀ = at <span class="c">← v₀ перенесли влево, «+» стал «−»</span></div></div></div>
+<div class="rule"><span class="num">2</span><div><b>Множитель убираем делением обеих частей.</b> Буква, которая стоит рядом с нужной через «·», уходит вниз, в знаменатель с другой стороны.
+<div class="ex">v − v₀ = at<br>a = (v − v₀) / t <span class="c">← разделили обе части на t</span><br><b>Важно:</b> скобка! Делим всю правую часть, а не только v₀.</div></div></div>
+<div class="rule"><span class="num">3</span><div><b>Делитель убираем умножением.</b> Если нужная буква в знаменателе — сначала умножаем на неё обе части, потом делим на лишнее.
+<div class="ex">v = s / t<br>v·t = s <span class="c">← умножили на t</span><br>t = s / v <span class="c">← разделили на v</span></div>
+<div class="tri"><svg viewBox="0 0 170 150"><path d="M85 8 L162 142 L8 142 Z" fill="rgba(59,227,255,.08)" stroke="#3BE3FF" stroke-width="2"/><line x1="40" y1="88" x2="130" y2="88" stroke="#3BE3FF" stroke-width="2"/><line x1="85" y1="88" x2="85" y2="142" stroke="#3BE3FF" stroke-width="2"/><text x="85" y="70" fill="#FFBE55" font-size="28" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">s</text><text x="58" y="126" fill="#E9EEFF" font-size="24" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">v</text><text x="112" y="126" fill="#E9EEFF" font-size="24" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">t</text></svg>
+<div class="ex" style="flex:1;min-width:220px"><span class="c">Шпаргалка «треугольник» для формул вида s = v·t:<br>закрой пальцем нужную букву — останется ответ.</span><br>s = v·t &nbsp;·&nbsp; v = s/t &nbsp;·&nbsp; t = s/v<br><span class="c">Так же: ρ = m/V, a = (v−v₀)/t, ν = N/t…</span></div></div></div></div>
+<div class="rule"><span class="num">4</span><div><b>Квадрат убираем корнем.</b> Сначала оставляем квадрат один, потом извлекаем корень из всей правой части.
+<div class="ex">s = at²/2<br>2s = at² <span class="c">← умножили на 2</span><br>t² = 2s / a <span class="c">← разделили на a</span><br>t = √(2s / a) <span class="c">← корень из обеих частей</span></div></div></div></div>
+<div class="panel"><h2>Как проверить себя за 10 секунд</h2><p style="margin:0">Подставь простые числа. Пусть s = 10, t = 2 — тогда v = s/t = 5. Теперь проверь свою формулу: если получилось t = v/s, то t = 5/10 = 0,5 — а должно быть 2. Значит, ошибка. <b>t = s/v = 10/5 = 2 ✓</b></p></div>
+<div class="row"><button class="btn" onclick="setView('drill')">Потренироваться →</button></div></section>`;
+/* задания: f — формула, x — что выразить, ok — верный ответ, bad — неверные, st — шаги, vals — числа для проверки, fn — функции для проверки вариантов */
+const T=[
+ {g:"v",f:"v = s / t",x:"s",o:[["s = v·t",V=>V.v*V.t],["s = v / t",V=>V.v/V.t],["s = t / v",V=>V.t/V.v],["s = v + t",V=>V.v+V.t]],st:[["v·t = s","умножили обе части на t"]],vals:{s:10,t:2,v:5}},
+ {g:"v",f:"v = s / t",x:"t",o:[["t = s / v",V=>V.s/V.v],["t = v / s",V=>V.v/V.s],["t = s·v",V=>V.s*V.v],["t = s − v",V=>V.s-V.v]],st:[["v·t = s","умножили на t"],["t = s / v","разделили на v"]],vals:{s:10,t:2,v:5}},
+ {g:"a",f:"v = v₀ + at",x:"a",o:[["a = (v − v₀) / t",V=>(V.v-V.v0)/V.t],["a = (v + v₀) / t",V=>(V.v+V.v0)/V.t],["a = v/t − v₀",V=>V.v/V.t-V.v0],["a = (v − v₀)·t",V=>(V.v-V.v0)*V.t]],st:[["v − v₀ = at","перенесли v₀ влево, знак сменился"],["a = (v − v₀) / t","разделили на t (вся скобка!)"]],vals:{v:10,v0:4,a:2,t:3}},
+ {g:"a",f:"v = v₀ + at",x:"t",o:[["t = (v − v₀) / a",V=>(V.v-V.v0)/V.a],["t = (v − v₀)·a",V=>(V.v-V.v0)*V.a],["t = v/a − v₀",V=>V.v/V.a-V.v0],["t = (v + v₀) / a",V=>(V.v+V.v0)/V.a]],st:[["v − v₀ = at","перенесли v₀"],["t = (v − v₀) / a","разделили на a"]],vals:{v:10,v0:4,a:2,t:3}},
+ {g:"a",f:"v = v₀ + at",x:"v₀",o:[["v₀ = v − at",V=>V.v-V.a*V.t],["v₀ = v + at",V=>V.v+V.a*V.t],["v₀ = at − v",V=>V.a*V.t-V.v],["v₀ = v / (at)",V=>V.v/(V.a*V.t)]],st:[["v − at = v₀","перенесли at влево со сменой знака"]],vals:{v:10,v0:4,a:2,t:3}},
+ {g:"a",f:"a = (v − v₀) / t",x:"v",o:[["v = v₀ + at",V=>V.v0+V.a*V.t],["v = at − v₀",V=>V.a*V.t-V.v0],["v = a/t + v₀",V=>V.a/V.t+V.v0],["v = v₀ − at",V=>V.v0-V.a*V.t]],st:[["a·t = v − v₀","умножили на t"],["v = v₀ + at","перенесли v₀ вправо с плюсом"]],vals:{v:10,v0:4,a:2,t:3}},
+ {g:"a",f:"x = x₀ + vt",x:"t",o:[["t = (x − x₀) / v",V=>(V.x-V.x0)/V.v],["t = (x + x₀) / v",V=>(V.x+V.x0)/V.v],["t = x/v − x₀",V=>V.x/V.v-V.x0],["t = (x − x₀)·v",V=>(V.x-V.x0)*V.v]],st:[["x − x₀ = vt","перенесли x₀"],["t = (x − x₀) / v","разделили на v"]],vals:{x:26,x0:20,v:3,t:2}},
+ {g:"s",f:"s = at² / 2",x:"a",o:[["a = 2s / t²",V=>2*V.s/V.t**2],["a = s / (2t²)",V=>V.s/(2*V.t**2)],["a = 2s·t²",V=>2*V.s*V.t**2],["a = s·t² / 2",V=>V.s*V.t**2/2]],st:[["2s = at²","умножили на 2"],["a = 2s / t²","разделили на t²"]],vals:{a:2,t:3,s:9}},
+ {g:"s",f:"s = at² / 2",x:"t",o:[["t = √(2s / a)",V=>Math.sqrt(2*V.s/V.a)],["t = 2s / a",V=>2*V.s/V.a],["t = √(s / 2a)",V=>Math.sqrt(V.s/(2*V.a))],["t = √(2a / s)",V=>Math.sqrt(2*V.a/V.s)]],st:[["2s = at²","умножили на 2"],["t² = 2s / a","разделили на a"],["t = √(2s / a)","извлекли корень"]],vals:{a:2,t:3,s:9}},
+ {g:"s",f:"h = gt² / 2",x:"t",o:[["t = √(2h / g)",V=>Math.sqrt(2*V.h/V.g)],["t = 2h / g",V=>2*V.h/V.g],["t = √(hg / 2)",V=>Math.sqrt(V.h*V.g/2)],["t = √(2g / h)",V=>Math.sqrt(2*V.g/V.h)]],st:[["2h = gt²","умножили на 2"],["t² = 2h / g","разделили на g"],["t = √(2h / g)","корень"]],vals:{g:10,t:3,h:45}},
+ {g:"s",f:"v² = 2as",x:"s",o:[["s = v² / (2a)",V=>V.v**2/(2*V.a)],["s = 2a / v²",V=>2*V.a/V.v**2],["s = 2a·v²",V=>2*V.a*V.v**2],["s = v / (2a)",V=>V.v/(2*V.a)]],st:[["s = v² / (2a)","разделили обе части на 2a"]],vals:{v:6,a:2,s:9}},
+ {g:"s",f:"v² = 2gh",x:"v",o:[["v = √(2gh)",V=>Math.sqrt(2*V.g*V.h)],["v = 2gh",V=>2*V.g*V.h],["v = √(gh / 2)",V=>Math.sqrt(V.g*V.h/2)],["v = (2gh)²",V=>(2*V.g*V.h)**2]],st:[["v = √(2gh)","извлекли корень из обеих частей"]],vals:{g:10,h:45,v:30}},
+ {g:"s",f:"s = (v₀ + v)/2 · t",x:"t",o:[["t = 2s / (v₀ + v)",V=>2*V.s/(V.v0+V.v)],["t = s / (2(v₀ + v))",V=>V.s/(2*(V.v0+V.v))],["t = 2s·(v₀ + v)",V=>2*V.s*(V.v0+V.v)],["t = (v₀ + v) / (2s)",V=>(V.v0+V.v)/(2*V.s)]],st:[["2s = (v₀ + v)·t","умножили на 2"],["t = 2s / (v₀ + v)","разделили на скобку"]],vals:{v0:4,v:10,t:3,s:21}},
+ {g:"c",f:"ν = 1 / T",x:"T",o:[["T = 1 / ν",V=>1/V.nu],["T = ν",V=>V.nu],["T = ν − 1",V=>V.nu-1],["T = 1 − ν",V=>1-V.nu]],st:[["ν·T = 1","умножили на T"],["T = 1 / ν","разделили на ν"]],vals:{T:0.5,nu:2}},
+ {g:"c",f:"v = 2πR / T",x:"R",o:[["R = vT / (2π)",V=>V.v*V.T/(2*Math.PI)],["R = 2πv / T",V=>2*Math.PI*V.v/V.T],["R = 2π·vT",V=>2*Math.PI*V.v*V.T],["R = 2πT / v",V=>2*Math.PI*V.T/V.v]],st:[["v·T = 2πR","умножили на T"],["R = vT / (2π)","разделили на 2π"]],vals:{R:2,T:4,v:Math.PI}},
+ {g:"c",f:"v = 2πR / T",x:"T",o:[["T = 2πR / v",V=>2*Math.PI*V.R/V.v],["T = v / (2πR)",V=>V.v/(2*Math.PI*V.R)],["T = 2πR·v",V=>2*Math.PI*V.R*V.v],["T = vR / (2π)",V=>V.v*V.R/(2*Math.PI)]],st:[["v·T = 2πR","умножили на T"],["T = 2πR / v","разделили на v"]],vals:{R:2,T:4,v:Math.PI}},
+ {g:"c",f:"a = v² / R",x:"R",o:[["R = v² / a",V=>V.v**2/V.a],["R = a / v²",V=>V.a/V.v**2],["R = a·v²",V=>V.a*V.v**2],["R = v / a",V=>V.v/V.a]],st:[["a·R = v²","умножили на R"],["R = v² / a","разделили на a"]],vals:{v:6,R:4,a:9}},
+ {g:"c",f:"a = v² / R",x:"v",o:[["v = √(aR)",V=>Math.sqrt(V.a*V.R)],["v = aR",V=>V.a*V.R],["v = √(a / R)",V=>Math.sqrt(V.a/V.R)],["v = √(R / a)",V=>Math.sqrt(V.R/V.a)]],st:[["a·R = v²","умножили на R"],["v = √(aR)","корень"]],vals:{v:6,R:4,a:9}}];
+const GROUPS={all:"Все",v:"v = s/t",a:"Скорость и ускорение",s:"Квадраты и корни",c:"Окружность"};
+const D={g:"all",i:-1,ok:0,n:0,cur:null,order:[]};
+const fmt=n=>{const r=Math.round(n*100)/100;return String(r).replace(".",",")};
+const nm={v:"v",t:"t",s:"s",a:"a",v0:"v₀",x:"x",x0:"x₀",h:"h",g:"g",nu:"ν",T:"T",R:"R"};
+function next(){const pool=T.map((q,i)=>i).filter(i=>D.g==="all"||T[i].g===D.g);if(!D.order.length)D.order=pool.sort(()=>Math.random()-.5);D.i=D.order.shift();D.cur={q:T[D.i],opts:T[D.i].o.map((o,k)=>({o,k})).sort(()=>Math.random()-.5),done:false};drawDrill()}
+function drawDrill(){const {q,opts}=D.cur;
+ V.innerHTML=`<section><div class="hero"><div class="kicker">Тренажёр · <span class="score">верно <b>${D.ok}</b> из ${D.n}</span></div><h1>Вырази <span class="grad">букву</span></h1></div>
+ <div class="chips" id="grp">${Object.entries(GROUPS).map(([k,v])=>`<button class="chip" data-g="${k}" aria-pressed="${D.g===k}">${v}</button>`).join("")}</div>
+ <div class="panel"><div class="hint">Формула</div><div class="q">${q.f}</div><div style="margin-top:8px">Вырази <span class="q t" style="font-size:22px">${q.x}</span></div>
+ <div class="opts" id="opts">${opts.map((p,i)=>`<button class="opt" data-i="${i}">${p.o[0]}</button>`).join("")}</div><div id="fb"></div></div></section>`;
+ $("#grp").onclick=e=>{const b=e.target.closest("[data-g]");if(!b)return;D.g=b.dataset.g;D.order=[];next()};
+ $("#opts").onclick=e=>{const b=e.target.closest(".opt");if(!b||D.cur.done)return;D.cur.done=true;const p=opts[+b.dataset.i];const ok=p.k===0;D.n++;if(ok)D.ok++;
+  document.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(opts[+x.dataset.i].k===0)x.classList.add("ok")});if(!ok)b.classList.add("no");
+  const V0=q.vals;const nums=Object.entries(V0).filter(([k])=>q.x.replace("₀","0")!==k&&!(q.x==="ν"&&k==="nu")).map(([k,v])=>`${nm[k]} = ${fmt(v)}`).join(", ");
+  const key=Object.keys(V0).find(k=>nm[k]===q.x);const right=V0[key];const mine=p.o[1](V0);
+  const chk=`<div class="chk"><b>Проверка числами:</b> пусть ${nums}. Тогда должно выйти ${q.x} = ${fmt(right)}.${ok?` Твоя формула даёт ${fmt(mine)} ✓`:` Твоя формула даёт ${fmt(mine)} — не сходится ✗`}</div>`;
+  $("#fb").innerHTML=`<div class="fb ${ok?"ok":"no"}"><b>${ok?"✓ Верно!":"✗ Не так. Смотри по шагам:"}</b><div class="steps">${q.f}<br>${q.st.map(s=>`${s[0]}<span class="c">← ${s[1]}</span>`).join("<br>")}</div>${chk}</div><div class="row"><button class="btn" id="nx">Дальше →</button></div>`;
+  $("#nx").onclick=next;$(".kicker .score").innerHTML=`верно <b>${D.ok}</b> из ${D.n}`}}
+function setView(v){document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));if(v==="rules")V.innerHTML=R;else next();window.scrollTo({top:0})}
+$("#tabs").onclick=e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)};
+setView(location.hash==="#drill"?"drill":"rules");
+</script></body></html>

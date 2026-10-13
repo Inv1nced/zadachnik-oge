@@ -135,11 +135,13 @@ h1 .grad{background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,var(--pi
 <div class="app">
  <header class="topbar">
   <a class="brand" href="./" title="В задачник"><i></i>ОГЭ · Графики движения</a>
+  <a class="brand" href="formuly.html" style="font-size:12px;border:1px solid var(--line2);border-radius:9px;padding:5px 9px;letter-spacing:.06em">Выражаем из формул</a>
   <nav class="tabs" id="tabs" role="tablist">
    <button class="tab" data-v="watch" role="tab">Смотри</button>
    <button class="tab" data-v="acc" role="tab">Ускорение</button>
    <button class="tab" data-v="path" role="tab">Путь при разгоне</button>
    <button class="tab" data-v="fall" role="tab">Падение</button>
+   <button class="tab" data-v="circle" role="tab">Окружность</button>
    <button class="tab" data-v="guess" role="tab">Угадай</button>
    <button class="tab" data-v="build" role="tab">Построй</button>
    <button class="tab" data-v="where" role="tab">Где машина?</button>
@@ -275,7 +277,7 @@ let active=null;function stopActive(){if(active){active.pause();active=null}}
 
 /* ---------- навигация ---------- */
 let view="watch";
-function setView(v){stopActive();view=v;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));({watch:renderWatch,acc:renderAcc,path:renderPath,fall:renderFall,guess:renderGuess,build:renderBuild,where:renderWhere})[v]();try{history.replaceState(null,"","#"+v)}catch(e){}window.scrollTo({top:0,behavior:"smooth"})}
+function setView(v){stopActive();view=v;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));({watch:renderWatch,acc:renderAcc,path:renderPath,fall:renderFall,circle:renderCir,guess:renderGuess,build:renderBuild,where:renderWhere})[v]();try{history.replaceState(null,"","#"+v)}catch(e){}window.scrollTo({top:0,behavior:"smooth"})}
 $("#tabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)});
 function hero(k,h,lead){return `<div class="hero"><div class="kicker">${k}</div><h1>${h}</h1><p class="lead">${lead}</p></div>`}
 
@@ -671,7 +673,70 @@ function frameFall(t){if(!$("#fscene"))return;const its=FA.items,two=its.length>
  $("#fform").innerHTML=it.v0===0?`<div class="fl"><span class="fk">v</span><div><b>v = g·t</b> = ${g}·${T} = <b class="ans">${fmt(it.g*tt)} м/с</b></div></div><div class="fl"><span class="fk">h</span><div><b>h = g·t²/2</b> = ${g}·${T}²/2 = <b class="ans">${fmt(it.g*tt*tt/2)} м</b></div></div>${two?`<p class="muted" style="margin:4px 0 0;font-size:13px">Расчёт — для первого тела (${esc(it.lab)}).</p>`:""}`
   :`<div class="fl"><span class="fk">v</span><div><b>v = v₀ − g·t</b> = ${fmt(it.v0)} − ${g}·${T} = <b class="ans">${fmt(it.v0-it.g*tt)} м/с</b>${it.v0-it.g*tt<0?" <span class='muted'>(минус — летит вниз)</span>":""}</div></div><div class="fl"><span class="fk">↑</span><div>подъём: <b>t = v₀/g</b> = ${fmt(it.v0/it.g)} с, <b>h_max = v₀²/2g</b> = <b class="ans">${fmt(it.v0*it.v0/(2*it.g))} м</b></div></div>`}
 
+/* =================== 8. ДВИЖЕНИЕ ПО ОКРУЖНОСТИ =================== */
+const CIRP=[
+ {n:"Точка на окружности",R:4,T:4,mode:"one",note:"Скорость по модулю не меняется, но всё время меняет направление — она направлена по касательной. Поэтому ускорение есть, и оно направлено к центру: a = v²/R."},
+ {n:"Вентилятор: считаем обороты",R:3,T:1,mode:"fan",note:"Период T — время одного оборота, частота ν — сколько оборотов за секунду. Посчитали N оборотов за время t: T = t/N, ν = N/t. ν = 1/T."},
+ {n:"Муха и жук на диске",R:6,T:6,mode:"two",note:"Все точки диска делают один оборот за одно и то же время: период и частота у них одинаковые. Но дальняя точка за оборот проходит большую окружность — её скорость больше (v = 2πR/T) и ускорение тоже."},
+ {n:"Отпусти — полетит по касательной",R:4,T:4,mode:"rel",note:"Нажми «Отпустить»: тело полетит прямо — туда, куда была направлена его скорость, то есть по касательной, а не от центра. Так летят искры от точильного круга и грязь от колеса."}];
+const CI={pi:0,rel:null};
+function setCir(p){CI.R=p.R;CI.T=p.T;CI.mode=p.mode;CI.note=p.note;CI.rel=null}
+const cv_=()=>2*Math.PI*CI.R/CI.T, ca_=()=>cv_()**2/CI.R;
+const f2=n=>String(Math.round(n*100)/100).replace(".",",");
+const raz=n=>{const r=Math.round(n*100)/100;if(!Number.isInteger(r))return "раза";const m=r%100;return (m%10>=2&&m%10<=4&&!(m>=12&&m<=14))?"раза":"раз"};
+function cirScene(t){const W=520,H=440,cx=260,cy=220;const rpx=40+CI.R*16;const vmax=2*Math.PI*10/1;
+ let s=`<svg viewBox="0 0 ${W} ${H}" class="fallsvg" role="img" aria-label="Движение по окружности">`;
+ const phi=2*Math.PI*t/CI.T;
+ if(CI.mode==="two"||CI.mode==="fan"){s+=`<circle cx="${cx}" cy="${cy}" r="${rpx}" fill="rgba(59,227,255,.06)" stroke="#2C3D6E" stroke-width="2"/>`;for(let k=0;k<6;k++){const a=phi+k*Math.PI/3;s+=`<line x1="${cx}" y1="${cy}" x2="${cx+rpx*Math.cos(a)}" y2="${cy-rpx*Math.sin(a)}" stroke="#1F2C52" stroke-width="${CI.mode==="fan"?10:2}" stroke-linecap="round"/>`}}
+ s+=`<circle cx="${cx}" cy="${cy}" r="${rpx}" fill="none" stroke="#3BE3FF" stroke-width="1.5" stroke-dasharray="5 6" opacity=".7"/><circle cx="${cx}" cy="${cy}" r="4" fill="#A4B1D6"/><text x="${cx+8}" y="${cy+18}" fill="#6D7BA6" font-size="12" font-family="JetBrains Mono,monospace">центр</text>`;
+ const pts=CI.mode==="two"?[{r:CI.R,col:"#3BE3FF",tag:"муха"},{r:CI.R/2,col:"#FFBE55",tag:"жук"}]:[{r:CI.R,col:"#3BE3FF",tag:""}];
+ const arrow=(x1,y1,dx,dy,len,col,lab)=>{if(len<2)return "";const x2=x1+dx*len,y2=y1+dy*len;const ang=Math.atan2(dy,dx);return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="3"/><path d="M${x2+Math.cos(ang)*10} ${y2+Math.sin(ang)*10} L${x2+Math.cos(ang+2.5)*9} ${y2+Math.sin(ang+2.5)*9} L${x2+Math.cos(ang-2.5)*9} ${y2+Math.sin(ang-2.5)*9}Z" fill="${col}"/><text x="${x2+dx*22}" y="${y2+dy*22+5}" fill="${col}" font-size="15" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="middle">${lab}</text>`};
+ for(const p of pts){const r=40+p.r*16*(CI.mode==="two"?1:1);const rp=CI.mode==="two"?rpx*p.r/CI.R:rpx;const v=2*Math.PI*p.r/CI.T,a=v*v/p.r;
+  let x=cx+rp*Math.cos(phi),y=cy-rp*Math.sin(phi);let tx=-Math.sin(phi),ty=-Math.cos(phi);
+  if(CI.mode==="rel"&&CI.rel!=null&&t>=CI.rel){const ph=2*Math.PI*CI.rel/CI.T;x=cx+rp*Math.cos(ph);y=cy-rp*Math.sin(ph);tx=-Math.sin(ph);ty=-Math.cos(ph);
+   s+=`<line x1="${x}" y1="${y}" x2="${x+tx*800}" y2="${y+ty*800}" stroke="#FF5FD2" stroke-width="1.5" stroke-dasharray="4 6" opacity=".6"/>`;
+   const d=(t-CI.rel)*v*16;x+=tx*d;y+=ty*d;s+=`<circle cx="${x}" cy="${y}" r="11" fill="${p.col}" stroke="#060A17" stroke-width="2"/>`;s+=arrow(x,y,tx,ty,20+v*5,"#FF5FD2","v");continue}
+  s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#2C3D6E" stroke-width="1.5"/>`;
+  s+=`<circle cx="${x}" cy="${y}" r="${CI.mode==="fan"?9:11}" fill="${p.col}" stroke="#060A17" stroke-width="2"/>`;
+  s+=arrow(x,y,tx,ty,Math.min(130,18+v*5),"#FF5FD2","v");
+  if(CI.mode!=="fan")s+=arrow(x,y,(cx-x)/rp,(cy-y)/rp,Math.min(rp-24,14+a*3),"#FFBE55","a");
+  if(p.tag)s+=`<text x="${x+16}" y="${y-14}" fill="${p.col}" font-size="13" font-weight="700" font-family="JetBrains Mono,monospace">${p.tag}</text>`}
+ if(CI.mode==="fan"){const N=Math.floor(t/CI.T+1e-9);s+=`<text x="20" y="34" fill="#E9EEFF" font-size="16" font-weight="700" font-family="JetBrains Mono,monospace">оборотов: ${N}</text>`}
+ return s+"</svg>"}
+function renderCir(){if(CI.R==null)setCir(CIRP[0]);
+ V.innerHTML=`<section class="view">${hero("Режим · движение по окружности","Движение <span class='grad'>по окружности</span>","Тело движется по кругу с постоянной по модулю скоростью. Скорость направлена по касательной, ускорение — к центру.")}
+ <div class="panel">
+  <div class="chips" id="cpre">${CIRP.map((p,i)=>`<button class="chip" data-i="${i}" aria-pressed="${CI.pi===i}">${p.n}</button>`).join("")}</div>
+  <div class="fallgrid"><div class="gcard" style="padding:6px"><div id="cscene"></div></div>
+   <div><div class="readout" style="grid-template-columns:1fr 1fr;margin-top:0"><div class="ro"><small>время t</small><b id="cT">0 с</b></div><div class="ro"><small>оборотов N</small><b id="cN">0</b></div><div class="ro x"><small>период T</small><b id="cP"></b></div><div class="ro"><small>частота ν («ню»)</small><b id="cF"></b></div><div class="ro v"><small>скорость v</small><b id="cV"></b></div><div class="ro s"><small>ускорение a</small><b id="cA"></b></div></div>
+    <div class="ctrl"><button class="btn primary" id="cplay">▶ Пуск</button><button class="btn" id="crew">⟲</button><button class="btn" id="crel" ${CI.mode==="rel"?"":"hidden"}>Отпустить</button></div>
+    <div class="cust panel" style="padding:12px;margin-top:10px"><div class="seg">Радиус R <input type="range" id="cR" min="1" max="10" step="1" value="${CI.R}"> <b id="cRv">${CI.R} м</b></div><div class="seg">Период T <input type="range" id="cTT" min="1" max="10" step="1" value="${CI.T}"> <b id="cTv">${CI.T} с</b></div></div>
+    <div class="panel" style="background:var(--bg2);margin-top:10px"><div id="cform" class="pform"></div></div></div></div>
+  <p class="note" id="cNote"></p>
+ </div>
+ <div class="panel" style="margin-top:14px"><b>Во сколько раз изменится ускорение?</b> <span class="muted" style="font-size:14px">(задачи урока 5 №7–10)</span>
+  <div class="seg" style="margin-top:10px">Радиус <select id="kR" class="sel"><option value="4">увеличили в 4 раза</option><option value="2" selected>увеличили в 2 раза</option><option value="1">не меняли</option><option value="0.5">уменьшили в 2 раза</option></select> скорость <select id="kV" class="sel"><option value="4">увеличили в 4 раза</option><option value="2" selected>увеличили в 2 раза</option><option value="1.4142135">увеличили в √2 раз</option><option value="1">не меняли</option><option value="0.5">уменьшили в 2 раза</option></select></div>
+  <div id="kout" class="pform" style="margin-top:10px"></div></div></section>`;
+ const P=active=Player(frameCir);P.T=600;P.ui=()=>{$("#cplay").textContent=P.playing?"❚❚ Пауза":"▶ Пуск"};
+ $("#cpre").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;CI.pi=+b.dataset.i;setCir(CIRP[CI.pi]);renderCir()};
+ $("#cplay").onclick=()=>P.toggle();$("#crew").onclick=()=>{P.pause();CI.rel=null;P.seek(0);P.ui()};
+ $("#crel").onclick=()=>{if(CI.rel==null){CI.rel=P.t;$("#crel").textContent="Вернуть";if(!P.playing)P.play()}else{CI.rel=null;$("#crel").textContent="Отпустить";P.seek(0)}};
+ $("#cR").oninput=e=>{CI.R=+e.target.value;$("#cRv").textContent=CI.R+" м";frameCir(P.t)};
+ $("#cTT").oninput=e=>{CI.T=+e.target.value;$("#cTv").textContent=CI.T+" с";frameCir(P.t)};
+ const kf=()=>{const kr=+$("#kR").value,kv=+$("#kV").value;const k=kv*kv/kr;const f=x=>Math.abs(x-1.4142135)<1e-6?"√2":fmt(x);
+  $("#kout").innerHTML=`<div class="fl"><span class="fk">a</span><div><b>a = v² / R</b> → скорость в квадрате: (${f(kv)})² = ${fmt(kv*kv)}, делим на изменение радиуса ${fmt(kr)}<br>= ${fmt(kv*kv)} / ${fmt(kr)} = <b class="ans">${k>1?"увеличится в "+fmt(k)+" "+raz(k):k<1?"уменьшится в "+fmt(1/k)+" "+raz(1/k):"не изменится"}</b></div></div>`};
+ $("#kR").onchange=$("#kV").onchange=kf;kf();
+ $("#cNote").textContent=CI.note;frameCir(0);P.ui()}
+function frameCir(t){if(!$("#cscene"))return;$("#cscene").innerHTML=cirScene(t);const v=cv_(),a=ca_();
+ $("#cT").textContent=fmt(t)+" с";$("#cN").textContent=Math.floor(t/CI.T+1e-9);$("#cP").textContent=fmt(CI.T)+" с";$("#cF").textContent=f2(1/CI.T)+" 1/с";$("#cV").textContent=fmt(v)+" м/с";$("#cA").textContent=fmt(a)+" м/с²";
+ const N=Math.floor(t/CI.T+1e-9);
+ $("#cform").innerHTML=`<div class="fl"><span class="fk">T</span><div><b>T = t / N</b>${N>0?` = ${fmt(N*CI.T)} / ${N} = <b class="ans">${fmt(CI.T)} с</b>`:" — дождись первого оборота"}</div></div>
+  <div class="fl"><span class="fk">ν</span><div><b>ν = 1 / T</b> <span class="muted">(ν — «ню», частота)</span> = 1 / ${fmt(CI.T)} = <b class="ans">${f2(1/CI.T)} 1/с</b></div></div>
+  <div class="fl"><span class="fk">v</span><div><b>v = 2πR / T</b> = 2·3,14·${CI.R} / ${CI.T} = <b class="ans">${fmt(v)} м/с</b></div></div>
+  <div class="fl"><span class="fk">a</span><div><b>a = v² / R</b> = ${fmt(v)}² / ${CI.R} = <b class="ans">${fmt(a)} м/с²</b></div></div>
+  ${CI.mode==="two"?`<p class="muted" style="margin:4px 0 0;font-size:13px">Это для мухи (R = ${CI.R} м). У жука R = ${fmt(CI.R/2)} м: тот же T и ν, но v = ${fmt(v/2)} м/с — в 2 раза меньше.</p>`:""}`}
+
 /* ---------- старт ---------- */
 document.addEventListener("keydown",e=>{if(e.key===" "&&active&&!e.target.matches("input,textarea,button")){e.preventDefault();active.toggle()}});
-setView(["watch","acc","path","fall","guess","build","where"].includes(location.hash.slice(1))?location.hash.slice(1):"watch");
+setView(["watch","acc","path","fall","circle","guess","build","where"].includes(location.hash.slice(1))?location.hash.slice(1):"watch");
 </script></body></html>
