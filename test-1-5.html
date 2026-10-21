@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Тест · Кинематика 1–5</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:#060A17}
+:root{color-scheme:dark;--bg:#060A17;--bg2:#0B1226;--panel:#0F1830;--line:#1E2A4A;--line2:#2B3A63;--text:#E9EEFF;--text2:#9AA6C8;--cyan:#3BE3FF;--pink:#FF5FD2;--amber:#FFBE55;--green:#35F2A2;--red:#FF5C7A}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:820px;margin:0 auto;padding-block:20px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:28px;line-height:1.2;margin:8px 0 6px}
+h1 .g{background:linear-gradient(90deg,var(--cyan),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--text2);margin:0 0 18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.top{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.top input{flex:1;min-width:180px}
+input[type=text]{background:var(--bg2);border:1px solid var(--line2);color:var(--text);border-radius:10px;padding:10px 12px;font:inherit;outline:none}
+input[type=text]:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(59,227,255,.15)}
+.btn{border:1px solid var(--line2);background:var(--bg2);color:var(--text);font:600 15px inherit;font-family:inherit;padding:10px 16px;border-radius:11px;cursor:pointer}
+.btn.primary{background:linear-gradient(135deg,var(--cyan),#7FF0FF);color:#04111A;border-color:transparent}
+.btn:hover{border-color:var(--cyan)}
+.prog{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(6,10,23,.9);backdrop-filter:blur(10px);margin:14px -16px 0;padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text2)}
+.bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--pink));transition:width .3s}
+.sec{margin:28px 0 10px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-weight:700}
+.task{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.task.ok{border-color:rgba(53,242,162,.6)}
+.task.bad{border-color:rgba(255,92,122,.6)}
+.task .n{display:inline-block;min-width:30px;color:var(--pink);font-weight:800}
+.task .tag{font-size:12px;color:var(--amber);margin-left:6px}
+.task p{margin:4px 0 10px}
+.task ol{margin:6px 0 10px;padding-left:22px;color:var(--text)}
+.task ol li{margin:3px 0}
+.ans{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ans input{width:160px}
+.ans .u{color:var(--text2);font-size:14px}
+.verdict{font-size:14px;font-weight:600}
+.verdict.ok{color:var(--green)}
+.verdict.bad{color:var(--red)}
+svg.gr{display:block;width:100%;max-width:440px;margin:6px 0 12px;background:#0A1124;border:1px solid var(--line);border-radius:12px}
+.f{font-family:"SF Mono",Menlo,Consolas,monospace;color:var(--cyan);white-space:nowrap}
+.res{margin-top:24px}
+.score{font-size:40px;font-weight:800}
+.muted{color:var(--text2);font-size:14px}
+textarea{width:100%;min-height:120px;background:var(--bg2);border:1px solid var(--line2);color:var(--text);border-radius:10px;padding:10px;font:13px/1.4 Menlo,Consolas,monospace}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+@media (max-width:520px){h1{font-size:23px}.ans input{width:130px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="muted">Задачник по механике · ОГЭ</div>
+  <h1>Тест: <span class="g">кинематика, уроки 1–5</span></h1>
+  <p class="lead">15 задач: равномерное движение, графики x(t) и v(t), ускорение, свободное падение, движение по окружности. Решай на листочке, сюда вписывай только ответ. Десятичные дроби пиши через запятую, например 2,5. В задачах «выберите два верных утверждения» пиши две цифры, например 14. Ответы сохраняются, можно закрыть страницу и вернуться. g = 10 м/с², π ≈ 3,14.</p>
+
+  <div class="panel top">
+    <input type="text" id="name" placeholder="Твоё имя" aria-label="Имя">
+    <span class="muted" id="startInfo"></span>
+  </div>
+
+  <div class="prog"><span id="cnt">0 / 15</span><div class="bar"><i id="barI"></i></div></div>
+
+  <div id="tasks"></div>
+
+  <div class="row"><button class="btn primary" id="finish">Завершить тест и проверить</button></div>
+
+  <div class="panel res" id="res" hidden>
+    <div class="muted">Результат</div>
+    <div class="score" id="score"></div>
+    <div class="muted" id="scoreInfo"></div>
+    <p>Скопируй этот текст и отправь репетитору:</p>
+    <textarea id="report" readonly></textarea>
+    <div class="row"><button class="btn" id="copy">Скопировать</button><button class="btn" id="again">Начать заново</button></div>
+  </div>
+</div>
+
+<script>
+// ---------- графики ----------
+function graph(o){
+  const W=440,H=280,L=46,R=18,T=18,B=40;
+  const xs=v=>L+(v-o.x0)/(o.x1-o.x0)*(W-L-R);
+  const ys=v=>T+(o.y1-v)/(o.y1-o.y0)*(H-T-B);
+  let s=`<svg class="gr" viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'график'}">`;
+  for(let x=o.x0;x<=o.x1+1e-9;x+=o.dx){s+=`<line x1="${xs(x)}" y1="${ys(o.y0)}" x2="${xs(x)}" y2="${ys(o.y1)}" stroke="#1C2848" stroke-width="1"/>`;
+    s+=`<text x="${xs(x)}" y="${ys(o.y0)+16}" fill="#9AA6C8" font-size="12" text-anchor="middle">${x}</text>`}
+  for(let y=o.y0;y<=o.y1+1e-9;y+=o.dy){s+=`<line x1="${xs(o.x0)}" y1="${ys(y)}" x2="${xs(o.x1)}" y2="${ys(y)}" stroke="#1C2848" stroke-width="1"/>`;
+    s+=`<text x="${xs(o.x0)-7}" y="${ys(y)+4}" fill="#9AA6C8" font-size="12" text-anchor="end">${y}</text>`}
+  const y0=Math.max(o.y0,Math.min(o.y1,0));
+  s+=`<line x1="${xs(o.x0)}" y1="${ys(y0)}" x2="${xs(o.x1)+8}" y2="${ys(y0)}" stroke="#9AA6C8" stroke-width="1.6"/>`;
+  s+=`<line x1="${xs(o.x0)}" y1="${ys(o.y0)}" x2="${xs(o.x0)}" y2="${ys(o.y1)-8}" stroke="#9AA6C8" stroke-width="1.6"/>`;
+  s+=`<text x="${W-6}" y="${ys(y0)-6}" fill="#E9EEFF" font-size="13" text-anchor="end">${o.xl}</text>`;
+  s+=`<text x="${xs(o.x0)+6}" y="${T+2}" fill="#E9EEFF" font-size="13">${o.yl}</text>`;
+  for(const ln of o.lines){
+    s+=`<polyline fill="none" stroke="${ln.c||'#3BE3FF'}" stroke-width="3" stroke-linejoin="round" points="${ln.p.map(([a,b])=>xs(a)+','+ys(b)).join(' ')}"/>`;
+    if(ln.lab){const [a,b]=ln.lab;s+=`<text x="${xs(a)}" y="${ys(b)}" fill="${ln.c||'#3BE3FF'}" font-size="14" font-weight="700">${ln.t}</text>`}
+  }
+  return s+'</svg>';
+}
+const G2={x0:0,x1:8,dx:1,y0:-4,y1:10,dy:2,xl:'t, с',yl:'x, м',lines:[{p:[[0,0],[2,8],[5,8],[8,-4]]}],aria:'график x(t)'};
+
+// ---------- задачи ----------
+// k: 'n' — число, 'm2' — две цифры в любом порядке
+const S=[
+ ['Равномерное движение',[
+  {q:'Переведи скорость 72 км/ч в м/с.',u:'м/с'},
+  {q:'Мальчик прошёл 300 м на север, а затем 400 м на восток. Чему равен модуль его перемещения?',u:'м'},
+  {q:'Мяч бросили вертикально вверх с балкона, который находится на высоте 10 м над землёй. Мяч поднялся на 5 м выше балкона, а затем упал на землю. Какой путь прошёл мяч?',u:'м',nw:1},
+  {q:'Два автомобиля движутся по прямой дороге. Их координаты меняются по законам <span class="f">x₁ = 10t</span> и <span class="f">x₂ = 300 − 20t</span> (все величины в СИ). Через сколько секунд автомобили встретятся?',u:'с',nw:1}
+ ]],
+ ['Графики равномерного движения',[
+  {q:'По графику зависимости координаты тела от времени определи <b>проекцию</b> скорости тела v<sub>x</sub>.',g:{x0:0,x1:6,dx:1,y0:-2,y1:12,dy:2,xl:'t, с',yl:'x, м',lines:[{p:[[0,10],[5,0],[6,-2]]}]},u:'м/с',nw:1},
+  {q:'На рисунке — график зависимости координаты тела от времени. Какой <b>путь</b> прошло тело за 8 с?',g:G2,u:'м'},
+  {q:'По тому же графику найди <b>модуль перемещения</b> тела за 8 с.',g:G2,u:'м'},
+  {q:'По тому же графику найди <b>среднюю путевую скорость</b> тела за 8 с (весь путь делить на всё время).',g:G2,u:'м/с'},
+  {q:'По тому же графику выбери <b>два верных</b> утверждения.',g:G2,list:['На участке от 2 до 5 с тело покоилось.','На участке от 0 до 2 с скорость тела равна 8 м/с.','Модули скоростей тела на участках 0–2 с и 5–8 с одинаковы.','На участке 5–8 с тело двигалось по направлению оси Ox.','За 8 с тело вернулось в начальную точку.'],k:'m2',u:'две цифры'},
+  {q:'На рисунке — графики зависимости координат двух тел от времени. В какой момент времени тела встретились?',g:{x0:0,x1:6,dx:1,y0:0,y1:12,dy:2,xl:'t, с',yl:'x, м',lines:[{p:[[0,0],[6,12]],c:'#3BE3FF',lab:[5.2,9.2],t:'1'},{p:[[0,12],[6,6]],c:'#FF5FD2',lab:[5.4,7.4],t:'2'}]},u:'с'}
+ ]],
+ ['Ускорение и графики v(t)',[
+  {q:'Автомобиль разогнался с 36 км/ч до 72 км/ч за 5 с. Чему равно ускорение автомобиля?',u:'м/с²'},
+  {q:'На рисунке — график зависимости скорости автомобиля от времени. Какой путь проехал автомобиль за 9 с?',g:{x0:0,x1:9,dx:1,y0:0,y1:8,dy:2,xl:'t, с',yl:'v, м/с',lines:[{p:[[0,0],[3,6],[7,6],[9,0]]}]},u:'м'},
+  {q:'На рисунке — график проекции скорости тела от времени. Какой <b>путь</b> прошло тело за 6 с? Подумай, что происходит после 3 с.',g:{x0:0,x1:6,dx:1,y0:-6,y1:6,dy:2,xl:'t, с',yl:'vₓ, м/с',lines:[{p:[[0,6],[6,-6]]}]},u:'м',nw:1},
+  {q:'На рисунке — графики зависимости скорости от времени для двух тел, движущихся по одной прямой. Выбери <b>два верных</b> утверждения.',g:{x0:0,x1:6,dx:1,y0:0,y1:12,dy:2,xl:'t, с',yl:'v, м/с',lines:[{p:[[0,0],[6,12]],c:'#3BE3FF',lab:[5.3,8.6],t:'1'},{p:[[0,8],[6,8]],c:'#FF5FD2',lab:[0.3,9.2],t:'2'}]},list:['Тело 2 движется равноускоренно.','В момент t = 4 с скорости тел одинаковы.','В момент t = 4 с тела встретились.','Ускорение тела 1 равно 2 м/с².','За первые 4 с тела прошли одинаковый путь.'],k:'m2',u:'две цифры',nw:1},
+  {q:'Координата тела меняется по закону <span class="f">x = 3 + 4t − t²</span> (все величины в СИ). Через сколько секунд после начала движения тело остановится?',u:'с',nw:1}
+ ]],
+ ['Путь при равноускоренном движении и свободное падение',[
+  {q:'Автомобиль трогается с места с ускорением 4 м/с². Какой путь он пройдёт за 5 с?',u:'м'},
+  {q:'Тело начинает двигаться из состояния покоя с ускорением 2 м/с². Какой путь оно пройдёт за <b>четвёртую</b> секунду движения?',u:'м'},
+  {q:'Автомобиль ехал со скоростью 20 м/с и начал тормозить с ускорением, модуль которого 5 м/с². Какой путь он пройдёт до остановки?',u:'м',nw:1},
+  {q:'Камень бросили вертикально вверх со скоростью 20 м/с. На какую максимальную высоту он поднимется? Сопротивлением воздуха пренебречь.',u:'м',nw:1},
+  {q:'Камень свободно падает из состояния покоя. Какой путь он пролетит за <b>третью</b> секунду падения?',u:'м',nw:1}
+ ]],
+ ['Движение по окружности',[
+  {q:'Колесо делает 900 оборотов за 3 минуты. Чему равна частота вращения колеса?',u:'Гц'},
+  {q:'Тело равномерно движется по окружности. Период обращения уменьшили в 2 раза, а радиус окружности не изменили. Во сколько раз увеличилось центростремительное ускорение тела?',u:'раз',nw:1}
+ ]]
+];
+// ответы хранятся не в открытом виде
+const K=JSON.parse(atob('WyIyMCIsIjUwMCIsIjIwIiwiMTAiLCItMiIsIjIwIiwiNCIsIjIsNSIsIjEzIiwiNCIsIjIiLCIzOSIsIjE4IiwiMjQiLCIyIiwiNTAiLCI3IiwiNDAiLCIyMCIsIjI1IiwiNSIsIjQiXQ=='));
+
+const ALL=[];S.forEach(([h,arr])=>arr.forEach(t=>{t.h=h;if(t.fix)t.fix(t);ALL.push(t)}));
+ALL.forEach((t,i)=>{t.a=K[i];t.k=t.k||'n'});
+{const DROP=new Set([1,3,7,10,14,15,19]);const keep=ALL.filter((t,i)=>!DROP.has(i));ALL.length=0;ALL.push(...keep);}
+
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const KEY='mk_test15b';
+let st=LS.get(KEY,null)||{ans:{},start:Date.now(),done:false,name:''};
+
+const norm=s=>String(s||'').trim().replace(/\s+/g,'').replace(/−/g,'-').replace(',','.');
+function check(t,g){
+  if(!norm(g))return false;
+  if(t.k==='m2'){const d=norm(g).replace(/\D/g,'');return d.length===2&&d.split('').sort().join('')===t.a.split('').sort().join('')}
+  const x=parseFloat(norm(g)),y=parseFloat(norm(t.a));return isFinite(x)&&Math.abs(x-y)<=Math.max(1e-6,Math.abs(y)*0.01);
+}
+
+function render(){
+  let h='',last='',i=0;
+  for(const t of ALL){
+    if(t.h!==last){h+=`<div class="sec">${t.h}</div>`;last=t.h}
+    i++;
+    h+=`<div class="task" id="t${i}"><p><span class="n">${i}.</span>${t.q}</p>${t.g?graph(t.g):''}${t.list?'<ol>'+t.list.map(x=>`<li>${x}</li>`).join('')+'</ol>':''}
+    <div class="ans"><input type="text" inputmode="${t.k==='m2'?'numeric':'decimal'}" data-i="${i-1}" placeholder="ответ" aria-label="Ответ к задаче ${i}"><span class="u">${t.u}</span><span class="verdict"></span></div></div>`;
+  }
+  document.getElementById('tasks').innerHTML=h;
+  document.querySelectorAll('.ans input').forEach(inp=>{
+    inp.value=st.ans[inp.dataset.i]||'';
+    inp.addEventListener('input',()=>{st.ans[inp.dataset.i]=inp.value;LS.set(KEY,st);progress()});
+  });
+  const nm=document.getElementById('name');nm.value=st.name||'';nm.addEventListener('input',()=>{st.name=nm.value;LS.set(KEY,st)});
+  progress();
+  if(st.done)finish(true);
+}
+function progress(){
+  const n=Object.values(st.ans).filter(v=>norm(v)).length;
+  document.getElementById('cnt').textContent=n+' / '+ALL.length;
+  document.getElementById('barI').style.width=(n/ALL.length*100)+'%';
+  const m=Math.round((Date.now()-st.start)/60000);
+  document.getElementById('startInfo').textContent=st.done?'тест завершён':'идёт '+m+' мин';
+}
+setInterval(progress,30000);
+
+function finish(silent){
+  const empty=ALL.filter((t,i)=>!norm(st.ans[i])).length;
+  const fb=document.getElementById('finish');
+  if(!silent&&!st.done&&empty&&!fb.dataset.armed){fb.dataset.armed=1;fb.textContent='Без ответа задач: '+empty+'. Нажми ещё раз, чтобы завершить';return}
+  if(!st.done){st.done=true;st.end=Date.now();LS.set(KEY,st)}
+  let ok=0;const lines=[];
+  ALL.forEach((t,i)=>{
+    const g=st.ans[i]||'',r=check(t,g);if(r)ok++;
+    const box=document.getElementById('t'+(i+1));box.classList.add(r?'ok':'bad');
+    const inp=box.querySelector('input');inp.readOnly=true;
+    box.querySelector('.verdict').className='verdict '+(r?'ok':'bad');
+    box.querySelector('.verdict').textContent=r?'верно':'неверно · правильный ответ: '+t.a;
+    lines.push(`${i+1}. ${r?'✔':'✘'} ответ: ${g||'—'}${r?'':' (верно: '+t.a+')'}`);
+  });
+  const mins=Math.round(((st.end||Date.now())-st.start)/60000);
+  document.getElementById('res').hidden=false;
+  document.getElementById('score').textContent=ok+' / '+ALL.length;
+  document.getElementById('scoreInfo').textContent='Время: '+mins+' мин';
+  document.getElementById('report').value=`Тест «Кинематика 1–5» · ${st.name||'без имени'}\nРезультат: ${ok}/${ALL.length} · ${mins} мин\n`+lines.join('\n');
+  document.getElementById('finish').hidden=true;
+  progress();
+  if(!silent)document.getElementById('res').scrollIntoView({behavior:'smooth'});
+}
+document.getElementById('finish').onclick=()=>finish(false);
+document.getElementById('copy').onclick=()=>{const t=document.getElementById('report');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}document.getElementById('copy').textContent='Скопировано ✓'};
+document.getElementById('again').onclick=e=>{const b=e.currentTarget;if(!b.dataset.armed){b.dataset.armed=1;b.textContent='Точно стереть все ответы? Нажми ещё раз';return}LS.del(KEY);st={ans:{},start:Date.now(),done:false,name:st.name};LS.set(KEY,st);location.reload()};
+render();
+</script>
+</body>
+</html>
