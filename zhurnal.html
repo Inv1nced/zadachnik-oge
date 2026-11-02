@@ -216,7 +216,8 @@ function fillList(){const q=hw.q.toLowerCase();const list=(byLesson[hw.l]||[]).f
  V.querySelector("#hlist").innerHTML=list.map(r=>`<label class="pick"><input type="checkbox" data-id="${r[0]}" ${hw.ids.includes(r[0])?"checked":""}><span>${esc(r[6].length>170?r[6].slice(0,170)+"…":r[6])}</span><span class="muted num" style="font-size:11px">${autoChk(r)?"авто":"—"}</span></label>`).join("")||`<p class="t2">Нет задач.</p>`}
 function fillFoot(){const f=V.querySelector("#hfoot");const ids=hw.ids;const ls=[...new Set(ids.map(id=>MAP[id]&&MAP[id][0]))].filter(l=>CODES[l]);
  const code=ids.length?"HW-"+b64e({t:hw.title||"Домашка",i:ids.map(x=>x.toString(36)),k:ls.map(l=>CODES[l])}):"";
- const msg=code?`Домашка «${hw.title||"Домашка"}» — ${ids.length} задач.\nОткрой задачник → вкладка «Домашка» → вставь код:\n${code}`:"";
+ const hwLink=code?new URL("index.html",location.href).href+"#hw="+encodeURIComponent(code):"";
+ const msg=code?`Домашка «${hw.title||"Домашка"}» — ${ids.length} задач.\nОткрыть подборку: ${hwLink}\n\nЕсли ссылка не открылась: задачник → вкладка «Домашка» → вставь код:\n${code}`:"";
  f.innerHTML=`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="num">Выбрано: <b style="color:var(--cyan)">${ids.length}</b></span><button class="btn small ghost" id="hclr" ${ids.length?"":"disabled"}>Очистить</button></div>${msg?`<textarea id="hmsg" rows="4" readonly>${esc(msg)}</textarea><div><button class="btn primary" id="hcp">Скопировать сообщение для ученика</button></div>`:""}`;
  f.querySelector("#hclr").onclick=()=>{hw.ids=[];fillList();fillFoot()};const cp=f.querySelector("#hcp");if(cp)cp.onclick=()=>copyTxt(msg,f.querySelector("#hmsg"))}
 

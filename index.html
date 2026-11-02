@@ -492,6 +492,11 @@ render();
  if(h&&Array.isArray(h.ids)&&h.ids.length){if(h.hw){try{await parseHW(h.hw)}catch(e){}}const ids=h.ids.filter(id=>byId[id]);if(ids.length)hwRun={...h,ids,answers:h.answers||{}}}
  const s=LS.get("mk_run_test",null);
  if(s&&!s.done&&Array.isArray(s.ids)&&s.ids.length){const ids=s.ids.filter(id=>byId[id]);if(ids.length){test={...s,ids,answers:s.answers||{}};if(test.limit){clearInterval(startRun._i);startRun._i=setInterval(tick,1000)}}}
+ const incomingHW=new URLSearchParams(location.hash.slice(1)).get("hw");
+ if(incomingHW){try{const h=await parseHW(incomingHW);if(!h.ids.length)throw 0;
+   if(!hwRun||hwRun.hw!==h.code)startRun("hw",h.title,h.ids,0,h.code);
+   setView("hw");return;
+ }catch(e){toast("Не удалось открыть домашку по ссылке. Проверь код во вкладке «Домашка»")}}
  if(hwRun&&!hwRun.done){setView("hw");toast("Домашка восстановлена — продолжай с того же места")}
  else if(test&&test.kind==="test"&&!test.done){setView("test");toast("Вариант восстановлен")}
 }catch(e){}})();
