@@ -319,7 +319,9 @@ function isRight(r,given){const g=norm(given),a=norm(r[4]);if(!g)return false;
   const gm=g.match(/^-?\d+(\.\d+)?/),av=parseFloat(a);if(!gm||!isFinite(av))return g===a;const gv=parseFloat(gm[0]);return Math.abs(gv-av)<=1e-9*Math.max(1,Math.abs(av))}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtText=t=>esc(t).replace(/\[рисунок\]/g,'<span class="pic">рисунок</span>').replace(/\[формула\]/g,'<span class="pic">формула</span>');
-function fmtRow(r){let k=0;const imgs=r[7]||[];return esc(r[6]).replace(/\[рисунок\]/g,()=>{const src=imgs[k++];return src?`<img class="fig" src="${src}" alt="Рисунок к задаче" loading="lazy">`:'<span class="pic">рисунок</span>'}).replace(/\[формула\]/g,'<span class="pic">формула</span>')}
+function fmtRow(r){let k=0;const imgs=r[7]||[];let body=r[6];
+ if([80176,35380,38211].includes(r[0])){body=body.split("|")[0].trim();if(r[0]===35380)body=body.replace("2t2","2t²");body+="\nВ ответе запиши сначала номер изменения "+(r[0]===38211?"модуля скорости, затем — модуля ускорения.":"модуля ускорения, затем — модуля скорости.")}
+ return esc(body).replace(/\[рисунок\]/g,()=>{const src=imgs[k++];return src?`<img class="fig" src="${src}" alt="Рисунок к задаче" loading="lazy">`:'<span class="pic">рисунок</span>'}).replace(/\[формула\]/g,'<span class="pic">формула</span>')}
 const link=r=>`https://3.shkolkovo.online/catalog/${r[1]}/${r[0]}`;
 /* storage */
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
