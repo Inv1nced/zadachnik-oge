@@ -1,0 +1,23 @@
+html[data-theme]{--f-d:"Onest",system-ui,sans-serif;--glow:none}
+html[data-theme=dark]{color-scheme:dark;--bg:#111b24;--bg2:#16232e;--panel:#1b2b37;--panel2:#213441;--line:#344b5b;--line2:#456171;--text:#edf4f7;--text2:#b6c9d2;--muted:#a4bac7;--cyan:#81dede;--violet:#9fbcdf;--pink:#dfb2cc;--ok:#85d8b1;--err:#ffa6b4;--amber:#f4cf8a}
+html[data-theme=light]{color-scheme:light;--bg:#f1f5f6;--bg2:#eaf0f2;--panel:#fff;--panel2:#f2f7f8;--line:#cddcdf;--line2:#a4bec4;--text:#203741;--text2:#46616d;--muted:#536d77;--cyan:#006d75;--violet:#425a9a;--pink:#965070;--ok:#176348;--err:#b32642;--amber:#795308;--ok-bg:#e5f5ed;--err-bg:#fff0f2}
+html[data-theme] .topbar{background:var(--bg)}
+html[data-theme] .hero{padding-top:24px}
+html[data-theme] h1{font-family:var(--f-d);font-size:clamp(26px,4vw,38px);line-height:1.2;letter-spacing:-.02em}
+html[data-theme] h1 .grad{background:none;color:var(--text)}
+html[data-theme] .btn.primary,html[data-theme] .tab[aria-selected=true]{background:var(--cyan);color:var(--bg);box-shadow:none}
+html[data-theme] .brand i{animation:none;box-shadow:none}
+html[data-theme] #scope,html[data-theme] .gridbg{display:none}
+html[data-theme] .panel,html[data-theme] .task,html[data-theme] .lesson,html[data-theme] .mod{box-shadow:none}
+.site-nav{position:relative;z-index:21;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px max(18px,calc((100% - 1080px)/2));background:var(--panel,#172934);border-bottom:1px solid var(--line,#344b5b);font:14px/1.5 system-ui,sans-serif;color:var(--text,#edf4f7)}
+.site-nav a,.site-nav button{color:inherit;text-decoration:none;border:1px solid transparent;border-radius:7px;padding:7px 10px;background:transparent;white-space:nowrap;font:inherit}
+.site-nav a[aria-current],.site-nav a:hover{background:var(--bg2,#213441);border-color:var(--line,#344b5b)}
+.site-nav button{margin-left:auto;border-color:var(--line,#344b5b);cursor:pointer}.site-nav :focus-visible{outline:3px solid var(--cyan,#81dede);outline-offset:2px}
+.workspace-embed .site-nav,.workspace-embed .topbar,.workspace-embed footer{display:none!important}
+html[data-theme=light] .fig{background:white;border:1px solid var(--line)}
+@media(max-width:550px){.site-nav{gap:3px;padding:9px}.site-nav a,.site-nav button{padding:7px;font-size:13px}}
+html[data-theme]{--ink:var(--text);--soft:var(--bg2);--purple:var(--violet);--green:var(--ok);--red:var(--err);--paper:var(--bg);--surface:var(--panel);--blue:var(--cyan);--shadow:none}
+html[data-theme=light] body{background:var(--bg)}
+html[data-theme=light] button.primary{color:#fff;background:var(--cyan)}
+html[data-theme=light] svg text{fill:var(--text)}
+html[data-theme=light] svg [stroke="#3BE3FF"],html[data-theme=light] svg [stroke="#3be3ff"]{stroke:#006d75}
