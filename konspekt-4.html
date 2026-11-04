@@ -38,7 +38,7 @@ code{font:600 15px var(--f-m);color:var(--cyan);background:rgba(59,227,255,.08);
 .err{color:var(--err);font-size:14px;min-height:20px}
 @media (max-width:600px){.top{position:static}}
 @media print{.top,.toc{display:none}body{background:#fff;color:#000}.blk{border:1px solid #999;background:#fff}code{color:#000}}
-</style><link rel="stylesheet" href="site-shell.css?v=20261105frog"><script src="site-shell.js?v=20261105frog" defer></script></head><body><div class="app">
+</style><link rel="stylesheet" href="site-shell.css?v=20261105cute"><script src="site-shell.js?v=20261105cute" defer></script></head><body><div class="app">
 <div class="top">Конспект репетитора<span class="sp"></span><a href="grafiki.html" target="_blank">Тренажёр</a><a href="zhurnal.html">Журнал</a><a href="./" target="_blank">Задачник</a></div>
 <main id="main"><div class="panel login"><b>Только для репетитора</b><p class="muted" style="margin:6px 0 0">Пароль — тот же, что от журнала.</p><input type="password" id="pw" placeholder="Пароль" autocomplete="current-password"><button class="btn" id="go">Открыть</button><div class="err" id="err"></div></div></main>
 </div>
@@ -53,4 +53,4 @@ async function tryPw(pw,save){try{const html=await unlock(pw);document.getElemen
 document.getElementById("go").onclick=async()=>{const ok=await tryPw(document.getElementById("pw").value,true);if(!ok)document.getElementById("err").textContent="Неверный пароль"};
 document.getElementById("pw").onkeydown=e=>{if(e.key==="Enter")document.getElementById("go").click()};
 (async()=>{let pw=null;try{pw=localStorage.getItem("jr_pw")}catch(e){}if(pw)await tryPw(pw,false)})();
-</script><link rel="stylesheet" href="site-shell.css?v=20261105frog"></body></html>
+</script><link rel="stylesheet" href="site-shell.css?v=20261105cute"></body></html>

@@ -50,7 +50,7 @@ textarea{width:100%;min-height:120px;background:var(--bg2);border:1px solid var(
 .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 @media (max-width:520px){h1{font-size:23px}.ans input{width:130px}}
 </style>
-<link rel="stylesheet" href="site-shell.css?v=20261105frog"><script src="site-shell.js?v=20261105frog" defer></script></head>
+<link rel="stylesheet" href="site-shell.css?v=20261105cute"><script src="site-shell.js?v=20261105cute" defer></script></head>
 <body>
 <div class="wrap">
   <div class="muted">Задачник по механике · ОГЭ</div>
@@ -210,5 +210,5 @@ document.getElementById('copy').onclick=()=>{const t=document.getElementById('re
 document.getElementById('again').onclick=e=>{const b=e.currentTarget;if(!b.dataset.armed){b.dataset.armed=1;b.textContent='Точно стереть все ответы? Нажми ещё раз';return}LS.del(KEY);st={ans:{},start:Date.now(),done:false,name:st.name};LS.set(KEY,st);location.reload()};
 render();
 </script>
-<link rel="stylesheet" href="site-shell.css?v=20261105frog"></body>
+<link rel="stylesheet" href="site-shell.css?v=20261105cute"></body>
 </html>

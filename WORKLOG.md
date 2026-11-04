@@ -59,3 +59,9 @@
 - Click to request context-sensitive laboratory formulas or physics facts; occasional quiet fact bubbles, close/Escape, persistent show/hide control in navigation, reduced-motion handling. No AI API, audio, or external service used.
 - Embedded workspace resources omit the helper to avoid duplicate floating widgets. Existing password gates remain intact.
 - Browser verified: spring-specific Hooke-law hint, talking state, pupils moving to (-3,-2), fact button, hiding retained across reload, restoring from navigation. Learning checks pass.
+
+## 2026-11-05 — cute frog and block-specific hints
+- Replaced oversized square pupils with smaller soft eyes, highlights, blush and a gentler smile; cursor tracking/blinking/talking retained.
+- Added task-bank block selector (1–23 plus bonus), remembering the choice. Selecting a block immediately tells a related fact; formula/fact/next stay within that block. Auto mode follows the most recently clicked task-bank block and retains laboratory context when no task block is selected.
+- Titles cross-checked against original journal metadata; no bank codes, task solutions or credentials added to public files. Added original short hints with conditions on formula use.
+- Verified coverage for all 24 entries; browser checked block 7 fact/F=ma, selected block surviving reload, auto detection of block 1, and updated appearance. Existing learning checks pass.

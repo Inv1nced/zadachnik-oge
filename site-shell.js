@@ -8,7 +8,7 @@ const items=[['teach.html','🔒 Журнал репетитора'],['index.htm
 nav.innerHTML=items.map(([url,text])=>`<a href="${new URL(url,base).href}" ${location.pathname===new URL(url,base).pathname?'aria-current="page"':''}>${text}</a>`).join('')+'<button type="button" aria-label="Переключить светлую и тёмную тему"></button>';
 document.body.prepend(nav);const button=nav.querySelector('button');function paint(){button.textContent=document.documentElement.dataset.theme==='light'?'Тёмная тема':'Светлая тема'}paint();button.onclick=()=>{const t=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=t;try{localStorage.setItem('oge-theme',t)}catch{}paint()};
 if(!document.documentElement.classList.contains('workspace-embed')){
-const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('frog-helper.css?v=20261105frog',base).href;document.head.append(css);
-const helper=document.createElement('script');helper.src=new URL('frog-helper.js?v=20261105frog',base).href;document.body.append(helper);
+const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('frog-helper.css?v=20261105cute',base).href;document.head.append(css);
+const helper=document.createElement('script');helper.src=new URL('frog-helper.js?v=20261105cute',base).href;const hints=document.createElement('script');hints.src=new URL('frog-blocks.js?v=20261105cute',base).href;hints.onload=()=>document.body.append(helper);hints.onerror=()=>document.body.append(helper);document.body.append(hints);
 }
 })();
