@@ -7,4 +7,8 @@ let teacher=false;try{teacher=!!(sessionStorage.getItem('oge-teacher-session-v1'
 const items=[['teach.html','🔒 Журнал репетитора'],['index.html','Задачник'],['grafiki.html','Графики'],['forces.html','Силы'],['laboratory.html','Лаборатория'],...(teacher?[['tutor-plan/','Маршрут ОГЭ']]:[])];
 nav.innerHTML=items.map(([url,text])=>`<a href="${new URL(url,base).href}" ${location.pathname===new URL(url,base).pathname?'aria-current="page"':''}>${text}</a>`).join('')+'<button type="button" aria-label="Переключить светлую и тёмную тему"></button>';
 document.body.prepend(nav);const button=nav.querySelector('button');function paint(){button.textContent=document.documentElement.dataset.theme==='light'?'Тёмная тема':'Светлая тема'}paint();button.onclick=()=>{const t=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=t;try{localStorage.setItem('oge-theme',t)}catch{}paint()};
+if(!document.documentElement.classList.contains('workspace-embed')){
+const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('frog-helper.css?v=20261105frog',base).href;document.head.append(css);
+const helper=document.createElement('script');helper.src=new URL('frog-helper.js?v=20261105frog',base).href;document.body.append(helper);
+}
 })();

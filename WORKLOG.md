@@ -53,3 +53,9 @@
 - Persistent SVG scenes: spring extension and suspended load move smoothly as mass changes; a complete friction rig moves at constant speed with balanced force arrows; conventional-current markers travel around the main circuit and respond to voltage.
 - Start/pause/replay controls, spring demonstration through three masses, automatic stop after the friction pass, page-hidden pause, reduced-motion alternative. Numeric readings stay fixed in place and existing tables/checks are preserved.
 - Browser checked spring automatic progression to 300 g, moving friction transform, pause and recording 400 g / 1.2 N, switching to Ohm scene and moving current markers. Existing learning validation passed.
+
+## 2026-11-05 — pixel frog physics helper
+- Added reference-inspired pixel SVG frog throughout the shared site shell, with idle hops/blinks, pointer-following pupils, and mouth animation during typed text.
+- Click to request context-sensitive laboratory formulas or physics facts; occasional quiet fact bubbles, close/Escape, persistent show/hide control in navigation, reduced-motion handling. No AI API, audio, or external service used.
+- Embedded workspace resources omit the helper to avoid duplicate floating widgets. Existing password gates remain intact.
+- Browser verified: spring-specific Hooke-law hint, talking state, pupils moving to (-3,-2), fact button, hiding retained across reload, restoring from navigation. Learning checks pass.

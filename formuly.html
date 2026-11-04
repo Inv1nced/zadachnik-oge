@@ -47,7 +47,7 @@ h2{font:700 18px var(--f-d);margin:0 0 10px}
 .score{font:600 13px var(--f-m);color:var(--text2)}.score b{color:var(--ok)}
 .hint{font-size:14px;color:var(--amber);font-weight:600}
 @media (max-width:640px){.opts{grid-template-columns:1fr}.q{font-size:19px}}
-</style><link rel="stylesheet" href="site-shell.css?v=20261105labs"><script src="site-shell.js?v=20261105labs" defer></script></head><body><div class="gridbg"></div><div class="app">
+</style><link rel="stylesheet" href="site-shell.css?v=20261105frog"><script src="site-shell.js?v=20261105frog" defer></script></head><body><div class="gridbg"></div><div class="app">
 <header class="topbar"><a class="brand" href="./"><i></i>ОГЭ · Формулы</a><nav class="tabs" id="tabs"><button class="tab" data-v="rules">Правила</button><button class="tab" data-v="drill">Тренажёр</button></nav><span class="sp"></span><a class="lk" href="grafiki.html">Тренажёр движения</a><a class="lk" href="./">Задачник</a></header>
 <main id="view"></main></div>
 <script>
@@ -107,4 +107,4 @@ function drawDrill(){const {q,opts}=D.cur;
 function setView(v){document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));if(v==="rules")V.innerHTML=R;else next();window.scrollTo({top:0})}
 $("#tabs").onclick=e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)};
 setView(location.hash==="#drill"?"drill":"rules");
-</script><link rel="stylesheet" href="site-shell.css?v=20261105labs"></body></html>
+</script><link rel="stylesheet" href="site-shell.css?v=20261105frog"></body></html>
