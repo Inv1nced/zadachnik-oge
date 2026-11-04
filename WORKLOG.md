@@ -48,3 +48,8 @@
 - Models explicitly identified as idealized training, not the complete official OGE experimental bank. Shared navigation now opens the hub; density has a return link.
 - Refreshed shared asset versions, including styles loaded by the encrypted teacher workspace. Password gate and encrypted bundles preserved.
 - Verified: existing learning verification passes (56 lessons/464 unique author tasks), browser spring measurements and persistence after reload, friction 0,3, resistance 20 and malformed-input rejection, light card computed white background/no background image/dark text.
+
+## 2026-11-05 — animated laboratory models
+- Persistent SVG scenes: spring extension and suspended load move smoothly as mass changes; a complete friction rig moves at constant speed with balanced force arrows; conventional-current markers travel around the main circuit and respond to voltage.
+- Start/pause/replay controls, spring demonstration through three masses, automatic stop after the friction pass, page-hidden pause, reduced-motion alternative. Numeric readings stay fixed in place and existing tables/checks are preserved.
+- Browser checked spring automatic progression to 300 g, moving friction transform, pause and recording 400 g / 1.2 N, switching to Ohm scene and moving current markers. Existing learning validation passed.
