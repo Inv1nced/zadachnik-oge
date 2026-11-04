@@ -41,3 +41,10 @@
 ## Запоминаемое устройство
 
 По дополнительному запросу пользователя в общую навигацию возвращён пункт «🔒 Журнал репетитора», ведущий в закрытый кабинет. Форма предлагает «Запомнить это устройство» (включено по умолчанию). Сохраняется ключ доступа в localStorage текущего браузера; пароль не сохраняется. Выход удаляет и ключ устройства, и ключ вкладки. Без отметки используется только сессия вкладки. Новая авторизация не попадает в резервные копии пользовательских записей.
+
+## 2026-11-05 — readable light theme and laboratory hub
+- Flat white task/lesson surfaces in light mode, dark readable text, solid success state and readable board/task overlays.
+- New laboratory.html hub: existing density experiment plus spring stiffness, sliding friction and resistance trainers. Three measurements, persisted tables, decimal-comma answer checks, worked calculation, notebook report and print action.
+- Models explicitly identified as idealized training, not the complete official OGE experimental bank. Shared navigation now opens the hub; density has a return link.
+- Refreshed shared asset versions, including styles loaded by the encrypted teacher workspace. Password gate and encrypted bundles preserved.
+- Verified: existing learning verification passes (56 lessons/464 unique author tasks), browser spring measurements and persistence after reload, friction 0,3, resistance 20 and malformed-input rejection, light card computed white background/no background image/dark text.
