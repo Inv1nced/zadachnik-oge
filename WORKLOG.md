@@ -71,3 +71,8 @@
 - Pending homework/tests switch the frog to generic coaching only: no formulas, topical facts, simple explanations, block switching, automatic fact bubbles or answer-dependent hints. Existing speech closes immediately on the mode change.
 - Assessment state is signalled by the task app and checked against saved unfinished runs, including reload and other same-profile tabs/pages. Submitting/ending a run restores learning hints. This does not restrict access to other educational pages or act as exam security.
 - Browser verified full transition: training explanation → pending one-task homework → restricted buttons → reload → restriction on lab tab → submission restores normal hints across tabs. Added verify-frog.cjs checks for hw/test detection, completion, all 24 explanations, restricted routing and capped prompts. Existing learning checks pass.
+
+## 2026-11-05 — remove generic frog coaching at user's request
+- Removed the generic start/self-check/stuck/simple-explanation buttons and their content. Retained block formulas/facts and the animated frog.
+- During an unfinished homework/test, the frog closes its bubble and rests silently; no clickable tips or automatic speeches. Assessment protection and cross-tab state remain.
+- Verified learning/frog checks and browser: only formula/fact/next in study mode; starting a test disables speech and closes an existing bubble on another page.

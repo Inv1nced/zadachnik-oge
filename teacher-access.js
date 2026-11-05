@@ -12,10 +12,10 @@ addEventListener('pageshow',e=>{if(e.persisted&&mounted){try{if(!sessionStorage.
 addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='teacher-logout'&&[...document.querySelectorAll('iframe')].some(f=>f.contentWindow===e.source)){sessionClear();location.reload()}});
 addEventListener('storage',e=>{if([SESSION,DEVICE].includes(e.key)&&!e.newValue){sessionClear();if(mounted)location.reload()}});
 function sessionClear(){try{sessionStorage.removeItem(SESSION)}catch{}try{localStorage.removeItem(DEVICE)}catch{}}
-function appendScript(item){return new Promise((resolve,reject)=>{const script=document.createElement('script');if(item.src){script.src=item.src.includes('site-shell.js')?item.src.replace(/\?.*$/,'')+'?v=20261105coach':item.src;script.onload=resolve;script.onerror=reject;}else{script.textContent=item.inline;resolve();}document.body.appendChild(script);});}
+function appendScript(item){return new Promise((resolve,reject)=>{const script=document.createElement('script');if(item.src){script.src=item.src.includes('site-shell.js')?item.src.replace(/\?.*$/,'')+'?v=20261105quiet':item.src;script.onload=resolve;script.onerror=reject;}else{script.textContent=item.inline;resolve();}document.body.appendChild(script);});}
 async function mount(payload){
  document.title=payload.title;document.documentElement.dataset.theme='light';
- for(const href of payload.styles){const link=document.createElement('link');link.rel='stylesheet';link.href=/site-shell\.css/.test(href)?href.replace(/\?.*$/,'')+'?v=20261105coach':href;document.head.appendChild(link);}
+ for(const href of payload.styles){const link=document.createElement('link');link.rel='stylesheet';link.href=/site-shell\.css/.test(href)?href.replace(/\?.*$/,'')+'?v=20261105quiet':href;document.head.appendChild(link);}
  window.__OGE_TEACHER_BANK=payload.bank||null;
  document.body.innerHTML=payload.body;mounted=true;
  for(const script of payload.scripts)await appendScript(script);
