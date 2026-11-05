@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Задачник по механике</title><link rel="stylesheet" href="site-shell.css?v=20261105cute"><script src="site-shell.js?v=20261105cute" defer></script></head><body><title>Задачник по механике</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Задачник по механике</title><link rel="stylesheet" href="site-shell.css?v=20261105coach"><script src="site-shell.js?v=20261105coach" defer></script></head><body><title>Задачник по механике</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
@@ -339,7 +339,7 @@ let view="bank",bank={mod:LS.get("mk_mod",0),type:"all",q:"",open:new Set()},tes
 const V=document.getElementById("view");
 function setView(v){view=v;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));render();window.scrollTo({top:0,behavior:"smooth"})}
 document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)});
-function render(){({bank:renderBank,test:renderTest,hw:renderHw,prog:renderProg})[view]()}
+function render(){document.body.dataset.frogAssessment=((test&&!test.done)||(hwRun&&!hwRun.done))?"active":"inactive";window.dispatchEvent(new Event("oge-study-state"));({bank:renderBank,test:renderTest,hw:renderHw,prog:renderProg})[view]()}
 /* ====== BANK ====== */
 function lessonStats(l){const a=byL[l]||[];return [a.filter(r=>solved.has(r[0])).length,a.length]}
 function modStats(m){let s=0,n=0;m.l.forEach(l=>{const [a,b]=lessonStats(l);s+=a;n+=b});return [s,n]}
@@ -773,4 +773,4 @@ window.addEventListener("hashchange",()=>BD.fromHash());
 document.addEventListener("click",e=>{if(e.target.closest("#freeBd"))BD.open("free",null)});
 setTimeout(()=>BD.fromHash(),0);
 </script>
-<script src="workspace-bridge.js?v=20261103a"></script><link rel="stylesheet" href="site-shell.css?v=20261105cute"></body></html>
+<script src="workspace-bridge.js?v=20261103a"></script><link rel="stylesheet" href="site-shell.css?v=20261105coach"></body></html>

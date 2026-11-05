@@ -9,3 +9,5 @@
 #frog-nav-toggle{margin-left:0}.workspace-embed .oge-frog{display:none}
 
 .oge-frog .frog-block-label{display:block;margin:10px 0 4px;font-size:12px;color:var(--muted,#536d77)}.oge-frog #frog-block{width:100%;max-width:100%;min-height:38px;padding:6px;border:1px solid var(--line,#cddcdf);border-radius:7px;background:var(--bg2,#eaf0f2);color:var(--text,#203741);font:13px system-ui,sans-serif}.frog-bubble{max-height:calc(100dvh - 150px);overflow-y:auto}.frog-bubble p{min-height:85px}
+
+.frog-coach{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.frog-coach button{font-size:12px}.frog-bubble [hidden]{display:none!important}

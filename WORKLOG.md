@@ -65,3 +65,9 @@
 - Added task-bank block selector (1–23 plus bonus), remembering the choice. Selecting a block immediately tells a related fact; formula/fact/next stay within that block. Auto mode follows the most recently clicked task-bank block and retains laboratory context when no task block is selected.
 - Titles cross-checked against original journal metadata; no bank codes, task solutions or credentials added to public files. Added original short hints with conditions on formula use.
 - Verified coverage for all 24 entries; browser checked block 7 fact/F=ma, selected block surviving reload, auto detection of block 1, and updated appearance. Existing learning checks pass.
+
+## 2026-11-05 — free coaching without homework spoilers
+- Added plain-language explanations for all 23 task-bank blocks plus bonus, and start/self-check/stuck checklists. This is fixed content, not AI or automatic evaluation of a student's reasoning.
+- Pending homework/tests switch the frog to generic coaching only: no formulas, topical facts, simple explanations, block switching, automatic fact bubbles or answer-dependent hints. Existing speech closes immediately on the mode change.
+- Assessment state is signalled by the task app and checked against saved unfinished runs, including reload and other same-profile tabs/pages. Submitting/ending a run restores learning hints. This does not restrict access to other educational pages or act as exam security.
+- Browser verified full transition: training explanation → pending one-task homework → restricted buttons → reload → restriction on lab tab → submission restores normal hints across tabs. Added verify-frog.cjs checks for hw/test detection, completion, all 24 explanations, restricted routing and capped prompts. Existing learning checks pass.
