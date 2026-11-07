@@ -118,6 +118,7 @@
     select('#normal-arrow').setAttribute('d', `M275 140v${-state.normal * 6}`);
     select('#normal-arrow').style.visibility = state.normal ? 'visible' : 'hidden';
     select('#normal-label').textContent = `N = ${state.normal} Н`;
+    select('#normal-label').setAttribute('y', 140 - state.normal * 6 - 10);
     select('#weight-arrow').setAttribute('d', `M315 154v${state.normal * 6}`);
     select('#weight-arrow').style.visibility = state.normal ? 'visible' : 'hidden';
     select('#weight-label').textContent = `P = ${state.normal} Н`;
