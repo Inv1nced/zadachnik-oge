@@ -76,3 +76,8 @@
 - Removed the generic start/self-check/stuck/simple-explanation buttons and their content. Retained block formulas/facts and the animated frog.
 - During an unfinished homework/test, the frog closes its bubble and rests silently; no clickable tips or automatic speeches. Assessment protection and cross-tab state remain.
 - Verified learning/frog checks and browser: only formula/fact/next in study mode; starting a test disables speech and closes an existing bubble on another page.
+
+## 2026-11-07 — follow-up homework after friction, weight and Newton's law
+- Added homework-friction.html with a shareable native homework launch, six original scaffolded tasks, block 9 tasks 3/23 and block 7 tasks 9/10. Eight automatic items plus two written explanations. Source labels and normal result submission preserved.
+- Added two interactive SVG demonstrations: static/sliding friction with Newton's law and camera-following motion; normal reaction/weight for supported, upward-pulled and freely falling bodies. Explicit controls, pauses, reduced motion, physics-based free-fall displacement.
+- Local browser verified static friction matching 4 N pull, sliding transition at 6 N, reaction 6 N with 4 N upward pull, weightless state with gravity retained, 10 homework rows with source labels. Submitted reference answers yield 8/8 automatic and 2 awaiting teacher review. Graph keys independently checked from source images.

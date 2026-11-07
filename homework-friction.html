@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Трение, вес и силы по осям · Домашка</title>
+  <meta name="description" content="Повторение урока о трении, весе и втором законе Ньютона. Две учебные анимации и домашняя работа из 10 заданий.">
+  <link rel="stylesheet" href="homework-friction.css?v=20261107">
+  <link rel="stylesheet" href="site-shell.css?v=20261105quiet">
+  <script src="site-shell.js?v=20261105quiet" defer></script>
+  <script src="homework-friction.js?v=20261107" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">После блока 9 · закрепление</p>
+    <h1>Трение, вес и силы по осям</h1>
+    <p class="intro">Сначала восстанови в памяти два опыта. Затем реши 10 заданий и пришли преподавателю результат вместе с фотографиями решений.</p>
+    <div class="assignment-actions"><a id="open-homework" class="primary" href="#assignment">Открыть домашку · 10 заданий</a><a href="#repeat">Повторить на опытах</a></div>
+    <p class="muted">Ориентир — 60–80 минут вместе с оформлением. Можно разделить работу на два подхода.</p>
+  </header>
+  <section class="sheet" id="assignment" aria-labelledby="assignment-title">
+    <h2 id="assignment-title">Что решить</h2>
+    <p>В расчётных задачах принимай g = 10 м/с². Для задач №3–6 на бумаге нарисуй силы, выбери оси, запиши уравнения и только затем подставляй числа.</p>
+    <ol class="task-list">
+      <li>Вес, тяжесть и реакция опоры — объяснение и рисунок. <span>Авторская тренировка</span></li>
+      <li>Трение покоя при небольшой горизонтальной тяге. <span>Авторская тренировка</span></li>
+      <li>Сила трения скольжения. <span>Авторская тренировка</span></li>
+      <li>Найти ускорение бруска, учитывая трение. <span>Авторская тренировка</span></li>
+      <li>Найти силу тяги по ускорению. <span>Авторская тренировка</span></li>
+      <li>Реакция опоры при дополнительной силе вверх. <span>Авторская тренировка</span></li>
+      <li>Сравнить коэффициенты трения по графику. <span>Блок 9 · №3</span></li>
+      <li>Объяснить, что происходит с водой в падающем ведре. <span>Блок 9 · №23</span></li>
+      <li>Прочитать график скорости и проверить утверждения о силах. <span>Блок 7 · №9</span></li>
+      <li>Связать график скорости с ускорением и равнодействующей. <span>Блок 7 · №10</span></li>
+    </ol>
+    <p class="callout">У №1 и №8 нужно объяснение словами — их проверит преподаватель. В остальных заданиях сайт проверяет ответ. Запиши и пришли ход решения, даже если число не получилось.</p>
+    <p>Если застрял больше чем на 7–10 минут, отметь точный вопрос и переходи дальше. Перед сдачей проверь, что на фотографиях видны номера задач.</p>
+  </section>
+  <section id="repeat" aria-labelledby="repeat-title">
+    <h2 id="repeat-title">Два опыта для повторения</h2>
+    <p class="muted">Сначала предположи, что произойдёт. После этого запусти опыт и сравни со своей мыслью. Числа в моделях учебные.</p>
+    <article class="sheet" aria-labelledby="friction-title">
+      <h3 id="friction-title">1. Тянем сильнее — когда брусок поедет?</h3>
+      <p>Брусок массой 1 кг стоит на горизонтальном столе. В этой модели предельная сила трения покоя — 5 Н, сила трения скольжения — 3 Н.</p>
+      <div class="demo-grid">
+        <div>
+          <svg viewBox="0 0 520 300" role="img" aria-label="Брусок на столе, горизонтальные силы тяги и трения, вертикальные силы реакции опоры и тяжести">
+            <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="context-stroke"/></marker><clipPath id="ground-clip"><rect x="25" y="211" width="470" height="22"/></clipPath></defs>
+            <path class="surface" d="M25 211H495"/>
+            <g clip-path="url(#ground-clip)"><g id="ground-marks"></g></g>
+            <rect class="body" x="225" y="156" width="70" height="54" rx="5"/>
+            <text x="260" y="189" text-anchor="middle">1 кг</text>
+            <path class="force" d="M260 156V96" marker-end="url(#arrow)"/><text x="275" y="96">N = 10 Н</text>
+            <path class="gravity" d="M260 211V271" marker-end="url(#arrow)"/><text x="275" y="270">mg = 10 Н</text>
+            <path id="pull-arrow" class="force" marker-end="url(#arrow)"/><text id="pull-text" x="370" y="145" text-anchor="middle"></text>
+            <path id="friction-arrow" class="friction" marker-end="url(#arrow)"/><text id="friction-text" x="140" y="198" text-anchor="middle"></text>
+            <text x="25" y="32">+x →</text><text x="25" y="53" class="small-svg">Камера следует за бруском</text>
+          </svg>
+          <label for="pull-force">Сила тяги <output id="pull-value">2 Н</output></label>
+          <input id="pull-force" type="range" min="0" max="8" step="1" value="2">
+          <div class="controls"><button id="friction-play" type="button">▶ Запустить</button><button id="friction-reset" type="button">Сначала</button></div>
+        </div>
+        <div class="explanation">
+          <p id="friction-state" class="reading" role="status"></p>
+          <p id="friction-detail"></p>
+          <p id="motion-reading" class="muted"></p>
+          <p class="callout">Проверь на тяге 2 Н, затем 4 Н и 6 Н. При каждом новом опыте начинай из состояния покоя.</p>
+          <p>Стрелки на рисунке показывают силы, приложенные к бруску. Его вес действует на стол.</p>
+        </div>
+      </div>
+    </article>
+    <article class="sheet" aria-labelledby="weight-title">
+      <h3 id="weight-title">2. Почему реакция опоры бывает меньше mg?</h3>
+      <p>Груз массой 1 кг находится на опоре. Выбери ситуацию и проследи за силами. В первом и втором случаях груз покоится.</p>
+      <div class="scenario-controls" role="group" aria-label="Ситуация с опорой"><button type="button" data-weight="rest" aria-pressed="true">Стоит на опоре</button><button type="button" data-weight="rope" aria-pressed="false">Подтягиваем нитью</button><button type="button" data-weight="fall" aria-pressed="false">Отпускаем вместе с опорой</button></div>
+      <div class="demo-grid">
+        <div>
+          <svg viewBox="0 0 520 330" role="img" aria-label="Груз и опора. Силы на груз показаны отдельно от веса, действующего на опору">
+            <text x="24" y="30">+y ↑</text><g id="falling-scene">
+              <path id="rope-line" class="rope" d="M250 90V30"/>
+              <rect class="body" x="215" y="90" width="70" height="50" rx="5"/><text x="250" y="121" text-anchor="middle">1 кг</text>
+              <rect class="platform" x="175" y="142" width="150" height="12" rx="3"/>
+              <path id="normal-arrow" class="force" marker-end="url(#arrow)"/><text id="normal-label" x="290" y="58"></text>
+              <path class="gravity" d="M230 115V175" marker-end="url(#arrow)"/><text x="125" y="212">mg = 10 Н</text>
+              <path id="rope-force" class="force" d="M250 90V66" marker-end="url(#arrow)"/><text id="rope-label" x="275" y="84">Fнити = 4 Н</text>
+              <path id="weight-arrow" class="weight" marker-end="url(#arrow)"/><text id="weight-label" x="330" y="212"></text>
+            </g>
+          </svg>
+          <button id="fall-replay" type="button" hidden>▶ Повторить падение</button>
+        </div>
+        <div class="explanation"><p id="weight-state" class="reading" role="status"></p><p id="weight-detail"></p><p id="weight-equation" class="equation"></p><p class="callout">mg, N и сила нити приложены к грузу. Вес P приложен к опоре. Смотри, к какому телу относится каждая стрелка.</p></div>
+      </div>
+      <p class="muted">Падение показано до удара. Конечный кадр — остановка демонстрации. При уменьшении движения в настройках системы виден неподвижный кадр с теми же силами.</p>
+    </article>
+  </section>
+</main>
+</body>
+</html>
