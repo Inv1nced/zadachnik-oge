@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Механика из открытого банка ФИПИ</title>
+  <link rel="stylesheet" href="gravity-board.css?v=20261108">
+  <link rel="stylesheet" href="fipi-mechanics.css">
+  <script src="fipi-mechanics-data.js" defer></script>
+  <script src="fipi-mechanics.js" defer></script>
+</head>
+<body>
+  <header><a href="index.html">← Задачник</a><span>ОГЭ · ФИПИ</span></header>
+  <main class="catalog">
+    <p class="tag">Открытый банк ФИПИ · раздел «Механические явления»</p>
+    <h1>Механика</h1>
+    <p>Выбери тему или введи номер ФИПИ. Кнопка «Условие ФИПИ» откроет оригинал задания с его рисунками и форматом ответа.</p>
+    <div class="filters">
+      <label for="topic">Тема<select id="topic"></select></label>
+      <label for="format">Тип ответа<select id="format"><option value="">Любой</option><option value="full">Развёрнутый</option><option value="other">Остальные</option></select></label>
+      <label for="code">Номер ФИПИ<input id="code" type="search" placeholder="Например, F7DAF7" autocomplete="off"></label>
+    </div>
+    <p id="count" role="status"></p>
+    <ul id="tasks" class="cards"></ul>
+    <div class="pages"><button id="prev">← Назад</button><span id="page"></span><button id="next">Дальше →</button></div>
+    <p class="small">Источник — официальный раздел банка ФИПИ. Список включает задания, которые ФИПИ относит к механике, в том числе задания с несколькими темами.</p>
+    <p><a href="https://oge.fipi.ru/bank/index.php?proj=B24AFED7DE6AB5BC461219556CCA4F9B">Открыть весь банк физики на ФИПИ ↗</a></p>
+    <noscript><p>Для фильтров нужен JavaScript. Открыть задания можно по ссылке на банк ФИПИ выше.</p></noscript>
+  </main>
+</body>
+</html>
