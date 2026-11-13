@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Диагностика по динамике · ОГЭ</title>
+<style>
+:root{color-scheme:light dark;--bg:#edf3fa;--card:#fff;--text:#142742;--muted:#445773;--line:#cfdbea;--tag:#e8f1fd;--btn:#1759aa;--white:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1624;--card:#172439;--text:#f1f6ff;--muted:#bfcee4;--line:#394b66;--tag:#243853;--btn:#205db0}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,sans-serif}main{width:min(680px,calc(100% - 32px));margin:clamp(24px,9vh,84px) auto;padding:clamp(20px,5vw,42px);background:var(--card);border:1px solid var(--line);border-radius:22px}header span,.tag{display:inline-block;background:var(--tag);border-radius:8px;padding:4px 9px;font-size:.86rem;font-weight:650}h1{margin:10px 0;font-size:clamp(29px,7vw,50px);line-height:1.08;letter-spacing:-.045em}p,ol{color:var(--muted)}ol{padding-left:24px}li{padding-bottom:9px}strong{color:var(--text)}.action{display:inline-block;background:var(--btn);color:var(--white);text-decoration:none;font-weight:700;padding:12px 18px;border-radius:10px}.action:hover{text-decoration:underline}.action:focus-visible{outline:3px solid var(--text);outline-offset:4px}#status{font-size:.9rem;margin:12px 0 0}
+</style>
+</head>
+<body>
+<main>
+<header><span>ОГЭ · Физика · к 14 ноября</span><h1>Диагностика по динамике</h1></header>
+<p>10 задач по блокам 6–11. Реши самостоятельно. Ориентир — 35–45 минут, таймера нет.</p>
+<ol>
+<li><strong>№ 1–8.</strong> Вводи только число или номер ответа, без единиц.</li>
+<li><strong>№ 9–10.</strong> Реши на бумаге: дано, схема сил и оси, формулы, вычисления и ответ с единицами. В поля на сайте напиши «решение на фото».</li>
+<li>Нажми <strong>«Сдать и проверить»</strong>. Отправь репетитору сообщение с кодом <strong>RES-…</strong> и два фото решений.</li>
+</ol>
+<p>Где нужно, прими g = 10 м/с². В № 10 считай, что после выключения двигателя машину тормозит только сила трения.</p>
+<a id="start" class="action" hidden>Открыть домашку →</a>
+<p id="status" aria-live="polite">Загружаем задания…</p>
+<noscript>Для открытия домашки включи JavaScript в браузере.</noscript>
+</main>
+<script src="dynamics-homework.js"></script>
+<script>
+try {
+  const hw = window.DynamicsHomework;
+  const codes = {
+    '6': '6-Y7ENU9',
+    '8': '8-8VH5GA',
+    '11': '11-6U8D3E',
+  };
+  const payload = { v: 2, t: hw.title, i: hw.order.map(id => id.toString(36)), k: hw.blocks.map(block => codes[block]), a: hw.authored };
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  const code = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const start = document.getElementById('start');
+  start.href = 'index.html#hw=HW-' + code;
+  start.hidden = false;
+  document.getElementById('status').textContent = 'Если нужно сделать перерыв, ответы сохранятся в этом браузере.';
+} catch {
+  document.getElementById('status').textContent = 'Задания не загрузились. Обнови страницу.';
+}
+</script>
+</body>
+</html>
