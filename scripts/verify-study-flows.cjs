@@ -48,6 +48,38 @@ async function checkPublic(browser, base) {
   await page.locator('.frog-close').click();
   assert.ok(!(await page.locator('.frog-bubble').isVisible()));
 
+  for (const [section,block] of [['heat','24'],['electricity','29'],['optics','34'],['quantum','37']]) {
+    await page.locator(`#bank-topics [data-section="${section}"]`).click();
+    assert.equal(await page.locator('#mods .mod').count(),2);
+    const lesson=page.locator(`details[data-l="${block}"]`);
+    await lesson.locator('summary').click();
+    await lesson.locator('.task').first().waitFor();
+    assert.equal(await lesson.locator('.task').count(),3);
+    assert.equal(await lesson.locator('.block-reference a').getAttribute('href'),`fipi-mechanics.html?section=${section}&block=${block}`);
+  }
+  await page.goto('index.html?section=optics&block=36');
+  const lens=page.locator('details[data-l="36"]');
+  assert.ok(await lens.evaluate(details=>details.open));
+  const lensTask=lens.locator('.task').first();
+  await lensTask.locator('input').fill('4');
+  await lensTask.locator('[data-act="check"]').click();
+  assert.match(await lensTask.locator('.vslot').innerText(),/верно/);
+  assert.match(await page.locator('#mods .mod[aria-pressed="true"] [data-module-solved]').innerText(),/1/);
+  await page.locator('#bt [data-t="e"]').click();
+  assert.equal(await lens.locator('.task').count(),1);
+  assert.match(await lens.locator('.task').innerText(),/36 см/);
+  await lens.locator('.block-reference a').click();
+  assert.equal(await page.locator('#topic').inputValue(),'36');
+  await page.locator('#format').selectOption('full');
+  assert.equal(await page.locator('#tasks li').count(),2);
+  await page.locator('#code').fill('df7cda');
+  assert.equal(await page.locator('#tasks li').count(),1);
+  assert.match(await page.locator('#tasks a').last().getAttribute('href'),/OGEPHYSDF7CDA$/);
+  await page.locator('#practice').click();
+  assert.ok(await lens.evaluate(details=>details.open));
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+  await page.locator('#bank-topics [data-section="mechanics"]').click();
+
   await openPreset(page,'homework-friction.html',8,2);
   await openPreset(page,'dynamics-homework.html',8,2);
   const dynamicCode = await page.evaluate(()=>runs.hw.hw);
@@ -240,6 +272,29 @@ async function checkTeacher(browser,base,bank,source) {
     await teacher.locator('#accept-result').click();
     assert.match(await teacher.locator('#review-tools').locator('..').innerText(),/Верно: 1 · Ошибки: 0/);
     assert.equal(await teacher.getByText('Неизвестное задание — открой банк',{exact:true}).count(),0);
+
+    await teacher.locator('#course-lesson').selectOption('19');
+    await teacher.locator('[data-step="homework"]').first().click();
+    await teacher.locator('#task-source').selectOption('bank');
+    await teacher.locator('#bank-block').selectOption('26');
+    assert.equal(await teacher.locator('.task-entry').count(),3);
+    assert.match(await teacher.locator('.task-entry').first().innerText(),/Блок 26 · №1/);
+    const previousDraftCount=Number(await teacher.locator('#draft-count').textContent());
+    await teacher.locator('.task-entry [data-pick]').first().check();
+    assert.equal(Number(await teacher.locator('#draft-count').textContent()),previousDraftCount+1);
+    await teacher.locator('#issue-homework').click();
+    const heatHomework=await teacher.locator('#draft-output a').getAttribute('href');
+    await pupil.goto(heatHomework); await waitForForm(pupil);
+    assert.equal(await pupil.locator('.study-questions .q').count(),previousDraftCount+1);
+    const heatTask=pupil.locator('.study-questions .q').filter({hasText:'Блок 26 · №1'});
+    await heatTask.locator('input').fill('42');
+    await pupil.locator('#fin2').click();await pupil.locator('#fin2').click();
+    await teacher.locator('[data-area="review"]').click();
+    await teacher.locator('#result-code').fill(await pupil.locator('#msg').inputValue());
+    await teacher.locator('#read-result').click();
+    await teacher.locator('#accept-result').waitFor();
+    await teacher.locator('#accept-result').click();
+    assert.match(await teacher.locator('#review-tools').locator('..').innerText(),/Верно: 1 · Ошибки: 0/);
     await studentCtx.close();
 
     const legacy=await context.newPage();

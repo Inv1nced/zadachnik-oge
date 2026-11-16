@@ -1,21 +1,26 @@
 const LESSONS={"1":["Путь, перемещение, равномерное движение",["v = s / t","x = x₀ + vₓt","1 м/с = 3,6 км/ч","|перемещение| ≤ путь"]],"2":["Урок закрыт",[]],"3":["Урок закрыт",[]],"4":["Урок закрыт",[]],"5":["Урок закрыт",[]],"6":["Урок закрыт",[]],"7":["Урок закрыт",[]],"8":["Урок закрыт",[]],"9":["Урок закрыт",[]],"10":["Урок закрыт",[]],"11":["Урок закрыт",[]],"12":["Урок закрыт",[]],"13":["Урок закрыт",[]],"14":["Урок закрыт",[]],"15":["Урок закрыт",[]],"16":["Урок закрыт",[]],"17":["Урок закрыт",[]],"18":["Урок закрыт",[]],"19":["Урок закрыт",[]],"20":["Урок закрыт",[]],"21":["Урок закрыт",[]],"22":["Урок закрыт",[]],"23":["Урок закрыт",[]],"X":["Урок закрыт",[]]};
+const EXTRA=window.OGE_EXTRA_PHYSICS;
+const closedLessons=new Set(Object.keys(LESSONS).filter(l=>l!=='1'));
 const MODULES=[
  {n:"Кинематика",s:"как движутся тела",l:["1","2","3","4","5"]},
  {n:"Динамика",s:"почему движутся",l:["6","7","8","9","10","11"]},
  {n:"Законы сохранения",s:"импульс, работа, энергия",l:["12","13","14","15"]},
  {n:"Давление и Архимед",s:"жидкости, газы, механизмы",l:["16","17","18","19","20"]},
  {n:"Колебания и итог",s:"маятники, звук, повторение",l:["21","22","23","X"]}
-];
+].map(module=>({...module,section:"mechanics"})).concat(EXTRA.modules);
 const TYPES={b:"Базовые",m:"Соответствие и утверждения",r:"Развёрнутые",e:"Эксперимент",q:"Качественные и текст"};
 const SRC={F:"ФИПИ",D:"ДЕМО",K:"К-2026",S:"ШКОЛКОВО",A:"АВТОРСКАЯ"};
 const byId={},byL={};
-function addRows(rows,temp){const ordered=Object.keys(TYPES).flatMap(t=>rows.filter(r=>r[3]===t));const ord=new Map(ordered.map((r,i)=>[r[0],i+1]));rows.forEach(r=>{r[8]={...(r[8]||{}),number:ord.get(r[0])};byId[r[0]]=r;if(!temp){(byL[r[2]]=byL[r[2]]||[]).push(r)}});if(!temp)DATA=DATA.concat(rows)}
+function addRows(rows,temp){const ordered=Object.keys(TYPES).flatMap(t=>rows.filter(r=>r[3]===t));const ord=new Map(ordered.map((r,i)=>[r[0],i+1]));rows.forEach(r=>{r[8]={number:ord.get(r[0]),...(r[8]||{})};byId[r[0]]=r;if(!temp){(byL[r[2]]=byL[r[2]]||[]).push(r)}});if(!temp)DATA=DATA.concat(rows)}
 addRows(DATA.splice(0),false);
+Object.assign(LESSONS,EXTRA.lessons);
+Object.assign(COUNTS,EXTRA.counts);
+Object.values(EXTRA.rows).forEach(rows=>addRows(rows,false));
 const isOpen=l=>!!byL[l];
 let keys=LS0("mk_keys",{});
 function LS0(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 const lessonDownloads = new Map();
-const lockedLesson = l => l !== '1' && Object.hasOwn(LESSONS, l);
+const lockedLesson = l => closedLessons.has(l);
 function loadLesson(l) {
  if (!lockedLesson(l)) throw new Error('Такого урока нет');
  if (!lessonDownloads.has(l)) {
@@ -66,7 +71,15 @@ function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t
 async function copy(text,ta){try{await navigator.clipboard.writeText(text);toast("Скопировано")}catch(e){if(ta){ta.focus();ta.select()}toast("Выдели текст и скопируй вручную")}}
 /* ====== state ====== */
 let view = 'bank';
-const bank = { mod: LS.get('mk_mod', 0), type: 'all', q: '', open: new Set() };
+const bankParams=new URLSearchParams(location.search);
+const sectionParam=bankParams.get('section');
+const blockParam=bankParams.get('block');
+const linkedBlock=Object.hasOwn(EXTRA.lessons,blockParam);
+const linkedModule=linkedBlock
+ ? MODULES.findIndex(module=>module.l.includes(blockParam))
+ : MODULES.findIndex(module=>module.section===sectionParam);
+const savedModule=Number(LS.get('mk_mod',0));
+const bank = { mod: linkedModule>=0?linkedModule:(MODULES[savedModule]?savedModule:0), type: 'all', q: '', open: new Set(linkedBlock?[blockParam]:[]) };
 const runs = { test: null, hw: null };
 const drafts = OgeDrafts.store({
  getItem:key=>localStorage.getItem(key), setItem:(key,value)=>localStorage.setItem(key,value), removeItem:key=>localStorage.removeItem(key),
@@ -97,32 +110,45 @@ function lessonStats(l){const a=byL[l]||[];return [a.filter(r=>solved.has(r[0]))
 function modStats(m){let s=0,n=0;m.l.forEach(l=>{const [a,b]=lessonStats(l);s+=a;n+=b});return [s,n]}
 function renderBank(){
   const total=Object.values(COUNTS).reduce((sum,count)=>sum+count,0);
-  const openN=Object.keys(LESSONS).filter(isOpen).length;
+  const section=MODULES[bank.mod].section;
+  const sectionLessons=MODULES.filter(module=>module.section===section).flatMap(module=>module.l);
+  const openN=sectionLessons.filter(isOpen).length;
+  const catalog=section==="mechanics"?"fipi-mechanics.html":`fipi-mechanics.html?section=${section}`;
   const homework=runs.hw && !runs.hw.done ? runs.hw : null;
   V.innerHTML=`<section class="view bank-view">
   <div class="hero bank-hero">
    <div class="bank-intro"><h1>Задачи по физике</h1>
    <p class="lead">Выбери тему, реши задачу самостоятельно или открой её на доске для разбора.</p></div>
    ${homework?`<aside class="bank-resume"><span>Домашка в процессе</span><strong>${esc(homework.title)}</strong><button class="btn primary" data-continue="hw">Продолжить домашку <span aria-hidden="true">→</span></button></aside>`:
-   `<dl class="bank-overview"><div><dt>Задач в банке</dt><dd>${total}</dd></div><div><dt>Доступно уроков</dt><dd>${openN} <span>из ${Object.keys(LESSONS).length}</span></dd></div><div><dt>Решено задач</dt><dd data-bank-solved>${solved.size}</dd></div></dl>`}
+   `<dl class="bank-overview"><div><dt>Задач в банке</dt><dd>${total}</dd></div><div><dt>Открыто в разделе</dt><dd>${openN} <span>из ${sectionLessons.length}</span></dd></div><div><dt>Решено задач</dt><dd data-bank-solved>${solved.size}</dd></div></dl>`}
   </div>
   <section class="bank-modules" aria-labelledby="modules-title">
-   <div class="bank-section-title"><h2 id="modules-title">Модули</h2><a class="bank-text-link" href="fipi-mechanics.html">Банк ФИПИ <span aria-hidden="true">↗</span></a></div>
+   <div class="bank-section-title"><h2 id="modules-title">Разделы физики</h2><a class="bank-text-link" href="${catalog}">Банк ФИПИ <span aria-hidden="true">↗</span></a></div>
+   <div class="bank-topics" id="bank-topics" role="group" aria-label="Разделы физики">${EXTRA.sections.map(([id,name])=>`<button class="chip" data-section="${id}" aria-pressed="${section===id}">${name}</button>`).join('')}</div>
    <div class="mods" id="mods">${MODULES.map((module,i)=>{
+    if(module.section!==section)return '';
     const [done,available]=modStats(module);
     const lessonsOpen=module.l.filter(isOpen).length;
-    return `<button class="mod" data-i="${i}" aria-pressed="${i===bank.mod}"><span class="module-symbol" aria-hidden="true"></span><span class="mn">${module.n}</span><span class="ms">${module.s}</span><span class="module-counts"><span>Уроки <b>${lessonsOpen}/${module.l.length}</b></span><span data-module-solved>Решено <b>${done}</b></span></span><span class="meter" aria-hidden="true"><i style="width:${available?done/available*100:0}%"></i></span></button>`;
+    return `<button class="mod" data-i="${i}" aria-pressed="${i===bank.mod}"><span class="module-symbol" aria-hidden="true"></span><span class="mn">${module.n}</span><span class="ms">${module.s}</span><span class="module-counts"><span>${section==="mechanics"?"Уроки":"Блоки"} <b>${lessonsOpen}/${module.l.length}</b></span><span data-module-solved>Решено <b>${done}</b></span></span><span class="meter" aria-hidden="true"><i style="width:${available?done/available*100:0}%"></i></span></button>`;
    }).join('')}</div>
   </section>
   <div class="bank-utilities">
    <form class="unlock" id="unlock-form"><label for="uc">Код урока</label><input type="text" id="uc" placeholder="Например, 3-AB12CD" autocomplete="off"><button class="btn" type="submit" id="ub">Открыть урок</button><span id="um" class="t2" role="status"></span></form>
-   <div class="bank-resources"><a href="forces.html">Силы и векторы</a><a href="grafiki.html">Тренажёр графиков</a><button class="btn board" id="freeBd">Чистая доска <span aria-hidden="true">↗</span></button></div>
+   <div class="bank-resources">${section==="mechanics"?'<a href="forces.html">Силы и векторы</a><a href="grafiki.html">Тренажёр графиков</a>':'<a href="https://3.shkolkovo.online/catalog?SubjectId=33" target="_blank" rel="noopener">Банк Школково ↗</a>'}<button class="btn board" id="freeBd">Чистая доска <span aria-hidden="true">↗</span></button></div>
   </div>
   <div class="tools"><input type="search" id="bq" aria-label="Поиск по условию" placeholder="Найти задачу по условию" value="${esc(bank.q)}" autocomplete="off">
   <div id="bt" style="display:flex;flex-wrap:wrap;gap:6px">${[["all","Все"],...Object.entries(TYPES)].map(([k,v])=>`<button class="chip" data-t="${k}" aria-pressed="${bank.type===k}">${v}</button>`).join("")}</div></div>
   <div id="lessons"></div></section>`;
   renderLessons();
   V.querySelector('[data-continue="hw"]')?.addEventListener('click', () => setView('hw'));
+  V.querySelector("#bank-topics").onclick=e=>{
+   const b=e.target.closest("[data-section]");
+   if(!b||b.dataset.section===section)return;
+   bank.mod=MODULES.findIndex(module=>module.section===b.dataset.section);
+   LS.set("mk_mod",bank.mod);bank.q="";bank.type="all";bank.open.clear();
+   renderBank();
+   V.querySelector(`[data-section="${b.dataset.section}"]`).focus({preventScroll:true});
+  };
   V.querySelector("#mods").onclick=e=>{const b=e.target.closest(".mod");if(!b)return;bank.mod=+b.dataset.i;LS.set("mk_mod",bank.mod);V.querySelectorAll(".mod").forEach(x=>x.setAttribute("aria-pressed",x===b));bank.open.clear();renderLessons()};
   const doUnlock=async()=>{const um=V.querySelector("#um");um.textContent="Проверяю…";um.style.color="";const r=await unlockCode(V.querySelector("#uc").value);if(view!=="bank"||!um.isConnected)return;
     if(r.err){um.textContent=r.err;um.style.color="var(--err)";const u=V.querySelector(".unlock");u.classList.remove("bad");void u.offsetWidth;u.classList.add("bad");return}
@@ -146,18 +172,19 @@ function taskCard(row,number){
   </div>
   <div class="tr task-links">
    ${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}
-   ${auto||(row[4]&&row[4].length<14)?'<button class="linkbtn" data-act="show">Показать ответ</button>':'<span class="muted">Ответ — в решении по ссылке</span>'}
+   ${auto||(row[4]&&row[4].length<14)?'<button class="linkbtn" data-act="show">Показать ответ</button>':`<span class="muted">${row[1]?'Ответ — в решении по ссылке':'Разбор с преподавателем'}</span>`}
    <button class="linkbtn" data-act="mark">${done?'Снять отметку':'Отметить решённой'}</button>
   </div>
  </li>`;
 }
 function renderLessons(){const box=V.querySelector("#lessons");const m=MODULES[bank.mod];const q=bank.q;
- const parts=m.l.map(l=>{if(!isOpen(l)){if(q||bank.type!=="all")return "";return `<div class="lesson locked"><div class="lsum"><span class="ln">${l==="X"?"БОНУС":"УРОК "+l}</span><span class="lt">Закрыто · откроется после занятия</span><span class="lm">${COUNTS[l]||0} задач</span></div></div>`}const list=filtered(l);if(!list.length&&(q||bank.type!=="all"))return "";const [s,n]=lessonStats(l);const open=bank.open.has(l)||!!q;
-   return `<details class="lesson" data-l="${l}" ${open?"open":""}><summary><span class="ln">${l==="X"?"БОНУС":"УРОК "+l}</span><span class="lt">${LESSONS[l][0]}<span class="chev">›</span></span><span class="lm"><span class="lmt">${s} / ${n}</span><div class="meter"><i style="width:${n?s/n*100:0}%"></i></div></span></summary><div class="lb">${open?lessonBody(l):""}</div></details>`}).join("");
+ const parts=m.l.map(l=>{if(!isOpen(l)){if(q||bank.type!=="all")return "";return `<div class="lesson locked"><div class="lsum"><span class="ln">${l==="X"?"БОНУС":"УРОК "+l}</span><span class="lt">Закрыто · откроется после занятия</span><span class="lm">${COUNTS[l]||0} задач</span></div></div>`}const list=filtered(l);if(!list.length&&(q||bank.type!=="all"))return "";const [s,n]=lessonStats(l);const open=bank.open.has(l)||!!q||bank.type!=="all";
+   return `<details class="lesson" data-l="${l}" ${open?"open":""}><summary><span class="ln">${l==="X"?"БОНУС":(EXTRA.lessons[l]?"БЛОК ":"УРОК ")+l}</span><span class="lt">${LESSONS[l][0]}<span class="chev">›</span></span><span class="lm"><span class="lmt">${s} / ${n}</span><div class="meter"><i style="width:${n?s/n*100:0}%"></i></div></span></summary><div class="lb">${open?lessonBody(l):""}</div></details>`}).join("");
  box.innerHTML=parts||`<div class="panel t2">${q||bank.type!=="all"?"Ничего не нашлось в открытых уроках.":"В этом модуле пока нет открытых уроков."}</div>`;
  box.querySelectorAll(".lesson").forEach(d=>d.addEventListener("toggle",()=>{const l=d.dataset.l;if(d.open){bank.open.add(l);const b=d.querySelector(".lb");if(!b.innerHTML)b.innerHTML=lessonBody(l)}else bank.open.delete(l)}));
 }
-function lessonBody(l){const list=filtered(l);let k=0,h=`<div class="formulas">${LESSONS[l][1].map(f=>`<span>${esc(l==="4"&&f.startsWith("s =")?f.replace(/^s =/,"Δx ="):f)}</span>`).join("")}${l==="4"?"<p>По оси формулы дают перемещение Δx. Путь s равен |Δx| только без разворота; при развороте сложи пути отдельных участков.</p>":""}</div>`;
+function lessonBody(l){const list=filtered(l);let h=`<div class="formulas">${LESSONS[l][1].map(f=>`<span>${esc(l==="4"&&f.startsWith("s =")?f.replace(/^s =/,"Δx ="):f)}</span>`).join("")}${l==="4"?"<p>По оси формулы дают перемещение Δx. Путь s равен |Δx| только без разворота; при развороте сложи пути отдельных участков.</p>":""}</div>`;
+ if(EXTRA.lessons[l])h+=`<p class="block-reference"><a class="bank-text-link" href="fipi-mechanics.html?section=${MODULES[bank.mod].section}&amp;block=${l}">Задания ФИПИ по этой теме ↗</a></p>`;
  for(const t of Object.keys(TYPES)){const g=list.filter(r=>r[3]===t);if(!g.length)continue;h+=`<div class="gh">${TYPES[t]} · ${g.length}</div><ol class="tasks">${g.map(r=>taskCard(r,taskNumber(r))).join("")}</ol>`}
  return h||`<p class="t2">Нет задач по фильтру.</p>`}
 function refreshLessonMeta(lesson){
@@ -169,8 +196,8 @@ function refreshLessonMeta(lesson){
   details.querySelector('.lmt').textContent=`${done} / ${total}`;
   details.querySelector('.lm .meter i').style.width=`${total?done/total*100:0}%`;
  }
- V.querySelectorAll('.mod').forEach((button,i)=>{
-  const [done,total]=modStats(MODULES[i]);
+ V.querySelectorAll('.mod').forEach(button=>{
+  const [done,total]=modStats(MODULES[Number(button.dataset.i)]);
   button.querySelector('[data-module-solved] b').textContent=done;
   button.querySelector('.meter i').style.width=`${total?done/total*100:0}%`;
  });

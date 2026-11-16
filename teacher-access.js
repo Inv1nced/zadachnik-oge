@@ -11,6 +11,18 @@ addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='te
 addEventListener('storage',e=>{if([SESSION,DEVICE].includes(e.key)&&!e.newValue){sessionClear();if(mounted)location.reload()}});
 const sessionClear=()=>auth.clear();
 function appendScript(item){return new Promise((resolve,reject)=>{const script=document.createElement('script');if(item.src){script.src=item.src.includes('site-shell.js')?item.src.replace(/\?.*$/,'')+'?v=20261116':item.src;script.onload=resolve;script.onerror=reject;}else{script.textContent=item.inline;resolve();}document.body.appendChild(script);});}
+async function includeOpenPractice(bank){
+ if(!bank)return null;
+ await appendScript({src:'bank/extra-physics.js?v=all-physics-1'}).catch(()=>{});
+ const extra=window.OGE_EXTRA_PHYSICS;
+ if(!extra)return bank;
+ const existing=new Set(bank.ALL.map(row=>row[0]));
+ const rows=Object.values(extra.rows).flat().filter(row=>!existing.has(row[0])).map(row=>{
+  const [id,catalog,block,type,answer,source,condition,images,meta]=row;
+  return [id,catalog,block,type,answer,source,condition,images,{...meta,label:`Блок ${block} · №${meta.number}`}];
+ });
+ return {...bank,ALL:[...bank.ALL,...rows],LT:{...extra.lessons,...bank.LT}};
+}
 async function mount(payload){
  document.title=payload.title;document.documentElement.dataset.theme='light';
  for(const href of payload.styles){
@@ -21,7 +33,7 @@ async function mount(payload){
   link.href=['teach.css','site-shell.css'].includes(filename)?file+'?v=interface-1':href;
   document.head.appendChild(link);
  }
- window.__OGE_TEACHER_BANK=payload.bank||null;
+ window.__OGE_TEACHER_BANK=await includeOpenPractice(payload.bank);
  document.body.innerHTML=payload.body;mounted=true;
  for(const script of payload.scripts)await appendScript(script);
  const exit=document.createElement('button');exit.id='teacher-signout';exit.type='button';exit.textContent='Выйти из кабинета';exit.onclick=()=>{if(parent!==window)parent.postMessage({type:'teacher-logout'},location.origin);sessionClear();location.reload();};(document.querySelector('.teacher-header')||document.querySelector('.topbar')||document.body).appendChild(exit);
