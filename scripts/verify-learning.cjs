@@ -27,6 +27,17 @@ assert.throws(()=>review.locate([teacherStudent],{...submission,ids:[2,1]}),/в�
 assert.throws(()=>codes.result(codes.encode('RES-',{r:[['1','5'],['1','6']]})),/разных заданий/);
 const snapshot=core.snapshotRow([12,34,'7','b','5','F','Condition'],'Блок 7 · №10');assert.deepEqual(snapshot[7],[]);assert.equal(snapshot[8].label,'Блок 7 · №10');
 const c={window:{},btoa:s=>Buffer.from(s,'binary').toString('base64'),unescape,encodeURIComponent};vm.createContext(c);
+for(const file of ['bank/extra-physics.js','bank/fipi-tasks.js','bank/fipi-index.js','fipi-mechanics-data.js']){
+ vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
+}
+const {OGE_FIPI:fipi,OGE_FIPI_TASKS:fipiRows,OGE_FIPI_MECHANICS:oldMechanics}=c.window;
+assert.equal(fipi.byCode.size,fipiRows.length,'Repeated FIPI code');
+assert.ok(fipi.byCode.size>=1506,'Missing FIPI assignments');
+const assignedCodes=new Set([...fipi.byBlock.values()].flatMap(items=>items.map(item=>item.code)));
+assert.equal(assignedCodes.size,fipi.byCode.size,'Some FIPI assignments are missing from the blocks');
+assert.ok(oldMechanics.every(([code])=>fipi.byCode.has(code.toUpperCase())),'Lost FIPI mechanics reference');
+for(let block=24;block<=39;block++)assert.ok(fipi.byBlock.get(String(block)).length>=12,`Underfilled FIPI block ${block}`);
+console.log(`PASS: ${fipi.byCode.size} distinct FIPI tasks distributed by block.`);
 const privateRoot=process.env.OGE_PRIVATE_SOURCE||'../site-private-source';
 const sourcePath=require('node:path');
 assert.ok(!fs.readFileSync('teach.html','utf8').includes('teacher-view'),'Locked page must not contain classroom UI');

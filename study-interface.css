@@ -51,7 +51,16 @@ html[data-theme] .study-site .bank-hero h1 { font-size: clamp(38px, 6vw, 74px); 
 .study-site .bank-text-link { color: var(--cyan); font-size: 14px; font-weight: 650; }
 .study-site .bank-topics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .study-site .bank-topics .chip { min-height: 42px; white-space: normal; text-align: left; }
+.study-site .bank-source { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.study-site .bank-source .chip { min-height: 38px; }
 .study-site .block-reference { margin: 8px 0 12px; }
+.study-site .fipi-format { color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
+.study-site .fipi-format select { min-height: 40px; max-width: 100%; padding: 6px 10px; font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.study-site .fipi-task-meta { color: var(--muted); font-size: 14px; margin: 4px 0 10px; }
+.study-site .fipi-links, .study-site .fipi-pagination { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; }
+.study-site .fipi-links a { color: var(--cyan); font-weight: 650; }
+.study-site .fipi-pagination { justify-content: center; margin-top: 12px; }
+.study-site .fipi-lesson { scroll-margin-top: calc(var(--topbar-height, 64px) + 14px); }
 .study-site .mods { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 10px; margin: 12px 0 0; }
 .study-site .mods:has(.mod:nth-child(2):last-child) { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .study-site .mod {

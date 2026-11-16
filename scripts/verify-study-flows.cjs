@@ -51,13 +51,14 @@ async function checkPublic(browser, base) {
   for (const [section,block] of [['heat','24'],['electricity','29'],['optics','34'],['quantum','37']]) {
     await page.locator(`#bank-topics [data-section="${section}"]`).click();
     assert.equal(await page.locator('#mods .mod').count(),2);
-    const lesson=page.locator(`details[data-l="${block}"]`);
+    assert.equal(await page.locator('#bank-source [data-source="fipi"]').getAttribute('aria-pressed'),'true');
+    const lesson=page.locator(`details[data-fipi-block="${block}"]`);
     await lesson.locator('summary').click();
-    await lesson.locator('.task').first().waitFor();
-    assert.equal(await lesson.locator('.task').count(),3);
-    assert.equal(await lesson.locator('.block-reference a').getAttribute('href'),`fipi-mechanics.html?section=${section}&block=${block}`);
+    await lesson.locator('.fipi-task').first().waitFor();
+    assert.equal(await lesson.locator('.fipi-task').count(),12);
+    assert.ok(Number((await lesson.locator('[data-fipi-count]').textContent()).split('/')[1])>12);
   }
-  await page.goto('index.html?section=optics&block=36');
+  await page.goto('index.html?section=optics&block=36&source=practice');
   const lens=page.locator('details[data-l="36"]');
   assert.ok(await lens.evaluate(details=>details.open));
   const lensTask=lens.locator('.task').first();
@@ -69,15 +70,34 @@ async function checkPublic(browser, base) {
   assert.equal(await lens.locator('.task').count(),1);
   assert.match(await lens.locator('.task').innerText(),/36 см/);
   await lens.locator('.block-reference a').click();
+  await page.locator('#topic option[value="36"]').waitFor({state:'attached'});
   assert.equal(await page.locator('#topic').inputValue(),'36');
   await page.locator('#format').selectOption('full');
   assert.equal(await page.locator('#tasks li').count(),2);
   await page.locator('#code').fill('df7cda');
   assert.equal(await page.locator('#tasks li').count(),1);
-  assert.match(await page.locator('#tasks a').last().getAttribute('href'),/OGEPHYSDF7CDA$/);
-  await page.locator('#practice').click();
-  assert.ok(await lens.evaluate(details=>details.open));
+  assert.match(await page.locator('#tasks a').nth(1).getAttribute('href'),/OGEPHYSDF7CDA$/);
+  await page.getByRole('link',{name:'В задачнике →'}).click();
+  const fipiLens=page.locator('details[data-fipi-block="36"]');
+  const linked=fipiLens.locator('[data-fipi-code="DF7CDA"]');
+  await linked.waitFor();
+  assert.ok(await fipiLens.evaluate(details=>details.open));
+  await linked.locator('[data-fipi-act="mark"]').click();
+  assert.match(await fipiLens.locator('[data-fipi-count]').innerText(),/^1 \/ 45$/);
+  await linked.locator('[data-fipi-act="board"]').click();
+  await page.locator('#bd').waitFor();
+  assert.match(await page.locator('#bdTn').textContent(),/Блок 36 · ФИПИ DF7CDA/);
+  assert.equal(await page.locator('#bdTb a').count(),2);
+  await page.locator('#bdClose').click();
+  await page.reload();
+  await linked.waitFor();
+  assert.equal(await linked.locator('[data-fipi-act="mark"]').getAttribute('aria-pressed'),'true');
+  await page.locator('#bq').fill('');
+  await fipiLens.locator('[data-fipi-page="1"]').click();
+  assert.match(await fipiLens.locator('.fipi-pagination [role="status"]').textContent(),/^13–24 из 45$/);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+  await page.locator('#bank-topics [data-section="methods"]').click();
+  assert.equal(await page.locator('[data-fipi-block]').count(),4);
   await page.locator('#bank-topics [data-section="mechanics"]').click();
 
   await openPreset(page,'homework-friction.html',8,2);

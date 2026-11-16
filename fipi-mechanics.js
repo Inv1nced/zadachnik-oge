@@ -1,38 +1,15 @@
 'use strict';
 
-const topics = [
-  'Общие задания по механике', 'Движение и система отсчёта', 'Средняя скорость',
-  'Равномерное прямолинейное движение', 'Равноускоренное движение',
-  'Свободное падение', 'Движение по окружности', 'Масса и плотность',
-  'Сила и сложение сил', 'Инерция и первый закон Ньютона', 'Второй закон Ньютона',
-  'Третий закон Ньютона', 'Трение', 'Упругость', 'Тяготение и сила тяжести',
-  'Импульс тела', 'Сохранение импульса', 'Работа и мощность', 'Механическая энергия',
-  'Сохранение механической энергии', 'Простые механизмы', 'Давление',
-  'Закон Паскаля', 'Закон Архимеда', 'Колебания', 'Маятники',
-  'Затухание и резонанс', 'Механические волны', 'Звук', 'Практические работы',
-  'Механика в природе', 'Технические устройства'
-];
-const practiceBank = window.OGE_EXTRA_PHYSICS;
+const index = window.OGE_FIPI;
 const params = new URLSearchParams(location.search);
-const section = practiceBank.sections.some(([id]) => id === params.get('section')) ? params.get('section') : 'mechanics';
-const mechanics = section === 'mechanics';
-const bank = mechanics ? window.OGE_FIPI_MECHANICS : window.OGE_FIPI_EXTRA.filter(row => row[1].includes(section));
-const formats = {
-  short: 'Краткий ответ', single: 'Выбор одного ответа', multiple: 'Выбор нескольких ответов',
-  terms: 'Расстановка терминов', match: 'Соответствие', full: 'Развёрнутый ответ',
-};
-const blockTags = {
-  24: ['2.1','2.2','2.3','2.4'], 25: ['2.6','2.7','2.16','2.17'], 26: ['2.5','2.8','2.9','2.15'],
-  27: ['2.10','2.11','2.12'], 28: ['2.13','2.14'], 29: ['3.1','3.2','3.3','3.4','3.5'],
-  30: ['3.6','3.7','3.8','3.16'], 31: ['3.9'], 32: ['3.10','3.11'],
-  33: ['3.12','3.13','3.14','3.15','3.17','3.18','3.19'], 34: ['3.20','3.21'], 35: ['3.22','3.23','3.27'],
-  36: ['3.24','3.25','3.26','3.28'], 37: ['4.2','4.3'], 38: ['4.1','4.4'], 39: ['4.5','4.6','4.7'],
-};
-const sectionBlocks = practiceBank.modules.filter(module => module.section === section).flatMap(module => module.l);
-const blockName = id => `Блок ${id} · ${practiceBank.lessons[id][0]}`;
-const official = 'https://oge.fipi.ru/bank/questions.php?proj=B24AFED7DE6AB5BC461219556CCA4F9B&search=1&qid=';
-const mirror = 'https://ege-fipi.ru/tasks/OGEPHYS';
+const sections = [['all', 'Все разделы'], ...index.sections];
+const selected = params.get('section');
+const section = sections.some(([id]) => id === selected) ? selected : 'mechanics';
+const blocks = section === 'all' ? Object.keys(index.titles) : index.sectionBlocks(section);
+const bank = section === 'all' ? [...index.byCode.values()] : index.sectionItems(section);
 const pageSize = 24;
+
+const nav = document.getElementById('sections');
 const topic = document.getElementById('topic');
 const format = document.getElementById('format');
 const code = document.getElementById('code');
@@ -45,82 +22,81 @@ const practice = document.getElementById('practice');
 const returnToPractice = document.getElementById('return-to-practice');
 let page = 0;
 
-for (const [id, name] of practiceBank.sections) {
+function practiceUrl(block, taskCode) {
+  const query = new URLSearchParams({source:'fipi'});
+  if (block) {
+    query.set('section', index.blockSection(Number(block)));
+    query.set('block', block);
+  } else if (section !== 'all') {
+    query.set('section', section);
+  }
+  if (taskCode) query.set('code', taskCode);
+  return 'index.html?' + query.toString();
+}
+
+for (const [id, name] of sections) {
   const link = document.createElement('a');
-  link.href = id === 'mechanics' ? 'fipi-mechanics.html' : `?section=${id}`;
+  link.href = id === 'mechanics' ? 'fipi-mechanics.html' : '?section=' + id;
   link.textContent = name;
   if (id === section) link.setAttribute('aria-current', 'page');
-  document.getElementById('sections').append(link);
+  nav.append(link);
 }
+
 topic.add(new Option('Все темы', ''));
+blocks.forEach(block => topic.add(new Option('Блок ' + block + ' · ' + index.titles[block], block)));
+if (blocks.includes(params.get('block'))) topic.value = params.get('block');
 format.add(new Option('Любой', ''));
-if (mechanics) {
-  topic.add(new Option('Кинематика · все темы', 'kinematics'));
-  topics.forEach((name, index) => topic.add(new Option(index ? `1.${index} ${name}` : name, String(index))));
-  format.add(new Option('Развёрнутый', 'full'));
-  format.add(new Option('Остальные', 'other'));
-} else {
-  sectionBlocks.forEach(id => topic.add(new Option(blockName(id), id)));
-  if (sectionBlocks.includes(params.get('block'))) topic.value = params.get('block');
-  Object.entries(formats).filter(([key]) => bank.some(row => row[3] === key))
-    .forEach(([key, name]) => format.add(new Option(name, key)));
-}
-document.getElementById('source-note').textContent = mechanics
-  ? 'Номера заданий механики взяты из открытого банка ФИПИ. Одна задача может относиться к нескольким темам.'
-  : 'Подборка охватывает часть открытого банка. Номера и темы сверены по ege-fipi.ru. Если официальный банк не откроется, условие можно прочитать через «Копию задания» на этом независимом сайте.';
+Object.entries(index.formats).filter(([id]) => bank.some(item => item.format === id))
+  .forEach(([id, name]) => format.add(new Option(name, id)));
+code.value = (params.get('code') || '').slice(0,32);
 
-function matchesBlock(id, tags) {
-  return tags.some(tag => blockTags[id].includes(tag));
-}
-
-function taskLink(url, text, label) {
+function linkTo(url, label, isExternal) {
   const link = document.createElement('a');
   link.href = url;
-  link.target = '_blank';
-  link.rel = 'noopener';
-  link.textContent = text;
-  link.setAttribute('aria-label', `${label}, откроется в новой вкладке`);
+  link.textContent = label;
+  if (isExternal) {
+    link.target = '_blank';
+    link.rel = 'noopener';
+  }
   return link;
+}
+
+function card(item) {
+  const card = document.createElement('li');
+  const title = document.createElement('strong');
+  title.textContent = item.code;
+  const description = document.createElement('p');
+  const relevant = topic.value ? [topic.value] : item.blocks.filter(block => blocks.includes(block));
+  const block = relevant[0] || item.blocks[0];
+  description.textContent = 'Блок ' + block + ' · ' + index.titles[block] + ' · ' + index.formats[item.format];
+  const links = document.createElement('div');
+  links.className = 'catalog-card-links';
+  const original = linkTo(index.officialUrl(item.code), 'Условие ФИПИ ↗', true);
+  original.setAttribute('aria-label', 'Условие ФИПИ ' + item.code + ' в новой вкладке');
+  links.append(original);
+  if (item.hasMirror) links.append(linkTo(index.mirrorUrl(item.code), 'Копия условия ↗', true));
+  links.append(linkTo(practiceUrl(block,item.code), 'В задачнике →', false));
+  card.append(title, description, links);
+  return card;
 }
 
 function render() {
   const query = code.value.trim().toUpperCase();
-  const filtered = bank.filter(row => {
-    if (query && !row[0].toUpperCase().includes(query)) return false;
-    if (!mechanics) return (!format.value || row[3] === format.value) && (!topic.value || matchesBlock(topic.value, row[2]));
-    const [, tags, full] = row;
-    if (format.value && full !== (format.value === 'full')) return false;
-    if (topic.value === 'kinematics') return tags.some(tag => tag >= 1 && tag <= 6);
-    if (topic.value === '0') return tags.length === 0;
-    return !topic.value || tags.includes(Number(topic.value));
-  });
+  const filtered = bank.filter(item =>
+    (!query || item.code.includes(query)) &&
+    (!format.value || item.format === format.value) &&
+    (!topic.value || item.blocks.includes(topic.value))
+  );
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   page = Math.min(page, pages - 1);
-  count.textContent = filtered.length ? `Найдено ${filtered.length} из ${bank.length}` : 'По этим фильтрам заданий нет.';
-  list.replaceChildren(...filtered.slice(page * pageSize, (page + 1) * pageSize).map(row => {
-    const id = row[0];
-    const item = document.createElement('li');
-    const title = document.createElement('strong');
-    title.textContent = id;
-    const description = document.createElement('p');
-    if (mechanics) {
-      description.textContent = (row[1].map(tag => topics[tag]).filter(Boolean).join(' · ') || topics[0]) +
-        (row[2] ? ' · развёрнутый ответ' : '');
-    } else {
-      const names = sectionBlocks.filter(block => matchesBlock(block, row[2])).map(blockName);
-      description.textContent = [names.join(' / ') || 'Общее задание по разделу', formats[row[3]]].join(' · ');
-    }
-    const links = document.createElement('div');
-    links.className = 'catalog-card-links';
-    links.append(taskLink(official + id, 'Условие ФИПИ ↗', `Условие ФИПИ ${id}`));
-    if (!mechanics) links.append(taskLink(mirror + id, 'Копия задания ↗', `Копия задания ${id} на ege-fipi.ru`));
-    item.append(title, description, links);
-    return item;
-  }));
-  pageText.textContent = filtered.length ? `${page + 1} / ${pages}` : '';
+  count.textContent = filtered.length ?
+    'Найдено ' + filtered.length + ' из ' + bank.length :
+    'По этим фильтрам заданий нет.';
+  list.replaceChildren(...filtered.slice(page * pageSize, (page + 1) * pageSize).map(card));
+  pageText.textContent = filtered.length ? (page + 1) + ' / ' + pages : '';
   previous.disabled = page === 0;
   next.disabled = page + 1 === pages;
-  practice.href = mechanics ? 'index.html?section=mechanics' : `index.html?section=${section}${topic.value ? `&block=${topic.value}` : ''}`;
+  practice.href = practiceUrl(topic.value, '');
   returnToPractice.href = practice.href;
 }
 
