@@ -37,7 +37,18 @@ const assignedCodes=new Set([...fipi.byBlock.values()].flatMap(items=>items.map(
 assert.equal(assignedCodes.size,fipi.byCode.size,'Some FIPI assignments are missing from the blocks');
 assert.ok(oldMechanics.every(([code])=>fipi.byCode.has(code.toUpperCase())),'Lost FIPI mechanics reference');
 for(let block=24;block<=39;block++)assert.ok(fipi.byBlock.get(String(block)).length>=12,`Underfilled FIPI block ${block}`);
-console.log(`PASS: ${fipi.byCode.size} distinct FIPI tasks distributed by block.`);
+const visibleFipiCodes=new Set();
+for(const group of fipi.byGroup.values()){
+ assert.ok(group.items.length>=10&&group.items.length<=50,`FIPI block ${group.id} has ${group.items.length} assignments`);
+ assert.equal(new Set(group.items).size,group.items.length,`Repeated assignment within ${group.id}`);
+ group.items.forEach(item=>visibleFipiCodes.add(item.code));
+}
+assert.equal(visibleFipiCodes.size,fipi.byCode.size,'Lost assignment when splitting or merging blocks');
+const heatGroups=fipi.byParent.get('26');
+assert.equal(heatGroups.reduce((total,group)=>total+group.items.length,0),133);
+assert.ok(fipi.locateGroup('17').items.some(item=>item.blocks.includes('17')),'Old block 17 does not resolve to its assignments');
+assert.ok(fipi.locateGroup('46').items.some(item=>item.blocks.includes('46')),'Old block 46 does not resolve to its assignments');
+console.log(`PASS: ${fipi.byCode.size} distinct FIPI tasks, ${fipi.byGroup.size} blocks of 10–50 tasks.`);
 const privateRoot=process.env.OGE_PRIVATE_SOURCE||'../site-private-source';
 const sourcePath=require('node:path');
 assert.ok(!fs.readFileSync('teach.html','utf8').includes('teacher-view'),'Locked page must not contain classroom UI');

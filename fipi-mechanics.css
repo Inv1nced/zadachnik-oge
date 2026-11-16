@@ -53,5 +53,13 @@
 }
 .cards p { margin: 7px 0 12px; }
 .catalog-card-links { margin-top: auto; }
+.cards li:has(.fipi-condition[open]) { grid-column: 1 / -1; }
+.catalog .fipi-condition { width: 100%; margin: 8px 0 12px; }
+.catalog .fipi-condition summary { color: #176a53; cursor: pointer; font-weight: 700; }
+.catalog .fipi-condition iframe { display: block; width: 100%; height: clamp(330px, 65vh, 630px); border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+.catalog .fipi-condition-content { margin-top: 8px; }
+.catalog .fipi-condition-loading { margin: 0 0 6px; font-size: 14px; }
+.catalog .fipi-condition-retry { border: 0; padding: 2px; background: transparent; color: #176a53; font: inherit; text-decoration: underline; cursor: pointer; }
+.catalog .fipi-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 14px; }
 .pages { display: flex; align-items: center; justify-content: center; gap: 12px; }
 @media (max-width: 670px) { .filters { grid-template-columns: 1fr; } }

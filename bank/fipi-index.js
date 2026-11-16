@@ -89,6 +89,91 @@
     const blocks = sectionBlocks(section);
     return [...new Set(blocks.flatMap(block => byBlock.get(block)))].sort((a,b) => a.code.localeCompare(b.code));
   };
+  const mergedInto = {17:'16',46:'39'};
+  const groupTitles = {
+    16:'Давление твёрдых тел, жидкостей и газов',
+    39:'Ядерные реакции, излучение и общие вопросы',
+  };
+  // Rules run in this order so a task appears only once within its original topic block.
+  const themes = {
+    11:[['Равнодействующая и второй закон Ньютона','1.8','1.10'],['Упругость и трение','1.12','1.13'],['Третий закон Ньютона и тяготение','1.11','1.14']],
+    14:[['Кинетическая и потенциальная энергия','1.18'],['Сохранение энергии и нагревание','2.8']],
+    15:[['Импульс и его сохранение','1.15','1.16'],['Механическая работа и мощность','1.17'],['Превращение энергии при нагревании','2.8']],
+    16:[['Давление жидкости и закон Паскаля','1.22','1.23']],
+    18:[['Архимедова сила','1.23']],
+    23:[['Практические работы по механике','1.29']],
+    26:[['Тепловой баланс и электрический нагрев','3.10'],['Тепловое равновесие и баланс','2.5','2.9','2.15'],['Нагревание, охлаждение и теплоёмкость','2.8']],
+    27:[['Плавление и кристаллизация','2.12'],['Испарение, конденсация и влажность','2.10','2.11']],
+    29:[['Электризация тел','3.1'],['Сохранение заряда и электрическое поле','3.2','3.3','3.4','3.5']],
+    30:[['Сила тока, сопротивление и измерения','3.6','3.7','3.16'],['Закон Ома и цепи','3.8']],
+    32:[['Энергия тока и тепловой баланс','2.9','3.11'],['Работа и мощность тока','3.10']],
+    33:[['Магнитное поле и магниты','3.12','3.13','3.14'],['Электромагнитная индукция','3.15'],['Электромагнитные волны','3.19']],
+    40:[['Измерения в механике','1.29']],
+    41:[['Эксперименты по механике','1.29'],['Тепловые эксперименты','2.8','2.15'],['Электрические и оптические опыты','3.1','3.7','3.16','3.26']],
+  };
+  const byGroup = new Map();
+  const byParent = new Map();
+  const byResponse = [
+    ['Краткий ответ', item => item.format === 'short'],
+    ['Развёрнутый ответ', item => item.format === 'full'],
+    ['Выбор, термины и соответствие', item => !['short','full'].includes(item.format)],
+  ];
+  function sortInto(items, rules, restTitle, matches) {
+    let remaining = items.slice();
+    const groups = [];
+    for (const [title,...rule] of rules) {
+      const selected = remaining.filter(item => matches(item,rule));
+      if (selected.length < 10) continue;
+      groups.push([title,selected]);
+      remaining = remaining.filter(item => !matches(item,rule));
+    }
+    if (!remaining.length) return groups;
+    if (remaining.length < 10 && groups.length) {
+      const smallest = groups.reduce((a,b) => a[1].length <= b[1].length ? a : b);
+      smallest[0] += ' и смешанные задачи';
+      smallest[1].push(...remaining);
+    } else {
+      groups.push([restTitle,remaining]);
+    }
+    return groups;
+  }
+  function splitGroup(title,items) {
+    if (items.length <= 50) return [[title,items]];
+    const formats = sortInto(items,byResponse,'Другие форматы',(item,[test])=>test(item));
+    return formats.flatMap(([formatTitle,group])=>{
+      // Even page sizes prevent a tiny last block when the total is just above 50.
+      const parts = Math.ceil(group.length / 50);
+      return Array.from({length:parts},(_,i)=>[
+        title + ' · ' + formatTitle + (parts > 1 ? ' ' + (i+1) + '/' + parts : ''),
+        group.slice(Math.floor(i*group.length/parts),Math.floor((i+1)*group.length/parts)),
+      ]);
+    });
+  }
+  for (const [parent,original] of byBlock) {
+    if (Object.hasOwn(mergedInto,parent)) continue;
+    const linked = Object.entries(mergedInto).filter(([,into])=>into===parent).flatMap(([from])=>byBlock.get(from));
+    const items = [...new Set([...original,...linked])];
+    const title = groupTitles[parent] || titles[parent];
+    const named = items.length>50 ?
+      sortInto(items,themes[parent]||[],title,(item,topicCodes)=>topicCodes.some(code=>item.topicCodes.includes(code))) :
+      [[title,items]];
+    const parts = named.flatMap(([name,part])=>splitGroup(name,part));
+    const groups = parts.map(([name,part],i)=>{
+      const id = parts.length===1?parent:parent+'.'+(i+1);
+      const group = {id,parent,title:name,items:part};
+      byGroup.set(id,group);
+      return group;
+    });
+    byParent.set(parent,groups);
+  }
+  function locateGroup(id,code) {
+    const direct = byGroup.get(id);
+    const mergedParent = Object.hasOwn(mergedInto,id) ? mergedInto[id] : null;
+    const candidates = byParent.get(mergedParent||direct?.parent||id) || [];
+    if (direct && (!code || direct.items.some(item=>item.code===code))) return direct;
+    const expected = code || (mergedParent && byBlock.get(id)[0]?.code);
+    return candidates.find(group=>group.items.some(item=>item.code===expected)) || candidates[0];
+  }
   window.OGE_FIPI = { sections, methodModule, recaps, titles, formats, byBlock, byCode, blockSection,
-    sectionBlocks, sectionItems, officialUrl, mirrorUrl, label };
+    sectionBlocks, sectionItems, officialUrl, mirrorUrl, label, byGroup, byParent, locateGroup };
 })();

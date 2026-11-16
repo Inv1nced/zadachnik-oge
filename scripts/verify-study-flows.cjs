@@ -35,6 +35,10 @@ async function openPreset(page, landing, quiz, written) {
 
 async function checkPublic(browser, base) {
   const context = await browser.newContext({baseURL:base,viewport:{width:390,height:844},hasTouch:true,isMobile:true});
+  await context.route('https://ege-fipi.ru/tasks/**',route=>{
+    const code=new URL(route.request().url()).pathname.split('OGEPHYS').pop();
+    return route.fulfill({contentType:'text/html; charset=utf-8',body:`<h1 id="task-heading-title">Задание ${code}</h1><p id="condition">Условие для проверки отображения ${code}</p>`});
+  });
   const page = await context.newPage();
   page.on('pageerror',error=>errors.push(error.message));
   const requested = [];
@@ -48,7 +52,7 @@ async function checkPublic(browser, base) {
   await page.locator('.frog-close').click();
   assert.ok(!(await page.locator('.frog-bubble').isVisible()));
 
-  for (const [section,block] of [['heat','24'],['electricity','29'],['optics','34'],['quantum','37']]) {
+  for (const [section,block] of [['heat','24'],['electricity','29.1'],['optics','34'],['quantum','37']]) {
     await page.locator(`#bank-topics [data-section="${section}"]`).click();
     assert.equal(await page.locator('#mods .mod').count(),2);
     assert.equal(await page.locator('#bank-source [data-source="fipi"]').getAttribute('aria-pressed'),'true');
@@ -58,6 +62,17 @@ async function checkPublic(browser, base) {
     assert.equal(await lesson.locator('.fipi-task').count(),12);
     assert.ok(Number((await lesson.locator('[data-fipi-count]').textContent()).split('/')[1])>12);
   }
+  await page.goto('index.html?block=26&source=fipi');
+  const thermal=page.locator('[data-fipi-block^="26."]');
+  const counts=await thermal.locator('[data-fipi-count]').allTextContents();
+  const sizes=counts.map(text=>Number(text.split('/')[1]));
+  assert.equal(sizes.reduce((a,b)=>a+b,0),133);
+  assert.ok(sizes.every(size=>size>=10&&size<=50));
+  const inline=thermal.first().locator('.fipi-condition-view iframe');
+  await inline.waitFor({state:'attached'});
+  await inline.scrollIntoViewIfNeeded();
+  assert.match(await thermal.first().frameLocator('iframe').locator('#condition').innerText(),/Условие для проверки/);
+  assert.equal(await thermal.first().locator('iframe').count(),1);
   await page.goto('index.html?section=optics&block=36&source=practice');
   const lens=page.locator('details[data-l="36"]');
   assert.ok(await lens.evaluate(details=>details.open));
@@ -76,7 +91,8 @@ async function checkPublic(browser, base) {
   assert.equal(await page.locator('#tasks li').count(),2);
   await page.locator('#code').fill('df7cda');
   assert.equal(await page.locator('#tasks li').count(),1);
-  assert.match(await page.locator('#tasks a').nth(1).getAttribute('href'),/OGEPHYSDF7CDA$/);
+  await page.locator('#tasks .fipi-condition-view iframe').waitFor({state:'attached'});
+  assert.match(await page.locator('#tasks iframe').getAttribute('src'),/OGEPHYSDF7CDA#task-heading-title$/);
   await page.getByRole('link',{name:'В задачнике →'}).click();
   const fipiLens=page.locator('details[data-fipi-block="36"]');
   const linked=fipiLens.locator('[data-fipi-code="DF7CDA"]');
@@ -88,7 +104,9 @@ async function checkPublic(browser, base) {
   await page.locator('#bd').waitFor();
   assert.match(await page.locator('#bdTn').textContent(),/Блок 36 · ФИПИ DF7CDA/);
   assert.equal(await page.locator('#bdTb a').count(),2);
+  assert.match(await page.locator('#bdTb iframe').getAttribute('src'),/OGEPHYSDF7CDA#task-heading-title$/);
   await page.locator('#bdClose').click();
+  assert.equal(await page.locator('#bdTb iframe').count(),0);
   await page.reload();
   await linked.waitFor();
   assert.equal(await linked.locator('[data-fipi-act="mark"]').getAttribute('aria-pressed'),'true');
@@ -97,7 +115,7 @@ async function checkPublic(browser, base) {
   assert.match(await fipiLens.locator('.fipi-pagination [role="status"]').textContent(),/^13–24 из 45$/);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
   await page.locator('#bank-topics [data-section="methods"]').click();
-  assert.equal(await page.locator('[data-fipi-block]').count(),4);
+  assert.ok(await page.locator('[data-fipi-block]').count()>4);
   await page.locator('#bank-topics [data-section="mechanics"]').click();
 
   await openPreset(page,'homework-friction.html',8,2);

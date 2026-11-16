@@ -5,7 +5,7 @@ const params = new URLSearchParams(location.search);
 const sections = [['all', 'Все разделы'], ...index.sections];
 const selected = params.get('section');
 const section = sections.some(([id]) => id === selected) ? selected : 'mechanics';
-const blocks = section === 'all' ? Object.keys(index.titles) : index.sectionBlocks(section);
+const groups = [...index.byGroup.values()].filter(group => section === 'all' || index.blockSection(+group.parent) === section);
 const bank = section === 'all' ? [...index.byCode.values()] : index.sectionItems(section);
 const pageSize = 24;
 
@@ -25,7 +25,7 @@ let page = 0;
 function practiceUrl(block, taskCode) {
   const query = new URLSearchParams({source:'fipi'});
   if (block) {
-    query.set('section', index.blockSection(Number(block)));
+    query.set('section', index.blockSection(+index.byGroup.get(block).parent));
     query.set('block', block);
   } else if (section !== 'all') {
     query.set('section', section);
@@ -43,40 +43,30 @@ for (const [id, name] of sections) {
 }
 
 topic.add(new Option('Все темы', ''));
-blocks.forEach(block => topic.add(new Option('Блок ' + block + ' · ' + index.titles[block], block)));
-if (blocks.includes(params.get('block'))) topic.value = params.get('block');
+groups.forEach(group => topic.add(new Option('Блок ' + group.id + ' · ' + group.title, group.id)));
+const linked = index.locateGroup(params.get('block'),(params.get('code')||'').toUpperCase());
+if (linked && groups.includes(linked)) topic.value = linked.id;
 format.add(new Option('Любой', ''));
 Object.entries(index.formats).filter(([id]) => bank.some(item => item.format === id))
   .forEach(([id, name]) => format.add(new Option(name, id)));
 code.value = (params.get('code') || '').slice(0,32);
-
-function linkTo(url, label, isExternal) {
-  const link = document.createElement('a');
-  link.href = url;
-  link.textContent = label;
-  if (isExternal) {
-    link.target = '_blank';
-    link.rel = 'noopener';
-  }
-  return link;
-}
 
 function card(item) {
   const card = document.createElement('li');
   const title = document.createElement('strong');
   title.textContent = item.code;
   const description = document.createElement('p');
-  const relevant = topic.value ? [topic.value] : item.blocks.filter(block => blocks.includes(block));
-  const block = relevant[0] || item.blocks[0];
-  description.textContent = 'Блок ' + block + ' · ' + index.titles[block] + ' · ' + index.formats[item.format];
+  const group = topic.value ? index.byGroup.get(topic.value) : groups.find(group=>group.items.includes(item));
+  description.textContent = 'Блок ' + group.id + ' · ' + group.title + ' · ' + index.formats[item.format];
   const links = document.createElement('div');
   links.className = 'catalog-card-links';
-  const original = linkTo(index.officialUrl(item.code), 'Условие ФИПИ ↗', true);
-  original.setAttribute('aria-label', 'Условие ФИПИ ' + item.code + ' в новой вкладке');
-  links.append(original);
-  if (item.hasMirror) links.append(linkTo(index.mirrorUrl(item.code), 'Копия условия ↗', true));
-  links.append(linkTo(practiceUrl(block,item.code), 'В задачнике →', false));
-  card.append(title, description, links);
+  const link = document.createElement('a');
+  link.href = practiceUrl(group.id,item.code);
+  link.textContent = 'В задачнике →';
+  links.append(link);
+  card.append(title, description);
+  card.insertAdjacentHTML('beforeend',window.OGE_FIPI_CONDITION.markup(item,code.value.trim().toUpperCase()===item.code));
+  card.append(links);
   return card;
 }
 
@@ -85,7 +75,7 @@ function render() {
   const filtered = bank.filter(item =>
     (!query || item.code.includes(query)) &&
     (!format.value || item.format === format.value) &&
-    (!topic.value || item.blocks.includes(topic.value))
+    (!topic.value || index.byGroup.get(topic.value).items.includes(item))
   );
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   page = Math.min(page, pages - 1);
