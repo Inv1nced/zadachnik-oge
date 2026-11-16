@@ -8,13 +8,15 @@ function correct(r,value){
  if(!checkable(r))return null;
  const g=norm(value),a=norm(r[4]);
  if(r[3]==='m'){
-  const digits=g.replace(/[\s;,]/g,'');
+  const digits=String(value??'').trim().replace(/[\s;,]/g,'');
   if(!/^\d+$/.test(digits))return false;
-  return r[1]>=10112&&r[1]<=10116?digits.split('').sort().join('')===a.split('').sort().join(''):digits===a;
+  const unordered=r[8]?.answerOrder==='any'||(r[1]>=10112&&r[1]<=10116);
+  return unordered?digits.split('').sort().join('')===a.split('').sort().join(''):digits===a;
  }
- return numeric(g)&&Math.abs(Number(g)-Number(a))<=1e-9*Math.max(1,Math.abs(Number(a)));
+ const threshold=r[8]?.numericTolerance===0.01?Math.max(1e-6,Math.abs(Number(a))*0.01):1e-9*Math.max(1,Math.abs(Number(a)));
+ return numeric(g)&&Math.abs(Number(g)-Number(a))<=threshold;
 }
-function summary(rows){return {correct:rows.filter(r=>r[2]===1).length,automatic:rows.filter(r=>r[2]!==null).length,pending:rows.filter(r=>r[2]===null).length};}
+function summary(rows){return {correct:rows.filter(r=>r[2]===1).length,automatic:rows.filter(r=>r[2]!==null).length,pending:rows.filter(r=>r[2]===null&&String(r[1]??'').trim()).length};}
 function snapshotRow(r,label){return [r[0],r[1],r[2],r[3],r[4],r[5],r[6],Array.isArray(r[7])?r[7]:[],{...(r[8]||{}),label}];}
 const api={norm,numeric,checkable,correct,summary,snapshotRow};root.OgeCore=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

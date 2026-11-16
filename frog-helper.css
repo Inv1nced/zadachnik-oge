@@ -13,3 +13,10 @@
 .frog-bubble [hidden]{display:none!important}
 
 .oge-frog .frog-body:disabled{opacity:1;cursor:default}
+
+@media (max-width: 600px) {
+  .oge-frog .frog-body, .oge-frog .frog-name { display: none; }
+  .oge-frog { inset: auto 12px 12px auto; width: auto; }
+  .oge-frog .frog-bubble { bottom: 0; }
+  .oge-frog:not(:has(.frog-bubble:not([hidden]))) { display: none; }
+}

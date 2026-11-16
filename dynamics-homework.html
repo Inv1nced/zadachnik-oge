@@ -20,29 +20,9 @@
 <li>Нажми <strong>«Сдать и проверить»</strong>. Отправь репетитору сообщение с кодом <strong>RES-…</strong> и два фото решений.</li>
 </ol>
 <p>Где нужно, прими g = 10 м/с². В № 10 считай, что после выключения двигателя машину тормозит только сила трения.</p>
-<a id="start" class="action" hidden>Открыть домашку →</a>
-<p id="status" aria-live="polite">Загружаем задания…</p>
+<a id="start" class="action" href="index.html#set=dynamics">Открыть домашку →</a>
+<p id="status" aria-live="polite">Ответы сохраняются в этом браузере.</p>
 <noscript>Для открытия домашки включи JavaScript в браузере.</noscript>
 </main>
-<script src="dynamics-homework.js"></script>
-<script>
-try {
-  const hw = window.DynamicsHomework;
-  const codes = {
-    '6': '6-Y7ENU9',
-    '8': '8-8VH5GA',
-    '11': '11-6U8D3E',
-  };
-  const payload = { v: 2, t: hw.title, i: hw.order.map(id => id.toString(36)), k: hw.blocks.map(block => codes[block]), a: hw.authored };
-  const bytes = new TextEncoder().encode(JSON.stringify(payload));
-  const code = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const start = document.getElementById('start');
-  start.href = 'index.html#hw=HW-' + code;
-  start.hidden = false;
-  document.getElementById('status').textContent = 'Если нужно сделать перерыв, ответы сохранятся в этом браузере.';
-} catch {
-  document.getElementById('status').textContent = 'Задания не загрузились. Обнови страницу.';
-}
-</script>
 </body>
 </html>
