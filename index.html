@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Задачник по механике</title><link rel="stylesheet" href="site-shell.css?v=20261105quiet"><script src="site-shell.js?v=20261116" defer></script></head><body><title>Задачник по механике</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Задачник по механике</title><link rel="stylesheet" href="site-shell.css?v=interface-1"><script src="site-shell.js?v=20261116" defer></script></head><body class="study-site">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
@@ -263,6 +263,7 @@ body.bd-open{overflow:hidden}
 <div class="lightbox" id="lb" hidden><img alt="Рисунок крупно"></div>
 <div class="bd" id="bd" hidden role="dialog" aria-label="Доска для решения">
  <div class="bd-bar" id="bdBar">
+  <div class="bd-tool-strip" role="group" aria-label="Инструменты доски">
   <div class="bd-g" id="bdTools">
    <button class="bd-b" data-tool="pen" title="Ручка (P)" aria-label="Ручка"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M14 6l3 3"/></svg></button>
    <button class="bd-b" data-tool="line" title="Линия (L)" aria-label="Линия"><svg viewBox="0 0 24 24"><path d="M5 19L19 5"/></svg></button>
@@ -284,10 +285,12 @@ body.bd-open{overflow:hidden}
    <button class="bd-b" id="bdPng" title="Скачать картинкой" aria-label="Скачать PNG"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
    <button class="bd-b x" id="bdClear" title="Очистить всё" aria-label="Очистить"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
   </div>
-  <div class="bd-sp"></div>
+  </div>
+  <div class="bd-session-actions">
   <span class="bd-st" id="bdSt"><i></i><span>одна</span></span>
   <button class="bd-b go" id="bdInv">Позвать на доску</button>
   <button class="bd-b x" id="bdClose" title="Закрыть (Esc)" aria-label="Закрыть доску"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
  </div>
  <div class="bd-main" id="bdMain">
   <canvas class="bd-cv" id="bdCv"></canvas>
@@ -305,5 +308,5 @@ body.bd-open{overflow:hidden}
 <script src="published-assignments.js?v=20261116"></script>
 <script src="study-drafts.js?v=20261116"></script>
 <script src="bank/intro.js?v=20261116"></script>
-<script src="zadachnik.js?v=20261116"></script>
-<script src="workspace-bridge.js?v=20261116"></script><link rel="stylesheet" href="site-shell.css?v=20261105quiet"></body></html>
+<script src="zadachnik.js?v=interface-1"></script>
+<script src="workspace-bridge.js?v=20261116"></script><link rel="stylesheet" href="study-interface.css?v=interface-1"></body></html>

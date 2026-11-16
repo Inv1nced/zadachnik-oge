@@ -13,11 +13,22 @@ const sessionClear=()=>auth.clear();
 function appendScript(item){return new Promise((resolve,reject)=>{const script=document.createElement('script');if(item.src){script.src=item.src.includes('site-shell.js')?item.src.replace(/\?.*$/,'')+'?v=20261116':item.src;script.onload=resolve;script.onerror=reject;}else{script.textContent=item.inline;resolve();}document.body.appendChild(script);});}
 async function mount(payload){
  document.title=payload.title;document.documentElement.dataset.theme='light';
- for(const href of payload.styles){const link=document.createElement('link');link.rel='stylesheet';link.href=/site-shell\.css/.test(href)?href.replace(/\?.*$/,'')+'?v=20261105quiet':href;document.head.appendChild(link);}
+ for(const href of payload.styles){
+  const link=document.createElement('link');
+  link.rel='stylesheet';
+  const file=href.split('?')[0];
+  const filename=file.split('/').at(-1);
+  link.href=['teach.css','site-shell.css'].includes(filename)?file+'?v=interface-1':href;
+  document.head.appendChild(link);
+ }
  window.__OGE_TEACHER_BANK=payload.bank||null;
  document.body.innerHTML=payload.body;mounted=true;
  for(const script of payload.scripts)await appendScript(script);
  const exit=document.createElement('button');exit.id='teacher-signout';exit.type='button';exit.textContent='Выйти из кабинета';exit.onclick=()=>{if(parent!==window)parent.postMessage({type:'teacher-logout'},location.origin);sessionClear();location.reload();};(document.querySelector('.teacher-header')||document.querySelector('.topbar')||document.body).appendChild(exit);
+ if(document.getElementById('teacher-view')) {
+  document.body.classList.add('teacher-interface');
+  await appendScript({src:'teacher-interface.js?v=interface-1'}).catch(()=>{});
+ }
  if(window.parent!==window)window.parent.postMessage({type:'teacher-unlocked'},location.origin);
 }
 form.addEventListener('submit',async event=>{

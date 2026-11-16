@@ -33,3 +33,46 @@ html[data-theme=light] .steps button[aria-current=step]{background:#e5f2f3;color
 html[data-theme=light] .verdict.show{background:#fff4d6;color:#795308}
 html[data-theme=light] .stat,html[data-theme=light] .unlock,html[data-theme=light] .testhead,html[data-theme=light] .ri,html[data-theme=light] .pick,html[data-theme=light] .bd-task,html[data-theme=light] .bd-bar,html[data-theme=light] .bd-hint{background:var(--panel);color:var(--text);box-shadow:none}
 html[data-theme=light] .chip[aria-pressed=true]{background:#425a9a;color:#fff;box-shadow:none}
+
+:is(body.study-site, body.teacher-interface) {
+  --accent-fill: #b8c5ff;
+  --accent-ink: #131e53;
+  --accent-soft: #252f50;
+  --bg: #141822;
+  --bg2: #1a202d;
+  --panel: #1e2533;
+  --panel2: #252e40;
+  --line: #343e53;
+  --line2: #485570;
+  --text: #f3f5fd;
+  --text2: #d0d7e7;
+  --muted: #aeb9cf;
+  --cyan: #b8c5ff;
+  --ok: #8bd9b0;
+  --ok-bg: #203b35;
+  --err: #ffabb4;
+  --err-bg: #482b3a;
+  --amber: #f8d38e;
+  --amber-bg: #3e3427;
+}
+html[data-theme="light"] :is(body.study-site, body.teacher-interface) {
+  --accent-fill: #3548b2;
+  --accent-ink: #fff;
+  --accent-soft: #e9edff;
+  --bg: #f6f7fb;
+  --bg2: #edf0f7;
+  --panel: #fff;
+  --panel2: #f1f3fa;
+  --line: #d9dfeb;
+  --line2: #b9c4d9;
+  --text: #18213b;
+  --text2: #384562;
+  --muted: #535f79;
+  --cyan: #3548b2;
+  --ok: #1a6546;
+  --ok-bg: #e7f5ee;
+  --err: #9e2c49;
+  --err-bg: #fbeaf0;
+  --amber: #744505;
+  --amber-bg: #fff1d9;
+}

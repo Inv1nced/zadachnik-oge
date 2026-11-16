@@ -41,6 +41,7 @@ async function checkPublic(browser, base) {
   page.on('request',request=>requested.push(request.url()));
   await page.goto('index.html');
   await page.locator('#freeBd').waitFor();
+  assert.equal(await page.locator('#mods .mod').count(),5);
   assert.ok(!requested.some(url=>/bank\/\w+\.json|task-board\.js/.test(url)));
   await page.locator('#frog-nav-toggle').click();
   assert.ok(await page.locator('.frog-bubble').isVisible());
@@ -114,6 +115,8 @@ async function checkPublic(browser, base) {
   assert.match(await page.locator('li.task:has(input[aria-label="Ответ к задаче 31"]) .vslot').innerText(),/✓ верно/);
   await page.locator('#freeBd').click();
   await page.locator('#bdCv').waitFor();
+  const closeButton=await page.locator('#bdClose').boundingBox();
+  assert.ok(closeButton.x>=0 && closeButton.x+closeButton.width<=390);
   const canvas = await page.locator('#bdCv').boundingBox();
   await page.mouse.move(canvas.x+65,canvas.y+90);await page.mouse.down();await page.mouse.move(canvas.x+120,canvas.y+120,{steps:5});await page.mouse.up();
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('mk_bd_free')||'[]').length===1);
@@ -200,6 +203,7 @@ async function checkTeacher(browser,base,bank,source) {
     await target(pupil,2).locator('input').fill('3');
     await target(pupil,11).locator('textarea').fill('решение на фото');
     await pupil.locator('#fin2').click();await pupil.locator('#fin2').click();
+    assert.deepEqual(await pupil.locator('.result-overview dd').allTextContents(),['1','1','9','1']);
     const message=await pupil.locator('#msg').inputValue();
     const assigned=await teacher.locator('#student').inputValue();
     await teacher.locator('#student').selectOption({index:0});
@@ -214,11 +218,17 @@ async function checkTeacher(browser,base,bank,source) {
     await teacher.locator('#build-warmup').click();
     assert.match(await teacher.locator('#warmup-plan').innerText(),/Разминка на 5–10 минут/);
     await teacher.locator('#copy-feedback').click();
+    await teacher.getByRole('button',{name:'Скопировано ✓',exact:true}).waitFor();
     assert.match(await teacher.locator('#feedback-text').inputValue(),/Исправить: 1/);
     await teacher.locator('#result-code').fill(message);
     await teacher.locator('#read-result').click();
     await teacher.locator('#open-existing-result').click();
     assert.equal(await teacher.locator('#review-select option').count(),1);
+    const reviewedId=await teacher.locator('#review-select').inputValue();
+    await teacher.locator('[data-area="lesson"]').click();
+    assert.match(await teacher.locator('.teacher-latest').innerText(),/Импульс/);
+    await teacher.getByRole('button',{name:'Открыть разбор',exact:true}).click();
+    assert.equal(await teacher.locator('#review-select').inputValue(),reviewedId);
 
     await pupil.goto(base+'index.html#set=dynamics');await waitForForm(pupil);
     await target(pupil,2).locator('input').fill('6');

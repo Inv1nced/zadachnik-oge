@@ -86,6 +86,9 @@ function loadBoard() {
 }
 function openBoard(...args) { loadBoard().then(board => board.open(...args)).catch(error => toast(error.message)); }
 const V=document.getElementById("view");
+const studyTopbar=document.querySelector('.study-site .topbar');
+new ResizeObserver(()=>document.body.style.setProperty('--topbar-height',`${studyTopbar.offsetHeight}px`)).observe(studyTopbar);
+
 function setView(v){view=v;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));render();window.scrollTo({top:0,behavior:"smooth"})}
 document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)});
 function render(){document.body.dataset.frogAssessment=Object.values(runs).some(run => run && !run.done)?"active":"inactive";window.dispatchEvent(new Event("oge-study-state"));({bank:renderBank,test:renderTest,hw:renderHw,prog:renderProg})[view]()}
@@ -93,17 +96,29 @@ function render(){document.body.dataset.frogAssessment=Object.values(runs).some(
 function lessonStats(l){const a=byL[l]||[];return [a.filter(r=>solved.has(r[0])).length,a.length]}
 function modStats(m){let s=0,n=0;m.l.forEach(l=>{const [a,b]=lessonStats(l);s+=a;n+=b});return [s,n]}
 function renderBank(){
-  const total=Object.values(COUNTS).reduce((a,b)=>a+b,0),ns=solved.size,openN=Object.keys(LESSONS).filter(isOpen).length;
-  V.innerHTML=`<section class="view">
-  <div class="hero"><div class="kicker">Банк задач · <b>${total}</b> задач · открыто уроков: <b>${openN}</b> из ${Object.keys(LESSONS).length}</div>
-  <h1>Задачи по физике</h1>
-  <p class="lead">Уроки открываются по мере занятий: после урока репетитор присылает код — вставь его ниже. Вписывай ответ — сайт сразу проверит. Нужен рисунок — жми «Условие ↗».</p>
-  ${runs.hw && !runs.hw.done ? `<p><button class="btn primary" data-continue="hw">Продолжить домашку</button></p>` : ''}
-  <p><a class="btn small board" href="fipi-mechanics.html" style="text-decoration:none">↗ Все задания ФИПИ по механике</a></p>
-  <div class="unlock"><span class="lockico" aria-hidden="true">⌁</span><input type="text" id="uc" placeholder="Код урока, например 3-AB12CD" autocomplete="off" aria-label="Код урока"><button class="btn primary" id="ub">Открыть урок</button><span id="um" class="t2"></span></div>
-  <div class="stats"><span class="stat"><b>${ns}</b>решено</span><span class="stat"><b>${DATA.filter(checkable).length}</b>с автопроверкой</span><span class="stat"><b>5</b>модулей</span><a class="btn small board" href="forces.html" style="text-decoration:none">↗ Силы и векторы</a><a class="btn small board" href="grafiki.html" style="margin-left:auto;text-decoration:none">📈 Тренажёр графиков</a><button class="btn small board" id="freeBd">✎ Чистая доска</button></div></div>
-  <div class="mods" id="mods">${MODULES.map((m,i)=>{const [s,n]=modStats(m);return `<button class="mod" data-i="${i}" aria-pressed="${i===bank.mod}"><div class="mi">МОДУЛЬ ${i+1}</div><div class="mn">${m.n}</div><div class="ms">${m.s} · открыто ${m.l.filter(isOpen).length}/${m.l.length}</div><div class="meter"><i style="width:${n?s/n*100:0}%"></i></div></button>`}).join("")}</div>
-  <div class="tools"><input type="search" id="bq" placeholder="Поиск по условию: «плотность», «маятник»…" value="${esc(bank.q)}" autocomplete="off">
+  const total=Object.values(COUNTS).reduce((sum,count)=>sum+count,0);
+  const openN=Object.keys(LESSONS).filter(isOpen).length;
+  const homework=runs.hw && !runs.hw.done ? runs.hw : null;
+  V.innerHTML=`<section class="view bank-view">
+  <div class="hero bank-hero">
+   <div class="bank-intro"><h1>Задачи по физике</h1>
+   <p class="lead">Выбери тему, реши задачу самостоятельно или открой её на доске для разбора.</p></div>
+   ${homework?`<aside class="bank-resume"><span>Домашка в процессе</span><strong>${esc(homework.title)}</strong><button class="btn primary" data-continue="hw">Продолжить домашку <span aria-hidden="true">→</span></button></aside>`:
+   `<dl class="bank-overview"><div><dt>Задач в банке</dt><dd>${total}</dd></div><div><dt>Доступно уроков</dt><dd>${openN} <span>из ${Object.keys(LESSONS).length}</span></dd></div><div><dt>Решено задач</dt><dd data-bank-solved>${solved.size}</dd></div></dl>`}
+  </div>
+  <section class="bank-modules" aria-labelledby="modules-title">
+   <div class="bank-section-title"><h2 id="modules-title">Модули</h2><a class="bank-text-link" href="fipi-mechanics.html">Банк ФИПИ <span aria-hidden="true">↗</span></a></div>
+   <div class="mods" id="mods">${MODULES.map((module,i)=>{
+    const [done,available]=modStats(module);
+    const lessonsOpen=module.l.filter(isOpen).length;
+    return `<button class="mod" data-i="${i}" aria-pressed="${i===bank.mod}"><span class="module-symbol" aria-hidden="true"></span><span class="mn">${module.n}</span><span class="ms">${module.s}</span><span class="module-counts"><span>Уроки <b>${lessonsOpen}/${module.l.length}</b></span><span data-module-solved>Решено <b>${done}</b></span></span><span class="meter" aria-hidden="true"><i style="width:${available?done/available*100:0}%"></i></span></button>`;
+   }).join('')}</div>
+  </section>
+  <div class="bank-utilities">
+   <form class="unlock" id="unlock-form"><label for="uc">Код урока</label><input type="text" id="uc" placeholder="Например, 3-AB12CD" autocomplete="off"><button class="btn" type="submit" id="ub">Открыть урок</button><span id="um" class="t2" role="status"></span></form>
+   <div class="bank-resources"><a href="forces.html">Силы и векторы</a><a href="grafiki.html">Тренажёр графиков</a><button class="btn board" id="freeBd">Чистая доска <span aria-hidden="true">↗</span></button></div>
+  </div>
+  <div class="tools"><input type="search" id="bq" aria-label="Поиск по условию" placeholder="Найти задачу по условию" value="${esc(bank.q)}" autocomplete="off">
   <div id="bt" style="display:flex;flex-wrap:wrap;gap:6px">${[["all","Все"],...Object.entries(TYPES)].map(([k,v])=>`<button class="chip" data-t="${k}" aria-pressed="${bank.type===k}">${v}</button>`).join("")}</div></div>
   <div id="lessons"></div></section>`;
   renderLessons();
@@ -113,16 +128,29 @@ function renderBank(){
     if(r.err){um.textContent=r.err;um.style.color="var(--err)";const u=V.querySelector(".unlock");u.classList.remove("bad");void u.offsetWidth;u.classList.add("bad");return}
     const mi=MODULES.findIndex(m=>m.l.includes(r.l));bank.mod=mi;LS.set("mk_mod",mi);bank.open=new Set([r.l]);renderBank();toast(r.already?"Этот урок уже открыт":(r.l==="X"?"Бонус открыт!":"Урок "+r.l+" открыт!"));if(!r.already)confetti();
     setTimeout(()=>{const d=V.querySelector(`.lesson[data-l="${r.l}"]`);if(d)d.scrollIntoView({behavior:"smooth",block:"start"})},250)};
-  V.querySelector("#ub").onclick=doUnlock;V.querySelector("#uc").onkeydown=e=>{if(e.key==="Enter")doUnlock()};
+  V.querySelector("#unlock-form").onsubmit=e=>{e.preventDefault();doUnlock()};
   V.querySelector("#bq").oninput=e=>{bank.q=e.target.value.trim();renderLessons()};
   V.querySelector("#bt").onclick=e=>{const c=e.target.closest(".chip");if(!c)return;bank.type=c.dataset.t;V.querySelectorAll("#bt .chip").forEach(x=>x.setAttribute("aria-pressed",x===c));renderLessons()};
 }
 function filtered(l){if(!isOpen(l))return [];const q=bank.q.toLowerCase();return (byL[l]||[]).filter(r=>(bank.type==="all"||r[3]===bank.type)&&(!q||r[6].toLowerCase().includes(q)))}
-function taskCard(r,i){const ok=solved.has(r[0]);const chk=checkable(r);
- return `<li class="task${ok?" ok":""}" data-id="${r[0]}"><p class="tt"><span class="tn">${i}.</span>${fmtRow(r)}</p><div class="tr"><b class="src ${r[5]}">${SRC[r[5]]}</b>${r[1]?`<a href="${link(r)}" target="_blank" rel="noopener">Условие ↗</a>`:""}
- ${chk?`<span class="ansbox"><input type="text" inputmode="${r[3]==='m'?'text':'decimal'}" placeholder="ответ" aria-label="Ответ к задаче ${i}" id="a${r[0]}"><button class="btn small" data-act="check">Проверить</button></span><button class="linkbtn" data-act="show">показать ответ</button>`
- :(r[4]&&r[4].length<14?`<button class="linkbtn" data-act="show">показать ответ</button>`:`<span class="muted" style="font-size:12.5px">ответ — в решении по ссылке</span>`)}
- <button class="btn small board" data-act="board" data-n="${i}">✎ Решить на доске</button><button class="linkbtn" data-act="mark">${ok?"снять отметку":"отметить решённой"}</button><span class="vslot"></span></div></li>`}
+function taskCard(row,number){
+ const done=solved.has(row[0]);
+ const auto=checkable(row);
+ return `<li class="task${done?' ok':''}" data-id="${row[0]}">
+  <div class="task-top"><span class="tn">${esc(taskLabel(row))}</span><b class="src ${row[5]}">${SRC[row[5]]}</b></div>
+  <p class="tt">${fmtRow(row)}</p>
+  <div class="tr task-controls">
+   ${auto?`<span class="ansbox"><input type="text" inputmode="${row[3]==='m'?'text':'decimal'}" placeholder="Ответ" aria-label="Ответ к задаче ${number}" id="a${row[0]}"><button class="btn small" data-act="check">Проверить</button></span>`:''}
+   <button class="btn small board" data-act="board" data-n="${number}">Решить на доске <span aria-hidden="true">↗</span></button>
+   <span class="vslot" role="status"></span>
+  </div>
+  <div class="tr task-links">
+   ${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}
+   ${auto||(row[4]&&row[4].length<14)?'<button class="linkbtn" data-act="show">Показать ответ</button>':'<span class="muted">Ответ — в решении по ссылке</span>'}
+   <button class="linkbtn" data-act="mark">${done?'Снять отметку':'Отметить решённой'}</button>
+  </div>
+ </li>`;
+}
 function renderLessons(){const box=V.querySelector("#lessons");const m=MODULES[bank.mod];const q=bank.q;
  const parts=m.l.map(l=>{if(!isOpen(l)){if(q||bank.type!=="all")return "";return `<div class="lesson locked"><div class="lsum"><span class="ln">${l==="X"?"БОНУС":"УРОК "+l}</span><span class="lt">Закрыто · откроется после занятия</span><span class="lm">${COUNTS[l]||0} задач</span></div></div>`}const list=filtered(l);if(!list.length&&(q||bank.type!=="all"))return "";const [s,n]=lessonStats(l);const open=bank.open.has(l)||!!q;
    return `<details class="lesson" data-l="${l}" ${open?"open":""}><summary><span class="ln">${l==="X"?"БОНУС":"УРОК "+l}</span><span class="lt">${LESSONS[l][0]}<span class="chev">›</span></span><span class="lm"><span class="lmt">${s} / ${n}</span><div class="meter"><i style="width:${n?s/n*100:0}%"></i></div></span></summary><div class="lb">${open?lessonBody(l):""}</div></details>`}).join("");
@@ -132,17 +160,30 @@ function renderLessons(){const box=V.querySelector("#lessons");const m=MODULES[b
 function lessonBody(l){const list=filtered(l);let k=0,h=`<div class="formulas">${LESSONS[l][1].map(f=>`<span>${esc(l==="4"&&f.startsWith("s =")?f.replace(/^s =/,"Δx ="):f)}</span>`).join("")}${l==="4"?"<p>По оси формулы дают перемещение Δx. Путь s равен |Δx| только без разворота; при развороте сложи пути отдельных участков.</p>":""}</div>`;
  for(const t of Object.keys(TYPES)){const g=list.filter(r=>r[3]===t);if(!g.length)continue;h+=`<div class="gh">${TYPES[t]} · ${g.length}</div><ol class="tasks">${g.map(r=>taskCard(r,taskNumber(r))).join("")}</ol>`}
  return h||`<p class="t2">Нет задач по фильтру.</p>`}
-function refreshLessonMeta(l){V.querySelector(".stats .stat b").textContent=solved.size;const d=V.querySelector(`.lesson[data-l="${l}"]`);if(!d)return;const [s,n]=lessonStats(l);d.querySelector(".lmt").textContent=`${s} / ${n}`;d.querySelector(".lm .meter i").style.width=(n?s/n*100:0)+"%";
- V.querySelectorAll(".mod").forEach((b,i)=>{const [a,c]=modStats(MODULES[i]);b.querySelector(".meter i").style.width=(c?a/c*100:0)+"%"})}
+function refreshLessonMeta(lesson){
+ const overview=V.querySelector('[data-bank-solved]');
+ if(overview)overview.textContent=solved.size;
+ const details=V.querySelector(`.lesson[data-l="${lesson}"]`);
+ if(details){
+  const [done,total]=lessonStats(lesson);
+  details.querySelector('.lmt').textContent=`${done} / ${total}`;
+  details.querySelector('.lm .meter i').style.width=`${total?done/total*100:0}%`;
+ }
+ V.querySelectorAll('.mod').forEach((button,i)=>{
+  const [done,total]=modStats(MODULES[i]);
+  button.querySelector('[data-module-solved] b').textContent=done;
+  button.querySelector('.meter i').style.width=`${total?done/total*100:0}%`;
+ });
+}
 function verdict(li,cls,txt){const v=li.querySelector(".vslot");v.innerHTML=`<span class="verdict ${cls} pop">${txt}</span>`}
 V.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b||view!=="bank")return;const li=b.closest(".task");const id=+li.dataset.id;const r=byId[id];const act=b.dataset.act;
  if(act==="check"){const inp=li.querySelector("input");const val=inp.value;if(!val.trim()){inp.focus();return}const t=tries[id]||[0,0];t[0]++;
-   if(isRight(r,val)){t[1]++;solved.add(id);li.classList.add("ok");verdict(li,"ok","✓ верно");b.closest(".tr").querySelector('[data-act="mark"]').textContent="снять отметку";burst(b)}
+   if(isRight(r,val)){t[1]++;solved.add(id);li.classList.add("ok");verdict(li,"ok","✓ верно");li.querySelector('[data-act="mark"]').textContent="Снять отметку";burst(b)}
    else{li.classList.remove("bad");void li.offsetWidth;li.classList.add("bad");verdict(li,"no","✗ пока нет")}
    tries[id]=t;saveAll();refreshLessonMeta(r[2])}
  if(act==="show"){const seen=LS.get("mk_seen_answers",{});seen[id]=Date.now();LS.set("mk_seen_answers",seen);verdict(li,"show","ответ: "+r[4])}
  if(act==="board"){openBoard(id,r,(r[2]==="X"?"Бонус":"Блок "+r[2])+" · задача "+b.dataset.n)}
- if(act==="mark"){if(solved.has(id)){solved.delete(id);li.classList.remove("ok");b.textContent="отметить решённой"}else{solved.add(id);li.classList.add("ok");b.textContent="снять отметку"}saveAll();refreshLessonMeta(r[2])}
+ if(act==="mark"){if(solved.has(id)){solved.delete(id);li.classList.remove("ok");b.textContent="Отметить решённой"}else{solved.add(id);li.classList.add("ok");b.textContent="Снять отметку"}saveAll();refreshLessonMeta(r[2])}
 });
 V.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".ansbox input")){e.preventDefault();e.target.parentElement.querySelector('[data-act="check"]').click()}});
 /* ====== TEST ENGINE (test + homework) ====== */
@@ -216,7 +257,8 @@ function syncAnswers(run) {
 function updateFilled(run) {
  const filled = run.ids.filter(id => answer(run,id).trim()).length;
  V.querySelector('#bp').style.width = `${filled/run.ids.length*100}%`;
- V.querySelector('#fc').textContent = `${filled}/${run.ids.length}`;
+ V.querySelector('#fc').textContent = `${filled} из ${run.ids.length}`;
+ V.querySelector('#answer-progress').setAttribute('aria-valuenow',filled);
  V.querySelector('#save-run').textContent = savedNotice(run);
 }
 function renderRun(run) {
@@ -226,8 +268,12 @@ function renderRun(run) {
   <h1>${esc(run.title)}</h1><p class="lead">В коротких заданиях введи число без единиц или номера утверждений. В развёрнутых запиши ход решения. Если решаешь на бумаге, укажи «решение на фото».</p></div>
   ${run.kind==='hw' ? `<label class="study-name" for="study-name">Твоё имя<input id="study-name" maxlength="40" value="${esc(myName)}" autocomplete="given-name"></label>` : ''}
   <p id="save-run" class="study-save" role="status"></p>
-  <div class="testhead"><span class="timer" id="timer" aria-label="Оставшееся время">${run.limit?fmtTime(timeLeft(run)):'∞'}</span><div class="bigprog"><i id="bp"></i></div><span class="muted num" id="fc"></span><button class="btn primary small" id="fin">Сдать</button></div>
-  <p id="submit-top" class="study-warning" role="status" hidden></p>
+  <div class="testhead">
+   <div class="study-progress"><span class="study-progress-label">Ответы <strong id="fc"></strong></span><div class="bigprog" id="answer-progress" role="progressbar" aria-label="Заполненные ответы" aria-valuemin="0" aria-valuemax="${run.ids.length}"><i id="bp"></i></div></div>
+   ${run.limit?`<span class="timer" id="timer" aria-label="Оставшееся время">${fmtTime(timeLeft(run))}</span>`:''}
+   <button class="btn primary small" id="fin">Сдать</button>
+   <p id="submit-top" class="study-warning" role="status" hidden></p>
+  </div>
   <div class="study-questions">${run.ids.map((id,i)=>{
    const row = byId[id], value = answer(run,id), title = `№${i+1} · ${taskLabel(row)}`;
    return `<div class="q${value.trim()?' filled':''}" data-id="${id}"><div class="qn">${esc(title)}</div><p class="tt">${fmtRow(row)}</p><div class="tr">${checkable(row)?`<input type="text" inputmode="${row[3]==='m'?'text':'decimal'}" maxlength="150" placeholder="ответ" value="${esc(value)}" aria-label="Ответ к задаче ${i+1}" id="q${id}">`:`<label class="study-written">Решение — проверит преподаватель<textarea rows="4" maxlength="2000" placeholder="Рисунок словами, закон, вычисления и вывод" aria-label="Решение задачи ${i+1}" id="q${id}">${esc(value)}</textarea></label>`}${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}<b class="src ${row[5]}">${SRC[row[5]]}</b></div></div>`;
@@ -326,14 +372,24 @@ function finish(run) {
  }
 }
 function grade(p){return p>=.85?["5","отлично","var(--ok)"]:p>=.65?["4","хорошо","var(--cyan)"]:p>=.4?["3","есть над чем поработать","var(--amber)"]:["2","разберём ошибки","var(--err)"]}
+const resultStates={
+ correct:{label:'Верно',symbol:'✓'},
+ error:{label:'Ошибка',symbol:'×'},
+ empty:{label:'Пропущено',symbol:'–'},
+ pending:{label:'Ждёт проверки',symbol:'◷'},
+};
 function renderResult(run) {
- const stats=OgeCore.summary(run.res||[]), blanks=(run.res||[]).filter(([,value])=>!String(value||'').trim()).length;
- const msg=`${run.name||myName||'Ученик'}: ${run.title}. Автопроверка: ${stats.correct}/${stats.automatic}. На проверке у преподавателя: ${stats.pending}. Пропущено: ${blanks}. Время ${fmtTime(run.dur)}.\nКод результата: ${run.code}`;
- V.innerHTML=`<section class="view"><div class="hero"><h1 tabindex="-1">${esc(run.title)}</h1><p class="lead">Автопроверка: <b>${stats.correct} из ${stats.automatic}</b>. ${stats.pending?`Ожидают проверки: ${stats.pending}. `:''}${blanks?`Пропущено: ${blanks}.`:''}</p></div>
- <div class="panel"><h2>Отправь преподавателю</h2><p>${run.persistError?'Браузер не сохранил результат. Скопируй сообщение сейчас.':'Скопируй сообщение и приложи фотографии бумажных решений.'}</p><textarea id="msg" rows="4" aria-label="Сообщение преподавателю" readonly>${esc(msg)}</textarea><button class="btn primary" id="cp">Скопировать сообщение</button></div>
- <div class="rlist">${(run.res||[]).map(([id,value,ok],i)=>{
-  const row=byId[id], empty=!String(value||'').trim();
-  return `<div class="ri ${empty||ok===null?'':ok?'ok':'no'}"><span class="mk">${empty?'—':ok===null?'◷':ok?'✓':'✗'}</span><div><b>№${i+1} · ${esc(row?taskLabel(row):'Задание')}</b>${row?`<p>${fmtText(row[6].slice(0,220))}</p>`:''}<p style="white-space:pre-wrap">Твой ответ: ${esc(value||'—')}</p>${empty?'<p>Без ответа</p>':ok===null?'<p>Ожидает проверки преподавателя</p>':ok||!row?'':`<p>Ответ: ${esc(row[4])}</p>`}${row?.[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Разбор ↗</a>`:''}</div></div>`;
+ const answers=(run.res||[]).map(([id,value,ok])=>({id,value,state:!String(value||'').trim()?'empty':ok===null?'pending':ok?'correct':'error'}));
+ const counts={correct:0,error:0,empty:0,pending:0};
+ for(const answer of answers)counts[answer.state]++;
+ const stats=OgeCore.summary(run.res||[]);
+ const msg=`${run.name||myName||'Ученик'}: ${run.title}. Автопроверка: ${stats.correct}/${stats.automatic}. На проверке у преподавателя: ${stats.pending}. Пропущено: ${counts.empty}. Время ${fmtTime(run.dur)}.\nКод результата: ${run.code}`;
+ V.innerHTML=`<section class="view study-result"><div class="hero"><h1 tabindex="-1">${esc(run.title)}</h1><p class="lead">Автопроверка: <b>${stats.correct} из ${stats.automatic}</b></p></div>
+ <dl class="result-overview">${Object.entries(resultStates).map(([state,{label,symbol}])=>`<div class="result-${state}"><dt><span aria-hidden="true">${symbol}</span>${label}</dt><dd>${counts[state]}</dd></div>`).join('')}</dl>
+ <div class="panel result-share"><h2>Отправь преподавателю</h2><p>${run.persistError?'Браузер не сохранил результат. Скопируй сообщение сейчас.':'Скопируй сообщение и приложи фотографии бумажных решений.'}</p><textarea id="msg" rows="4" aria-label="Сообщение преподавателю" readonly>${esc(msg)}</textarea><button class="btn primary" id="cp">Скопировать сообщение</button></div>
+ <div class="rlist">${answers.map(({id,value,state},i)=>{
+  const row=byId[id], {label,symbol}=resultStates[state];
+  return `<article class="ri result-${state}"><div class="result-card-heading"><b>№${i+1} · ${esc(row?taskLabel(row):'Задание')}</b><span class="result-status"><span aria-hidden="true">${symbol}</span>${label}</span></div>${row?`<p>${fmtText(row[6].slice(0,220))}</p>`:''}${state==='empty'?'':`<p class="result-answer">Твой ответ: ${esc(value)}</p>`}${state==='error'&&row?`<p>Правильный ответ: ${esc(row[4])}</p>`:''}${row?.[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Разбор ↗</a>`:''}</article>`;
  }).join('')}</div>
  <div class="study-actions"><button class="btn" id="again">${run.kind==='hw'?'К домашкам':'Новый вариант'}</button><button class="btn" id="toprog">Мой прогресс</button></div></section>`;
  V.querySelector('#cp').onclick=()=>copy(msg,V.querySelector('#msg'));
