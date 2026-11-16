@@ -37,8 +37,8 @@ async function mount(payload){
  window.__OGE_TEACHER_BANK=await includeOpenPractice(payload.bank);
  document.body.innerHTML=payload.body;mounted=true;
  for(const script of payload.scripts)await appendScript(script);
- const exit=document.createElement('button');exit.id='teacher-signout';exit.type='button';exit.textContent='Выйти из кабинета';exit.onclick=()=>{if(parent!==window)parent.postMessage({type:'teacher-logout'},location.origin);sessionClear();location.reload();};(document.querySelector('.teacher-header')||document.querySelector('.topbar')||document.body).appendChild(exit);
- if(document.getElementById('teacher-view')) {
+ const exit=document.createElement('button');exit.id='teacher-signout';exit.type='button';exit.textContent='Выйти из кабинета';exit.onclick=()=>{if(parent!==window)parent.postMessage({type:'teacher-logout'},location.origin);sessionClear();location.reload();};(document.getElementById('teacher-session-actions')||document.querySelector('.teacher-header')||document.querySelector('.topbar')||document.body).appendChild(exit);
+ if(document.getElementById('teacher-view')&&!document.querySelector('.teacher-app--compact')) {
   document.body.classList.add('teacher-interface');
   await appendScript({src:'teacher-interface.js?v=interface-1'}).catch(()=>{});
  }

@@ -266,9 +266,59 @@ async function checkTeacher(browser,base,bank,source) {
     const teacher=await context.newPage();
     teacher.on('pageerror',error=>errors.push(error.message));
     await login(teacher);
+    await teacher.locator('.lesson-tile').first().waitFor();
+    assert.equal(await teacher.locator('.cabinet-nav a').count(),3);
+    assert.equal(await teacher.locator('.lesson-tile').count(),56);
+    assert.equal(await teacher.locator('script[src*="frog-helper.js"],.teacher-sidebar').count(),0);
+    await teacher.locator('.lesson-tile').first().focus();
+    await teacher.keyboard.press('Tab');
+    assert.ok(await teacher.locator('.lesson-tile').nth(1).evaluate(element=>
+      element===document.activeElement&&getComputedStyle(element).outlineStyle!=='none'));
+    await teacher.emulateMedia({reducedMotion:'reduce'});
+    assert.equal(await teacher.locator('.lesson-tile').first().evaluate(element=>getComputedStyle(element).transitionDuration),'0s');
+    await teacher.emulateMedia({reducedMotion:'no-preference'});
+    await teacher.locator('.cabinet-menu summary').click();
+    await teacher.locator('#open-cabinet-bank').click();
+    assert.match(teacher.url(),/view=lesson&lesson=2&step=practice/);
+    assert.equal(await teacher.locator('#task-source').inputValue(),'bank');
+    await teacher.locator('[data-area="lessons"]').click();
+    const fits=async page=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    const widths=[390,768,1440];
+    for(const width of widths){
+      await teacher.setViewportSize({width,height:900});await fits(teacher);
+    }
+    await teacher.locator('[data-area="students"]').click();
     await teacher.locator('#add-student').click();
     await teacher.locator('#new-name').fill(studentName);
     await teacher.locator('#profile-form button[type="submit"]').click();
+    const firstProfile=await teacher.locator('#student').inputValue();
+    await teacher.locator('[data-area="lessons"]').click();
+    await teacher.locator('.lesson-tile[data-lesson="2"]').click();
+    assert.match(teacher.url(),/view=lesson&lesson=2/);
+    await teacher.locator('#mark-lesson-done').click();
+    await teacher.getByText('Заметки и материалы',{exact:true}).click();
+    await teacher.locator('#lesson-note').fill('Вымышленная заметка о занятии');
+    await teacher.goBack();
+    assert.equal(await teacher.locator('.lesson-tile[data-lesson="2"] [data-status=done]').count(),1);
+    await teacher.goForward();
+    assert.equal(await teacher.locator('#mark-lesson-done').getAttribute('aria-pressed'),'true');
+    await teacher.reload();
+    await teacher.locator('#mark-lesson-done').waitFor();
+    assert.equal(await teacher.locator('#mark-lesson-done').getAttribute('aria-pressed'),'true');
+    await teacher.locator('[data-area="students"]').click();
+    assert.match(await teacher.locator('.completed-lessons').innerText(),/Вымышленная заметка/);
+    await teacher.locator('#student').selectOption({index:0});
+    assert.equal(await teacher.locator('.completed-lessons').count(),0);
+    await teacher.locator('#student').selectOption(firstProfile);
+    assert.equal(await teacher.locator('.completed-lessons li').count(),1);
+    assert.match(teacher.url(),/view=students/);
+    for(const width of widths){
+      await teacher.setViewportSize({width,height:900});await fits(teacher);
+    }
+    await teacher.locator('.completed-lessons a').click();
+    for(const width of widths){
+      await teacher.setViewportSize({width,height:900});await fits(teacher);
+    }
     await teacher.locator('[data-step="homework"]').first().click();
     await teacher.locator('#homework-preset option').nth(1).waitFor({state:'attached'});
     await teacher.locator('#homework-preset').selectOption('0');
@@ -296,7 +346,12 @@ async function checkTeacher(browser,base,bank,source) {
     assert.match(await teacher.locator('.review-preview').innerText(),new RegExp(studentName));
     await teacher.locator('#accept-result').click();
     assert.equal(await teacher.locator('#student').inputValue(),assigned);
-    assert.match(await teacher.locator('#review-tools').locator('..').innerText(),/Верно: 1 · Ошибки: 1 · Ожидают проверки: 1/);
+    assert.match(await teacher.locator('.review-summary').innerText(),/Верно: 1 · Ошибки: 1 · Ожидают проверки: 1/);
+    assert.match(teacher.url(),/view=review&work=/);
+    for(const width of widths){
+      await teacher.setViewportSize({width,height:900});await fits(teacher);
+    }
+    await teacher.getByText('Отправить разбор или собрать разминку',{exact:true}).click();
     await teacher.locator('#build-warmup').click();
     assert.match(await teacher.locator('#warmup-plan').innerText(),/Разминка на 5–10 минут/);
     await teacher.locator('#copy-feedback').click();
@@ -307,9 +362,9 @@ async function checkTeacher(browser,base,bank,source) {
     await teacher.locator('#open-existing-result').click();
     assert.equal(await teacher.locator('#review-select option').count(),1);
     const reviewedId=await teacher.locator('#review-select').inputValue();
-    await teacher.locator('[data-area="lesson"]').click();
-    assert.match(await teacher.locator('.teacher-latest').innerText(),/Импульс/);
-    await teacher.getByRole('button',{name:'Открыть разбор',exact:true}).click();
+    await teacher.locator('[data-area="students"]').click();
+    assert.match(await teacher.locator('.student-last-work').innerText(),/Импульс/);
+    await teacher.getByRole('link',{name:'Открыть разбор',exact:true}).click();
     assert.equal(await teacher.locator('#review-select').inputValue(),reviewedId);
 
     await pupil.goto(base+'index.html#set=dynamics');await waitForForm(pupil);
@@ -320,10 +375,11 @@ async function checkTeacher(browser,base,bank,source) {
     assert.ok(await teacher.locator('#accept-result').isDisabled());
     await teacher.locator('#result-student').selectOption(assigned);
     await teacher.locator('#accept-result').click();
-    assert.match(await teacher.locator('#review-tools').locator('..').innerText(),/Верно: 1 · Ошибки: 0/);
+    assert.match(await teacher.locator('.review-summary').innerText(),/Верно: 1 · Ошибки: 0/);
     assert.equal(await teacher.getByText('Неизвестное задание — открой банк',{exact:true}).count(),0);
 
-    await teacher.locator('#course-lesson').selectOption('19');
+    await teacher.locator('[data-area="lessons"]').click();
+    await teacher.locator('.lesson-tile[data-lesson="19"]').click();
     await teacher.locator('[data-step="homework"]').first().click();
     await teacher.locator('#task-source').selectOption('bank');
     await teacher.locator('#bank-block').selectOption('26');
@@ -353,9 +409,9 @@ async function checkTeacher(browser,base,bank,source) {
     await teacher.locator('#read-result').click();
     await teacher.locator('#accept-result').waitFor();
     await teacher.locator('#accept-result').click();
-    assert.match(await teacher.locator('#review-tools').locator('..').innerText(),/Верно: 1 · Ошибки: 0/);
+    assert.match(await teacher.locator('.review-summary').innerText(),/Верно: 1 · Ошибки: 0/);
     async function checkCards(page) {
-      const cards=page.locator('#teacher-view > section > article.review-item');
+      const cards=page.locator('.review-work > article.review-item');
       assert.equal(await cards.count(),expected.length);
       for(let i=0;i<expected.length;i++){
         const card=cards.nth(i), item=expected[i];
@@ -373,11 +429,23 @@ async function checkTeacher(browser,base,bank,source) {
     }
     await checkCards(teacher);
     await teacher.locator('[data-comment]').first().fill('Сохранённый комментарий');
+    await teacher.getByText('Фотографии решений',{exact:true}).click();
+    const photo=await teacher.evaluate(()=>{
+      const canvas=document.createElement('canvas');
+      canvas.width=8;canvas.height=8;
+      canvas.getContext('2d').fillRect(1,1,6,6);
+      return canvas.toDataURL('image/png').split(',')[1];
+    });
+    await teacher.locator('#solution-photo').setInputFiles({
+      name:'test-solution.png',mimeType:'image/png',buffer:Buffer.from(photo,'base64'),
+    });
+    await teacher.getByAltText('test-solution.png').waitFor();
     await teacher.reload();
     await teacher.locator('[data-area="review"]').click();
     await checkCards(teacher);
     assert.equal(await teacher.locator('[data-comment]').first().inputValue(),'Сохранённый комментарий');
-    await teacher.locator('[data-area="storage"]').click();
+    await teacher.locator('[data-area="students"]').click();
+    await teacher.getByText('Данные кабинета',{exact:true}).click();
     const downloadPromise=teacher.waitForEvent('download');
     await teacher.locator('#export-all').click();
     const backupPath=await (await downloadPromise).path();
@@ -396,7 +464,7 @@ async function checkTeacher(browser,base,bank,source) {
       assert.equal(await unresolved.count(),expected.length);
       assert.match(await unresolved.first().innerText(),/Условие не восстановлено|Сверь версию/);
       await clean.locator('#accept-result').click();
-      assert.match(await clean.locator('#teacher-view > section > article.review-item').first().innerText(),/Ответ ученика/);
+      assert.match(await clean.locator('.review-work > article.review-item').first().innerText(),/Ответ ученика/);
       await clean.locator('#result-code').fill(mixedMessage);
       await clean.getByText('Восстановить по исходной ссылке',{exact:true}).click();
       await clean.locator('#recovery-hw').fill(assignmentUrl);
@@ -405,13 +473,16 @@ async function checkTeacher(browser,base,bank,source) {
       await clean.locator('#recovery-hw').fill(heatHomework);
       await clean.locator('#read-result').click();
       await clean.locator('#open-existing-result').click();
-      assert.ok(await clean.locator('#teacher-view > section > article .review-figure').count());
-      await clean.locator('[data-area="storage"]').click();
+      assert.ok(await clean.locator('.review-work > article .review-figure').count());
+      await clean.locator('[data-area="students"]').click();
+      await clean.getByText('Данные кабинета',{exact:true}).click();
       await clean.locator('#import-all').setInputFiles(backupPath);
       await clean.getByText('Копия объединена с текущими записями.',{exact:false}).waitFor();
       await clean.locator('#student').selectOption(assigned);
+      assert.match(await clean.locator('.completed-lessons').innerText(),/Вымышленная заметка/);
       await clean.locator('[data-area="review"]').click();
       await checkCards(clean);
+      await clean.getByAltText('test-solution.png').waitFor();
       assert.equal(await clean.locator('[data-comment]').first().inputValue(),'Сохранённый комментарий');
     } finally {
       await cleanContext.close();
