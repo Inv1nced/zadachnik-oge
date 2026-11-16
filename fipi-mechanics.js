@@ -1,6 +1,7 @@
 'use strict';
 
 const index = window.OGE_FIPI;
+const native = window.OGE_FIPI_NATIVE;
 const params = new URLSearchParams(location.search);
 const sections = [['all', 'Все разделы'], ...index.sections];
 const selected = params.get('section');
@@ -60,12 +61,17 @@ function card(item) {
   description.textContent = 'Блок ' + group.id + ' · ' + group.title + ' · ' + index.formats[item.format];
   const links = document.createElement('div');
   links.className = 'catalog-card-links';
-  const link = document.createElement('a');
-  link.href = practiceUrl(group.id,item.code);
-  link.textContent = 'В задачнике →';
-  links.append(link);
+  const link = (href,label,external=false) => {
+    const anchor=document.createElement('a');
+    anchor.href=href;
+    anchor.textContent=label;
+    if(external){anchor.target='_blank';anchor.rel='noopener'}
+    return anchor;
+  };
+  if(Object.hasOwn(native,item.code))links.append(link(practiceUrl(group.id,item.code),'В задачнике →'));
+  links.append(link(index.officialUrl(item.code),'Оригинал ФИПИ ↗',true));
+  if(item.hasMirror)links.append(link(index.mirrorUrl(item.code),'Копия условия ↗',true));
   card.append(title, description);
-  card.insertAdjacentHTML('beforeend',window.OGE_FIPI_CONDITION.markup(item,code.value.trim().toUpperCase()===item.code));
   card.append(links);
   return card;
 }

@@ -1,6 +1,7 @@
 const LESSONS={"1":["Путь, перемещение, равномерное движение",["v = s / t","x = x₀ + vₓt","1 м/с = 3,6 км/ч","|перемещение| ≤ путь"]],"2":["Урок закрыт",[]],"3":["Урок закрыт",[]],"4":["Урок закрыт",[]],"5":["Урок закрыт",[]],"6":["Урок закрыт",[]],"7":["Урок закрыт",[]],"8":["Урок закрыт",[]],"9":["Урок закрыт",[]],"10":["Урок закрыт",[]],"11":["Урок закрыт",[]],"12":["Урок закрыт",[]],"13":["Урок закрыт",[]],"14":["Урок закрыт",[]],"15":["Урок закрыт",[]],"16":["Урок закрыт",[]],"17":["Урок закрыт",[]],"18":["Урок закрыт",[]],"19":["Урок закрыт",[]],"20":["Урок закрыт",[]],"21":["Урок закрыт",[]],"22":["Урок закрыт",[]],"23":["Урок закрыт",[]],"X":["Урок закрыт",[]]};
 const EXTRA=window.OGE_EXTRA_PHYSICS;
 const FIPI=window.OGE_FIPI;
+const NATIVE_FIPI=window.OGE_FIPI_NATIVE;
 const closedLessons=new Set(Object.keys(LESSONS).filter(l=>l!=='1'));
 const MODULES=[
  {n:"Кинематика",s:"как движутся тела",l:["1","2","3","4","5"]},
@@ -12,6 +13,26 @@ const MODULES=[
 const TYPES={b:"Базовые",m:"Соответствие и утверждения",r:"Развёрнутые",e:"Эксперимент",q:"Качественные и текст"};
 const SRC={F:"ФИПИ",D:"ДЕМО",K:"К-2026",S:"ШКОЛКОВО",A:"АВТОРСКАЯ"};
 const byId={},byL={};
+const nativeBlocks=new Map();
+const nativeBlockId=id=>id==='35'?'34':id==='40'?'41':id;
+const nativeTitles={
+ '34':'Отражение и преломление света',
+ '38':'Альфа- и бета-распад',
+ '41':'Измерения и эксперименты',
+};
+for(const [code,task] of Object.entries(NATIVE_FIPI)){
+ const id=nativeBlockId(task.block);
+ const title=nativeTitles[id]||FIPI.titles[id];
+ if(!nativeBlocks.has(id))nativeBlocks.set(id,{title,rows:[]});
+ const row=[-(0x10000000+parseInt(code,16)),0,id,task.type,task.answer,'F',task.condition,task.images,{fipi:code}];
+ nativeBlocks.get(id).rows.push(row);
+ byId[row[0]]=row;
+}
+for(const block of nativeBlocks.values()){
+ const sorted=Object.keys(TYPES).flatMap(type=>block.rows.filter(row=>row[3]===type));
+ sorted.forEach((row,i)=>row[8].number=i+1);
+ block.rows=sorted;
+}
 function addRows(rows,temp){const ordered=Object.keys(TYPES).flatMap(t=>rows.filter(r=>r[3]===t));const ord=new Map(ordered.map((r,i)=>[r[0],i+1]));rows.forEach(r=>{r[8]={number:ord.get(r[0]),...(r[8]||{})};byId[r[0]]=r;if(!temp){(byL[r[2]]=byL[r[2]]||[]).push(r)}});if(!temp)DATA=DATA.concat(rows)}
 addRows(DATA.splice(0),false);
 Object.assign(LESSONS,EXTRA.lessons);
@@ -57,12 +78,11 @@ function taskLabel(r){return r[8]?.label||`Блок ${r[2]} · №${taskNumber(r
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtText=t=>esc(t).replace(/\[рисунок\]/g,'<span class="pic">рисунок</span>').replace(/\[формула\]/g,'<span class="pic">формула</span>');
 function fmtRow(r){let k=0;const imgs=r[7]||[];let body=r[6];
- if(r[8]?.fipi && /^[A-F0-9]{6}$/.test(r[8].fipi)){
-  const item=FIPI.byCode.get(r[8].fipi);
-  if(item)return window.OGE_FIPI_CONDITION.markup(item,true);
- }
  if([80176,35380,38211].includes(r[0])){body=body.split("|")[0].trim();if(r[0]===35380)body=body.replace("2t2","2t²");body+="\nВ ответе запиши сначала номер изменения "+(r[0]===38211?"модуля скорости, затем — модуля ускорения.":"модуля ускорения, затем — модуля скорости.")}
- return esc(body).replace(/\[рисунок\]/g,()=>{const src=imgs[k++];return src?`<img class="fig" src="${src}" alt="Рисунок к задаче" loading="lazy">`:'<span class="pic">рисунок</span>'}).replace(/\[формула\]/g,'<span class="pic">формула</span>')}
+ if(r[8]?.fipi)body=body.replace(/\n*\[рисунок\]\n*/g,'[рисунок]');
+ const html=esc(body).replace(/\[рисунок\]/g,()=>{const src=imgs[k++];return src?`<img class="fig" src="${src}" alt="Рисунок к задаче" loading="lazy">`:'<span class="pic">рисунок</span>'}).replace(/\[формула\]/g,'<span class="pic">формула</span>');
+ return r[8]?.fipi?html.replace(/\n/g,'<br>'):html;
+}
 const link=r=>`https://3.shkolkovo.online/catalog/${r[1]}/${r[0]}`;
 /* storage */
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -80,26 +100,30 @@ const bankParams=new URLSearchParams(location.search);
 const sectionParam=bankParams.get('section');
 const blockRef=bankParams.get('block');
 const codeParam=(bankParams.get('code')||'').slice(0,32);
-const linkedGroup=FIPI.locateGroup(blockRef,codeParam.toUpperCase());
-const blockParam=FIPI.byGroup.get(blockRef)?.parent||blockRef;
+const codeTask=Object.hasOwn(NATIVE_FIPI,codeParam.toUpperCase())?NATIVE_FIPI[codeParam.toUpperCase()]:null;
+const blockParam=FIPI.byGroup.get(blockRef)?.parent||blockRef||codeTask?.block;
+const nativeBlockParam=nativeBlockId(codeTask?.block||blockParam);
+const requestedSource=bankParams.get('source');
+const routeBlock=requestedSource==='practice'?blockParam:nativeBlockParam;
 const linkedBlock=Object.hasOwn(FIPI.titles,blockParam);
-const linkedModule=linkedBlock
- ? MODULES.findIndex(module=>fipiModuleBlocks(module).includes(blockParam))
+const exactModule=linkedBlock
+ ? MODULES.findIndex(module=>module.l.includes(routeBlock))
  : MODULES.findIndex(module=>module.section===sectionParam);
+const linkedModule=exactModule>=0?exactModule:linkedBlock
+ ? MODULES.findIndex(module=>module.section===FIPI.blockSection(+blockParam))
+ : -1;
 const savedModule=Number(LS.get('mk_mod',0));
 const initialModule=linkedModule>=0?linkedModule:(MODULES[savedModule]?savedModule:0);
 const defaultBankSource=section=>section==="mechanics"?"practice":"fipi";
 const initialSection=MODULES[initialModule].section;
-const requestedSource=bankParams.get('source');
-const fipiOnlyBlock=linkedBlock&&(blockRef!==blockParam||!MODULES[initialModule].l.includes(blockParam));
-const initialSource=initialSection==="methods"||fipiOnlyBlock?"fipi":['fipi','practice'].includes(requestedSource)?requestedSource:defaultBankSource(initialSection);
+const initialSource=initialSection==="mechanics"?"practice":initialSection==="methods"||requestedSource!=="practice"?"fipi":"practice";
 const bank = {
- mod:initialModule, source:initialSource, type:'all', format:'',
+ mod:initialModule, source:initialSource, type:'all',
  q:initialSource==='fipi'?codeParam:'',
- open:new Set(initialSource==='fipi'&&linkedGroup?[linkedGroup.id]:linkedBlock?[blockParam]:[]),
- previewBlock:initialSource==='fipi'?linkedGroup?.id:null, pages:new Map(),
+ open:new Set(linkedBlock?[initialSource==='fipi'?nativeBlockParam:blockParam]:[]),
 };
 let fipiSolved=new Set(LS.get('mk_fipi_solved',[]));
+const nativeSolvedCount=()=>Object.keys(NATIVE_FIPI).filter(code=>fipiSolved.has(code)).length;
 const runs = { test: null, hw: null };
 const drafts = OgeDrafts.store({
  getItem:key=>localStorage.getItem(key), setItem:(key,value)=>localStorage.setItem(key,value), removeItem:key=>localStorage.removeItem(key),
@@ -110,7 +134,7 @@ let boardRequest;
 function loadBoard() {
  if (!boardRequest) boardRequest = new Promise((resolve, reject) => {
   const script = document.createElement('script');
-  script.src = 'task-board.js?v=fipi-in-place';
+  script.src = 'task-board.js?v=native-fipi';
   script.onload = () => resolve(BD);
   script.onerror = () => { script.remove(); boardRequest = null; reject(new Error('Доска не загрузилась. Проверь интернет и попробуй ещё раз.')); };
   document.body.append(script);
@@ -130,11 +154,10 @@ function lessonStats(l){const a=byL[l]||[];return [a.filter(r=>solved.has(r[0]))
 function modStats(m){let s=0,n=0;m.l.forEach(l=>{const [a,b]=lessonStats(l);s+=a;n+=b});return [s,n]}
 function renderBank(){
   const fipi=bank.source==="fipi";
-  const total=fipi?FIPI.byCode.size:Object.values(COUNTS).reduce((sum,count)=>sum+count,0);
+  const total=fipi?Object.keys(NATIVE_FIPI).length:Object.values(COUNTS).reduce((sum,count)=>sum+count,0);
   const section=MODULES[bank.mod].section;
-  const sectionBlocks=MODULES.filter(module=>module.section===section).flatMap(module=>fipi?fipiModuleBlocks(module):module.l);
-  const sectionLessons=fipi?sectionBlocks.flatMap(block=>FIPI.byParent.get(block)||[]):sectionBlocks;
-  const openN=fipi?sectionLessons.length:sectionLessons.filter(isOpen).length;
+  const sectionLessons=MODULES.filter(module=>module.section===section).flatMap(module=>module.l);
+  const openN=sectionLessons.filter(id=>fipi?nativeBlocks.has(id):isOpen(id)).length;
   const catalog=section==="mechanics"?"fipi-mechanics.html":`fipi-mechanics.html?section=${section}`;
   const homework=runs.hw && !runs.hw.done ? runs.hw : null;
   V.innerHTML=`<section class="view bank-view">
@@ -142,20 +165,20 @@ function renderBank(){
    <div class="bank-intro"><h1>Задачи по физике</h1>
    <p class="lead">Выбери тему, реши задачу самостоятельно или открой её на доске для разбора.</p></div>
    ${homework?`<aside class="bank-resume"><span>Домашка в процессе</span><strong>${esc(homework.title)}</strong><button class="btn primary" data-continue="hw">Продолжить домашку <span aria-hidden="true">→</span></button></aside>`:
-   `<dl class="bank-overview"><div><dt>${fipi?'Заданий ФИПИ в банке':'Задач в практике'}</dt><dd>${total}</dd></div><div><dt>${fipi?'Блоков в разделе':'Открыто в разделе'}</dt><dd>${openN}${fipi?'':` <span>из ${sectionLessons.length}</span>`}</dd></div><div><dt>Решено задач</dt><dd data-bank-solved>${fipi?fipiSolved.size:solved.size}</dd></div></dl>`}
+   `<dl class="bank-overview"><div><dt>${fipi?'Задач ФИПИ на сайте':'Задач в практике'}</dt><dd>${total}</dd></div><div><dt>${fipi?'Блоков в разделе':'Открыто в разделе'}</dt><dd>${openN}${fipi?'':` <span>из ${sectionLessons.length}</span>`}</dd></div><div><dt>Решено задач</dt><dd data-bank-solved>${fipi?nativeSolvedCount():solved.size}</dd></div></dl>`}
   </div>
   <section class="bank-modules" aria-labelledby="modules-title">
    <div class="bank-section-title"><h2 id="modules-title">Разделы физики</h2><a class="bank-text-link" href="${catalog}">Банк ФИПИ <span aria-hidden="true">↗</span></a></div>
    <div class="bank-topics" id="bank-topics" role="group" aria-label="Разделы физики">${FIPI.sections.map(([id,name])=>`<button class="chip" data-section="${id}" aria-pressed="${section===id}">${name}</button>`).join('')}</div>
-   ${section!=="methods"?`<div class="bank-source" id="bank-source" role="group" aria-label="Источник задач">
+   ${!['mechanics','methods'].includes(section)?`<div class="bank-source" id="bank-source" role="group" aria-label="Источник задач">
     <button class="chip" data-source="fipi" aria-pressed="${fipi}">Задания ФИПИ</button>
     <button class="chip" data-source="practice" aria-pressed="${!fipi}">${section==="mechanics"?"Практика уроков":"Авторская практика"}</button>
    </div>`:''}
    <div class="mods" id="mods">${MODULES.map((module,i)=>{
     if(module.section!==section)return '';
     if(fipi){
-     const tasks=fipiModuleItems(module);
-     const done=tasks.filter(task=>fipiSolved.has(task.code)).length;
+     const tasks=fipiModuleRows(module);
+     const [done]=fipiStats(tasks);
      return `<button class="mod" data-i="${i}" aria-pressed="${i===bank.mod}"><span class="module-symbol" aria-hidden="true"></span><span class="mn">${module.n}</span><span class="ms">${module.s}</span><span class="module-counts"><span>Заданий <b>${tasks.length}</b></span><span data-module-solved>Решено <b>${done}</b></span></span><span class="meter" aria-hidden="true"><i style="width:${tasks.length?done/tasks.length*100:0}%"></i></span></button>`;
     }
     const [done,available]=modStats(module);
@@ -167,9 +190,8 @@ function renderBank(){
    <form class="unlock" id="unlock-form"><label for="uc">Код урока</label><input type="text" id="uc" placeholder="Например, 3-AB12CD" autocomplete="off"><button class="btn" type="submit" id="ub">Открыть урок</button><span id="um" class="t2" role="status"></span></form>
    <div class="bank-resources">${section==="mechanics"?'<a href="forces.html">Силы и векторы</a><a href="grafiki.html">Тренажёр графиков</a>':'<a href="https://3.shkolkovo.online/catalog?SubjectId=33" target="_blank" rel="noopener">Банк Школково ↗</a>'}<button class="btn board" id="freeBd">Чистая доска <span aria-hidden="true">↗</span></button></div>
   </div>
-  <div class="tools"><input type="search" id="bq" aria-label="${fipi?'Поиск по номеру ФИПИ или теме':'Поиск по условию'}" placeholder="${fipi?'Номер ФИПИ или тема':'Найти задачу по условию'}" value="${esc(bank.q)}" autocomplete="off">
-  ${fipi?`<label class="fipi-format">Тип ответа <select id="bank-fipi-format"><option value="">Все типы</option>${Object.entries(FIPI.formats).map(([key,label])=>`<option value="${key}" ${bank.format===key?'selected':''}>${label}</option>`).join('')}</select></label>`:
-   `<div id="bt" style="display:flex;flex-wrap:wrap;gap:6px">${[["all","Все"],...Object.entries(TYPES)].map(([k,v])=>`<button class="chip" data-t="${k}" aria-pressed="${bank.type===k}">${v}</button>`).join("")}</div>`}</div>
+  <div class="tools"><input type="search" id="bq" aria-label="${fipi?'Поиск по условию или номеру ФИПИ':'Поиск по условию'}" placeholder="${fipi?'Условие или номер ФИПИ':'Найти задачу по условию'}" value="${esc(bank.q)}" autocomplete="off">
+   <div id="bt" style="display:flex;flex-wrap:wrap;gap:6px">${[["all","Все"],...Object.entries(TYPES)].map(([k,v])=>`<button class="chip" data-t="${k}" aria-pressed="${bank.type===k}">${v}</button>`).join("")}</div></div>
   <div id="lessons"></div></section>`;
   renderLessons();
   V.querySelector('[data-continue="hw"]')?.addEventListener('click', () => setView('hw'));
@@ -188,146 +210,90 @@ function renderBank(){
    bank.source=b.dataset.source;clearBankFilters();renderBank();
    V.querySelector(`[data-source="${bank.source}"]`).focus({preventScroll:true});
   });
-  V.querySelector("#mods").onclick=e=>{const b=e.target.closest(".mod");if(!b)return;bank.mod=+b.dataset.i;LS.set("mk_mod",bank.mod);V.querySelectorAll(".mod").forEach(x=>x.setAttribute("aria-pressed",x===b));bank.open.clear();bank.pages.clear();renderLessons()};
+  V.querySelector("#mods").onclick=e=>{const b=e.target.closest(".mod");if(!b)return;bank.mod=+b.dataset.i;LS.set("mk_mod",bank.mod);V.querySelectorAll(".mod").forEach(x=>x.setAttribute("aria-pressed",x===b));bank.open.clear();renderLessons()};
   const doUnlock=async()=>{const um=V.querySelector("#um");um.textContent="Проверяю…";um.style.color="";const r=await unlockCode(V.querySelector("#uc").value);if(view!=="bank"||!um.isConnected)return;
     if(r.err){um.textContent=r.err;um.style.color="var(--err)";const u=V.querySelector(".unlock");u.classList.remove("bad");void u.offsetWidth;u.classList.add("bad");return}
     const mi=MODULES.findIndex(m=>m.l.includes(r.l));bank.mod=mi;bank.source="practice";clearBankFilters();LS.set("mk_mod",mi);bank.open=new Set([r.l]);renderBank();toast(r.already?"Этот урок уже открыт":(r.l==="X"?"Бонус открыт!":"Урок "+r.l+" открыт!"));if(!r.already)confetti();
     setTimeout(()=>{const d=V.querySelector(`.lesson[data-l="${r.l}"]`);if(d)d.scrollIntoView({behavior:"smooth",block:"start"})},250)};
   V.querySelector("#unlock-form").onsubmit=e=>{e.preventDefault();doUnlock()};
-  V.querySelector("#bq").oninput=e=>{bank.q=e.target.value.trim();bank.pages.clear();renderLessons()};
-  V.querySelector("#bank-fipi-format")?.addEventListener('change',e=>{bank.format=e.target.value;bank.pages.clear();renderLessons()});
+  V.querySelector("#bq").oninput=e=>{bank.q=e.target.value.trim();renderLessons()};
   V.querySelector("#bt")?.addEventListener('click',e=>{const c=e.target.closest(".chip");if(!c)return;bank.type=c.dataset.t;V.querySelectorAll("#bt .chip").forEach(x=>x.setAttribute("aria-pressed",x===c));renderLessons()});
 }
-function clearBankFilters(){bank.q="";bank.type="all";bank.format="";bank.previewBlock=null;bank.open.clear();bank.pages.clear()}
-function fipiModuleBlocks(module){
- const recap=FIPI.recaps[module.section];
- return recap&&module.l.includes(recap.after)?[...module.l,recap.id]:module.l;
+function clearBankFilters(){
+ bank.q="";
+ bank.type="all";
+ bank.open.clear();
 }
-function fipiModuleItems(module){
- return [...new Set(fipiModuleBlocks(module).flatMap(block=>(FIPI.byParent.get(block)||[]).flatMap(group=>group.items)))];
+function fipiModuleRows(module){
+ return module.l.flatMap(id=>nativeBlocks.get(id)?.rows||[]);
 }
-function fipiBlockStats(block){
- const tasks=FIPI.byGroup.get(block).items;
- return [tasks.filter(task=>fipiSolved.has(task.code)).length,tasks.length];
+function fipiStats(rows){
+ return [rows.filter(row=>fipiSolved.has(row[8].fipi)).length,rows.length];
 }
-function fipiCard(item,block,showCondition){
- const done=fipiSolved.has(item.code);
- return `<li class="task fipi-task${done?' ok':''}" data-fipi-code="${item.code}">
-  <div class="task-top"><strong class="tn">${FIPI.label(block,item.code)}</strong><b class="src F">ФИПИ</b></div>
-  <div class="fipi-task-meta">${FIPI.formats[item.format]}${item.topicCodes.length?' · КЭС '+item.topicCodes.join(', '):''}</div>
-  ${window.OGE_FIPI_CONDITION.markup(item,showCondition)}
-  <div class="tr task-links">
-   <button class="btn small board" data-fipi-act="board">Решить на доске ↗</button>
-   <button class="linkbtn" data-fipi-act="share" aria-label="Скопировать ссылку на ${FIPI.label(block,item.code)}">Ссылка</button>
-   <button class="linkbtn" data-fipi-act="mark" aria-pressed="${done}">${done?'Решено ✓':'Отметить решённой'}</button>
-  </div></li>`;
-}
-function fipiBlockBody(block,items,preview=false){
- const size=12, pages=Math.ceil(items.length/size);
- const page=Math.min(bank.pages.get(block)||0,pages-1);
- const from=page*size;
- return `<ol class="tasks">${items.slice(from,from+size).map((item,i)=>fipiCard(item,block,preview&&i===0)).join('')}</ol>
-  ${pages>1?`<div class="fipi-pagination">
-   <button class="btn small" data-fipi-page="-1" ${page===0?'disabled':''}>← Назад</button>
-   <span class="muted" role="status">${from+1}–${Math.min(from+size,items.length)} из ${items.length}</span>
-   <button class="btn small" data-fipi-page="1" ${page===pages-1?'disabled':''}>Дальше →</button>
-  </div>`:''}`;
+function fipiLessonBody(block,rows){
+ const formulas=EXTRA.lessons[block]?.[1]||[];
+ return groupedTaskCards(rows,formulas);
 }
 function renderFipiLessons(box,module){
  const query=bank.q.toLocaleLowerCase('ru');
- const parents=query?FIPI.sectionBlocks(module.section):fipiModuleBlocks(module);
- const groups=parents.flatMap(block=>FIPI.byParent.get(block)||[]);
- const itemsByBlock=new Map();
- const parts=groups.flatMap(group=>{
-  const block=group.id;
-  const items=group.items.filter(item=>{
-   if(bank.format&&item.format!==bank.format)return false;
-   return !query||item.code.toLowerCase().includes(query)||item.topicCodes.some(code=>code.includes(query))||
-    (group.title+' '+FIPI.titles[group.parent]).toLocaleLowerCase('ru').includes(query);
-  });
-  if(!items.length)return [];
-  itemsByBlock.set(block,items);
-  const [done,total]=fipiBlockStats(block);
-  const open=bank.open.has(block)||!!query||!!bank.format;
-  return `<details class="lesson fipi-lesson" data-fipi-block="${block}" ${open?'open':''}>
-   <summary><span class="ln">БЛОК ${block}</span><span class="lt">${esc(group.title)}<span class="chev">›</span></span>
-   <span class="lm" data-fipi-count title="Решено из всех заданий блока">${done} / ${total}</span></summary>
-   <div class="lb">${open?fipiBlockBody(block,items,bank.previewBlock===block):''}</div></details>`;
- });
- box.innerHTML=parts.join('')||'<div class="panel t2" role="status">В этом разделе нет заданий по выбранным фильтрам.</div>';
+ const blocks=query?MODULES.filter(item=>item.section===module.section).flatMap(item=>item.l):module.l;
+ const visible=new Map();
+ const content=[];
+ for(const id of blocks){
+  const block=nativeBlocks.get(id);
+  if(!block)continue;
+  const rows=block.rows.filter(row=>
+   (bank.type==='all'||bank.type===row[3])&&(!query||
+   row[8].fipi.toLowerCase().includes(query)||row[6].toLocaleLowerCase('ru').includes(query)||
+   block.title.toLocaleLowerCase('ru').includes(query))
+  );
+  if(!rows.length)continue;
+  const [done,total]=fipiStats(block.rows);
+  const open=bank.open.has(id)||!!query||bank.type!=='all';
+  visible.set(id,rows);
+  content.push(`<details class="lesson" data-fipi-block="${id}" ${open?'open':''}>
+   <summary><span class="ln">БЛОК ${id}</span><span class="lt">${esc(block.title)}<span class="chev">›</span></span>
+    <span class="lm"><span class="lmt">${done} / ${total}</span><div class="meter"><i style="width:${done/total*100}%"></i></div></span>
+   </summary><div class="lb">${open?fipiLessonBody(id,rows):''}</div></details>`);
+ }
+ const possible=FIPI.byCode.has(query.toUpperCase());
+ const missing=possible?'У этого номера пока нет условия в задачнике.':'Не нашлось задач по этому фильтру.';
+ const catalog=new URLSearchParams({section:module.section});
+ if(possible)catalog.set('code',query.toUpperCase());
+ box.innerHTML=content.join('')||`<div class="panel t2" role="status">${missing} <a href="fipi-mechanics.html?${esc(catalog.toString())}">Каталог ФИПИ ↗</a></div>`;
  box.querySelectorAll('[data-fipi-block]').forEach(details=>{
-  const block=details.dataset.fipiBlock;
+  const id=details.dataset.fipiBlock;
   details.addEventListener('toggle',()=>{
    if(!details.isConnected)return;
-   if(!details.open){bank.open.delete(block);return}
-   bank.open.add(block);
-   const content=details.querySelector('.lb');
-   if(!content.hasChildNodes()){
-    bank.previewBlock=block;
-    content.innerHTML=fipiBlockBody(block,itemsByBlock.get(block),true);
-   }
+   if(!details.open){bank.open.delete(id);return}
+   bank.open.add(id);
+   const wrapper=details.querySelector('.lb');
+   if(!wrapper.innerHTML)wrapper.innerHTML=fipiLessonBody(id,visible.get(id));
   });
  });
 }
-function refreshFipiProgress(code){
+function refreshFipiProgress(block){
  const overview=V.querySelector('[data-bank-solved]');
- if(overview)overview.textContent=fipiSolved.size;
- V.querySelectorAll('[data-fipi-block]').forEach(details=>{
-  details.querySelector('[data-fipi-count]').textContent=fipiBlockStats(details.dataset.fipiBlock).join(' / ');
- });
+ if(overview)overview.textContent=nativeSolvedCount();
+ const details=V.querySelector(`[data-fipi-block="${block}"]`);
+ if(details){
+  const [done,total]=fipiStats(nativeBlocks.get(block).rows);
+  details.querySelector('.lmt').textContent=`${done} / ${total}`;
+  details.querySelector('.meter i').style.width=`${done/total*100}%`;
+ }
  V.querySelectorAll('#mods .mod').forEach(button=>{
-  const tasks=fipiModuleItems(MODULES[Number(button.dataset.i)]);
-  const done=tasks.filter(task=>fipiSolved.has(task.code)).length;
+  const [done,total]=fipiStats(fipiModuleRows(MODULES[Number(button.dataset.i)]));
   button.querySelector('[data-module-solved] b').textContent=done;
-  button.querySelector('.meter i').style.width=`${tasks.length?done/tasks.length*100:0}%`;
- });
- V.querySelectorAll(`[data-fipi-code="${code}"]`).forEach(card=>{
-  const done=fipiSolved.has(code),button=card.querySelector('[data-fipi-act="mark"]');
-  card.classList.toggle('ok',done);
-  button.setAttribute('aria-pressed',done);
-  button.textContent=done?'Решено ✓':'Отметить решённой';
+  button.querySelector('.meter i').style.width=`${total?done/total*100:0}%`;
  });
 }
-V.addEventListener('click',e=>{
- if(view!=='bank'||bank.source!=='fipi')return;
- const button=e.target.closest('[data-fipi-act],[data-fipi-page]');
- if(!button)return;
- const block=button.closest('[data-fipi-block]').dataset.fipiBlock;
- if(button.hasAttribute('data-fipi-page')){
-  bank.pages.set(block,(bank.pages.get(block)||0)+Number(button.dataset.fipiPage));
-  bank.previewBlock=block;
-  renderLessons();
-  const next=V.querySelector(`[data-fipi-block="${block}"]`);
-  const direction=next.querySelector(`[data-fipi-page="${button.dataset.fipiPage}"]:enabled`);
-  (direction||next.querySelector('summary')).focus({preventScroll:true});
-  next.scrollIntoView({block:'start'});
-  return;
- }
- const code=button.closest('[data-fipi-code]').dataset.fipiCode;
- const item=FIPI.byCode.get(code);
- const group=FIPI.byGroup.get(block);
- if(!item)return;
- if(button.dataset.fipiAct==='mark'){
-  if(fipiSolved.has(code))fipiSolved.delete(code);else fipiSolved.add(code);
-  LS.set('mk_fipi_solved',[...fipiSolved]);
-  refreshFipiProgress(code);
- }
- if(button.dataset.fipiAct==='board'){
-  const row=[`fipi-${code}`,0,block,'q','','F',group.title,[],{fipi:code}];
-  openBoard(row[0],row,FIPI.label(block,code));
- }
- if(button.dataset.fipiAct==='share'){
-  const url=new URL('index.html',location.href);
-  url.search=new URLSearchParams({section:FIPI.blockSection(+group.parent),block,source:'fipi',code});
-  copy(url.href);
- }
-});
 function filtered(l){if(!isOpen(l))return [];const q=bank.q.toLowerCase();return (byL[l]||[]).filter(r=>(bank.type==="all"||r[3]===bank.type)&&(!q||r[6].toLowerCase().includes(q)))}
 function taskCard(row,number){
- const done=solved.has(row[0]);
+ const code=row[8]?.fipi;
+ const done=code?fipiSolved.has(code):solved.has(row[0]);
  const auto=checkable(row);
- return `<li class="task${done?' ok':''}" data-id="${row[0]}">
-  <div class="task-top"><span class="tn">${esc(taskLabel(row))}</span><b class="src ${row[5]}">${SRC[row[5]]}</b></div>
+ return `<li class="task${done?' ok':''}" data-id="${row[0]}"${code?` data-fipi-code="${code}"`:''}>
+  <div class="task-top"><span class="tn">${esc(taskLabel(row))}</span><b class="src ${row[5]}"${code?` title="Условие переоформлено по заданию ФИПИ ${code}"`:''}>${SRC[row[5]]}</b></div>
   <p class="tt">${fmtRow(row)}</p>
   <div class="tr task-controls">
    ${auto?`<span class="ansbox"><input type="text" inputmode="${row[3]==='m'?'text':'decimal'}" placeholder="Ответ" aria-label="Ответ к задаче ${number}" id="a${row[0]}"><button class="btn small" data-act="check">Проверить</button></span>`:''}
@@ -335,7 +301,7 @@ function taskCard(row,number){
    <span class="vslot" role="status"></span>
   </div>
   <div class="tr task-links">
-   ${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}
+   ${code?`<a href="${FIPI.officialUrl(code)}" target="_blank" rel="noopener">ФИПИ ${code} ↗</a>`:row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}
    ${auto||(row[4]&&row[4].length<14)?'<button class="linkbtn" data-act="show">Показать ответ</button>':`<span class="muted">${row[1]?'Ответ — в решении по ссылке':'Разбор с преподавателем'}</span>`}
    <button class="linkbtn" data-act="mark">${done?'Снять отметку':'Отметить решённой'}</button>
   </div>
@@ -348,10 +314,21 @@ function renderLessons(){const box=V.querySelector("#lessons");const m=MODULES[b
  box.innerHTML=parts||`<div class="panel t2">${q||bank.type!=="all"?"Ничего не нашлось в открытых уроках.":"В этом модуле пока нет открытых уроков."}</div>`;
  box.querySelectorAll(".lesson").forEach(d=>d.addEventListener("toggle",()=>{const l=d.dataset.l;if(d.open){bank.open.add(l);const b=d.querySelector(".lb");if(!b.innerHTML)b.innerHTML=lessonBody(l)}else bank.open.delete(l)}));
 }
-function lessonBody(l){const list=filtered(l);let h=`<div class="formulas">${LESSONS[l][1].map(f=>`<span>${esc(l==="4"&&f.startsWith("s =")?f.replace(/^s =/,"Δx ="):f)}</span>`).join("")}${l==="4"?"<p>По оси формулы дают перемещение Δx. Путь s равен |Δx| только без разворота; при развороте сложи пути отдельных участков.</p>":""}</div>`;
- if(EXTRA.lessons[l])h+=`<p class="block-reference"><a class="bank-text-link" href="fipi-mechanics.html?section=${MODULES[bank.mod].section}&amp;block=${l}">Задания ФИПИ по этой теме ↗</a></p>`;
- for(const t of Object.keys(TYPES)){const g=list.filter(r=>r[3]===t);if(!g.length)continue;h+=`<div class="gh">${TYPES[t]} · ${g.length}</div><ol class="tasks">${g.map(r=>taskCard(r,taskNumber(r))).join("")}</ol>`}
- return h||`<p class="t2">Нет задач по фильтру.</p>`}
+function groupedTaskCards(rows,formulas,notes=''){
+ const chips=formulas.length?`<div class="formulas">${formulas.map(f=>`<span>${esc(f)}</span>`).join('')}${notes}</div>`:notes;
+ const cards=Object.entries(TYPES).map(([type,label])=>{
+  const items=rows.filter(row=>row[3]===type);
+  if(!items.length)return '';
+  return `<div class="gh">${label} · ${items.length}</div><ol class="tasks">${items.map(row=>taskCard(row,taskNumber(row))).join('')}</ol>`;
+ }).join('');
+ return chips+cards;
+}
+function lessonBody(l){
+ const formulas=LESSONS[l][1].map(f=>l==="4"&&f.startsWith("s =")?f.replace(/^s =/,"Δx ="):f);
+ const notes=l==="4"?"<p>По оси формулы дают перемещение Δx. Путь s равен |Δx| только без разворота; при развороте сложи пути отдельных участков.</p>":"";
+ const related=EXTRA.lessons[l]?`<p class="block-reference"><a class="bank-text-link" href="fipi-mechanics.html?section=${MODULES[bank.mod].section}&amp;block=${l}">Задания ФИПИ по этой теме ↗</a></p>`:'';
+ return related+groupedTaskCards(filtered(l),formulas,notes);
+}
 function refreshLessonMeta(lesson){
  const overview=V.querySelector('[data-bank-solved]');
  if(overview)overview.textContent=solved.size;
@@ -368,14 +345,62 @@ function refreshLessonMeta(lesson){
  });
 }
 function verdict(li,cls,txt){const v=li.querySelector(".vslot");v.innerHTML=`<span class="verdict ${cls} pop">${txt}</span>`}
-V.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b||view!=="bank")return;const li=b.closest(".task");const id=+li.dataset.id;const r=byId[id];const act=b.dataset.act;
- if(act==="check"){const inp=li.querySelector("input");const val=inp.value;if(!val.trim()){inp.focus();return}const t=tries[id]||[0,0];t[0]++;
-   if(isRight(r,val)){t[1]++;solved.add(id);li.classList.add("ok");verdict(li,"ok","✓ верно");li.querySelector('[data-act="mark"]').textContent="Снять отметку";burst(b)}
-   else{li.classList.remove("bad");void li.offsetWidth;li.classList.add("bad");verdict(li,"no","✗ пока нет")}
-   tries[id]=t;saveAll();refreshLessonMeta(r[2])}
- if(act==="show"){const seen=LS.get("mk_seen_answers",{});seen[id]=Date.now();LS.set("mk_seen_answers",seen);verdict(li,"show","ответ: "+r[4])}
- if(act==="board"){openBoard(id,r,(r[2]==="X"?"Бонус":"Блок "+r[2])+" · задача "+b.dataset.n)}
- if(act==="mark"){if(solved.has(id)){solved.delete(id);li.classList.remove("ok");b.textContent="Отметить решённой"}else{solved.add(id);li.classList.add("ok");b.textContent="Снять отметку"}saveAll();refreshLessonMeta(r[2])}
+V.addEventListener("click",e=>{
+ const button=e.target.closest("[data-act]");
+ if(!button||view!=="bank")return;
+ const card=button.closest(".task");
+ const id=Number(card?.dataset.id), row=byId[id];
+ if(!row)return;
+ const code=row[8]?.fipi;
+ const marks=code?fipiSolved:solved;
+ const markId=code||id;
+ const block=row[2];
+ const saveProgress=()=>{
+  saveAll();
+  if(code){
+   LS.set('mk_fipi_solved',[...fipiSolved]);
+   refreshFipiProgress(block);
+  }else refreshLessonMeta(block);
+ };
+ switch(button.dataset.act){
+  case 'check':{
+   const input=card.querySelector("input");
+   const value=input.value.trim();
+   if(!value){input.focus();return}
+   const attempts=tries[id]||[0,0];
+   attempts[0]++;
+   if(isRight(row,value)){
+    attempts[1]++;marks.add(markId);card.classList.add("ok");
+    verdict(card,"ok","✓ верно");
+    card.querySelector('[data-act="mark"]').textContent="Снять отметку";
+    burst(button);
+   }else{
+    card.classList.remove("bad");void card.offsetWidth;card.classList.add("bad");
+    verdict(card,"no","✗ пока нет");
+   }
+   tries[id]=attempts;
+   saveProgress();
+   break;
+  }
+  case 'show':{
+   const seen=LS.get("mk_seen_answers",{});
+   seen[id]=Date.now();
+   LS.set("mk_seen_answers",seen);
+   verdict(card,"show","ответ: "+esc(row[4]));
+   break;
+  }
+  case 'board':
+   openBoard(code?'fipi-'+code:id,row,(block==="X"?"Бонус":"Блок "+block)+" · задача "+button.dataset.n);
+   break;
+  case 'mark':{
+   const done=!marks.has(markId);
+   if(done)marks.add(markId);else marks.delete(markId);
+   card.classList.toggle("ok",done);
+   button.textContent=done?"Снять отметку":"Отметить решённой";
+   saveProgress();
+   break;
+  }
+ }
 });
 V.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".ansbox input")){e.preventDefault();e.target.parentElement.querySelector('[data-act="check"]').click()}});
 /* ====== TEST ENGINE (test + homework) ====== */

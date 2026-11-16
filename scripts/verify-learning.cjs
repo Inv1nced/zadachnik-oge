@@ -27,10 +27,10 @@ assert.throws(()=>review.locate([teacherStudent],{...submission,ids:[2,1]}),/в�
 assert.throws(()=>codes.result(codes.encode('RES-',{r:[['1','5'],['1','6']]})),/разных заданий/);
 const snapshot=core.snapshotRow([12,34,'7','b','5','F','Condition'],'Блок 7 · №10');assert.deepEqual(snapshot[7],[]);assert.equal(snapshot[8].label,'Блок 7 · №10');
 const c={window:{},btoa:s=>Buffer.from(s,'binary').toString('base64'),unescape,encodeURIComponent};vm.createContext(c);
-for(const file of ['bank/extra-physics.js','bank/fipi-tasks.js','bank/fipi-index.js','fipi-mechanics-data.js']){
+for(const file of ['bank/extra-physics.js','bank/fipi-tasks.js','bank/fipi-index.js','bank/fipi-native.js','fipi-mechanics-data.js']){
  vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
 }
-const {OGE_FIPI:fipi,OGE_FIPI_TASKS:fipiRows,OGE_FIPI_MECHANICS:oldMechanics}=c.window;
+const {OGE_FIPI:fipi,OGE_FIPI_TASKS:fipiRows,OGE_FIPI_NATIVE:native,OGE_FIPI_MECHANICS:oldMechanics}=c.window;
 assert.equal(fipi.byCode.size,fipiRows.length,'Repeated FIPI code');
 assert.ok(fipi.byCode.size>=1506,'Missing FIPI assignments');
 const assignedCodes=new Set([...fipi.byBlock.values()].flatMap(items=>items.map(item=>item.code)));
@@ -49,6 +49,34 @@ assert.equal(heatGroups.reduce((total,group)=>total+group.items.length,0),133);
 assert.ok(fipi.locateGroup('17').items.some(item=>item.blocks.includes('17')),'Old block 17 does not resolve to its assignments');
 assert.ok(fipi.locateGroup('46').items.some(item=>item.blocks.includes('46')),'Old block 46 does not resolve to its assignments');
 console.log(`PASS: ${fipi.byCode.size} distinct FIPI tasks, ${fipi.byGroup.size} blocks of 10–50 tasks.`);
+const nativeCounts=new Map();
+for(const [code,task] of Object.entries(native)){
+ assert.ok(fipi.byCode.get(code)?.blocks.includes(task.block),`FIPI task ${code} has the wrong topic`);
+ assert.ok(task.condition.length>35 && !/<iframe|https:\/\//i.test(task.condition),`Task ${code} needs a local condition`);
+ if(['b','m'].includes(task.type))assert.ok(core.numeric(task.answer),`Invalid key for task ${code}`);
+ assert.equal((task.condition.match(/\[рисунок\]/g)||[]).length,task.images.length,`Missing figure for ${code}`);
+ for(const image of task.images){
+  assert.match(image,/^bank\/figures\/[a-z-]+\.svg$/);
+  assert.ok(fs.existsSync(image),`Missing local image ${image}`);
+ }
+ const block=({'35':'34','40':'41'})[task.block]||task.block;
+ nativeCounts.set(block,(nativeCounts.get(block)||0)+1);
+}
+assert.ok(nativeCounts.size>=16);
+for(const [block,count] of nativeCounts)assert.ok(count>=10&&count<=50,`Native block ${block} has ${count} tasks`);
+assert.equal(Number(native['325B62'].answer),8000/400/10);
+assert.equal(Number(native['AFFC36'].answer),0.2*2300000/1000);
+assert.ok(Math.abs(Number(native['1D15CF'].answer)-3.6e-15/1.6e-19/1000)<1e-8);
+assert.equal(Number(native['8CEE80'].answer),9/4);
+assert.equal(Number(native['5FF3B9'].answer),900000/(3*60*5**2));
+assert.equal(Number(native['D27B09'].answer),90-150/2);
+assert.equal(Number(native['EF05FF'].answer),224-2*4);
+assert.equal(Number(native['579C59'].answer),235+1-141-92);
+assert.equal(native['7C16CA'].answer,'32');
+assert.equal(native['F74FFB'].answer,'52 °C');
+assert.equal(native['485DFD'].answer,'12,5 Вт');
+assert.equal(native['6E8FB0'].answer,'2475');
+console.log(`PASS: ${Object.keys(native).length} full FIPI cards in ${nativeCounts.size} blocks on local data.`);
 const privateRoot=process.env.OGE_PRIVATE_SOURCE||'../site-private-source';
 const sourcePath=require('node:path');
 assert.ok(!fs.readFileSync('teach.html','utf8').includes('teacher-view'),'Locked page must not contain classroom UI');

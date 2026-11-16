@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 235" role="img" aria-labelledby="title desc">
+  <title id="title">Колба с узкой трубкой в горячей воде</title>
+  <desc id="desc">Круглая колба помещена в ванну с горячей водой. Стрелкой обозначено повышение уровня жидкости в трубке при нагревании.</desc>
+  <rect width="430" height="235" fill="#f7fafc"/>
+  <path d="M39 112H264V208H39Z" fill="#cfe9fa"/>
+  <path d="M39 86v122h225V86" fill="none" stroke="#17334c" stroke-width="3" stroke-linecap="round"/>
+  <path d="M39 112H264" stroke="#5289a7" stroke-width="2" stroke-dasharray="5 4"/>
+  <path d="M138 21h19v85a42 42 0 1 1-19 0Z" fill="#fff" stroke="#17334c" stroke-width="3"/>
+  <path d="M143 55h9v56a36 36 0 1 1-9 0Z" fill="#51a0b9"/>
+  <path d="M169 83V54m-6 6 6-7 6 7" fill="none" stroke="#17334c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M186 66h44" stroke="#17334c" stroke-width="1.5"/>
+  <text x="239" y="71" fill="#17334c" font-size="14" font-family="Arial,sans-serif">уровень поднимается</text>
+  <path d="M247 136h27" stroke="#17334c" stroke-width="1.5"/>
+  <text x="281" y="141" fill="#17334c" font-size="14" font-family="Arial,sans-serif">горячая вода</text>
+</svg>

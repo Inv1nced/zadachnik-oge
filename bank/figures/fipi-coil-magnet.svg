@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 240" role="img" aria-labelledby="title desc">
+ <title id="title">Магнит вдвигают в катушку</title>
+ <desc id="desc">Слева полосовой магнит, стрелка направлена вправо в катушку. Справа катушка подключена к амперметру.</desc>
+ <rect width="430" height="240" fill="#f7fafc"/>
+ <g fill="none" stroke="#17334c" stroke-width="2.5">
+  <path d="M199 156v28h88m46 0h28v-28"/>
+  <circle cx="310" cy="184" r="23" fill="#fff"/>
+  <path d="M142 108h41m-9-8 10 8-10 8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M199 156v-30c0-42 28-42 28 0s-16 42-16 0 43-42 43 0-16 42-16 0 43-42 43 0-16 42-16 0 43-42 43 0-16 42-16 0 43-42 43 0-16 42-16 0 42-42 42 0v30" stroke="#12627e"/>
+ </g>
+ <path d="M30 88h47v41H30Z" fill="#8eb9df"/>
+ <path d="M77 88h47v41H77Z" fill="#ef9c93"/>
+ <path d="M30 88h94v41H30Z" stroke="#17334c" stroke-width="2" fill="none"/>
+ <g fill="#17334c" font-family="Arial,sans-serif" text-anchor="middle">
+  <text x="53" y="115" font-size="17">S</text><text x="101" y="115" font-size="17">N</text>
+  <text x="310" y="192" font-size="19">А</text>
+  <text x="78" y="157" font-size="15">магнит</text>
+  <text x="281" y="70" font-size="15">катушка</text>
+ </g>
+</svg>

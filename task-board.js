@@ -145,7 +145,7 @@ $("bdPng").onclick=()=>{const objs=S.objs;if(!objs.length){toast("Доска п�
 /* ---------- task panel ---------- */
 function placeFig(k){const row=S.row;const src=row&&row[7]&&row[7][k];if(!src)return;const im=new Image();im.onload=()=>{let w=im.naturalWidth,h=im.naturalHeight;const m=Math.min(1,360/w,280/h);w*=m;h*=m;
   const x=S.ox+Math.max(W/S.z-w-40,Math.min(W/S.z/2,480)),y=S.oy+30+S.objs.filter(o=>o.t==="img").length*20;addObj({id:uid(),t:"img",k,x:r1(x),y:r1(y),w:r1(w),h:r1(h)})};im.src=src}
-function setRow(row,label){S.row=row;const t=$("bdTask");t.classList.toggle("fipi-board",!!row?.[8]?.fipi);if(!row){t.hidden=true;$("bdTb").replaceChildren();return}
+function setRow(row,label){S.row=row;const t=$("bdTask");if(!row){t.hidden=true;$("bdTb").replaceChildren();return}
  t.hidden=false;t.classList.remove("min");$("bdTn").textContent=label||("Задача · урок "+row[2]);
  const n=(row[7]||[]).length;$("bdTb").innerHTML=fmtRow(row)+(n?`<div class="bd-tact">${row[7].map((_,k)=>`<button class="bd-chip" data-fig="${k}">⇲ рисунок${n>1?" "+(k+1):""} на доску</button>`).join("")}</div>`:"");}
 $("bdTb").addEventListener("click",e=>{const b=e.target.closest("[data-fig]");if(b)placeFig(+b.dataset.fig)});
@@ -156,7 +156,7 @@ function open(tid,row,label,opts={}){endPtr();commitText();flushSave();endSessio
  $("bdPop").hidden=true;$("bdHint").style.display="";setStatus("solo");syncBar();
  if(!opts.join&&row&&row[7]&&row[7].length&&!S.objs.length)setTimeout(()=>placeFig(0),30);
  dirty=true;if(!opts.join)window.history.replaceState(null,"",location.pathname+location.search)}
-function close(){endPtr();commitText();flushSave();endSession();el.hidden=true;if(S.row?.[8]?.fipi)setRow(null);document.body.classList.remove("bd-open");window.history.replaceState(null,"",location.pathname+location.search);if(typeof render==="function"&&window.__bdRerender)window.__bdRerender()}
+function close(){endPtr();commitText();flushSave();endSession();el.hidden=true;document.body.classList.remove("bd-open");window.history.replaceState(null,"",location.pathname+location.search);if(typeof render==="function"&&window.__bdRerender)window.__bdRerender()}
 window.addEventListener("resize",()=>{if(!el.hidden)resize()});
 if(window.ResizeObserver)new ResizeObserver(()=>{if(!el.hidden)resize()}).observe(main);
 /* мини-клиент MQTT 3.1.1 поверх WebSocket (QoS 0) */
