@@ -2,28 +2,83 @@
 (function (root) {
   'use strict';
 
+  const sameIds=(left,right)=>Array.isArray(left)&&left.length===right.length&&left.every((id,i)=>id===right[i]);
   function locate(students, submission) {
     for (const student of students) {
       const duplicate = student.results.find(result => result.code === submission.code);
       if (duplicate) return { student, duplicate };
+    }
+    for (const student of students) {
       const assignment = submission.assignment && student.assignments.find(item => item.id === submission.assignment);
       if (assignment) {
-        if (assignment.ids.length !== submission.ids.length || assignment.ids.some((id,i) => id !== submission.ids[i])) {
+        if (!sameIds(assignment.ids,submission.ids)) {
           throw new Error('Состав ответа отличается от выданной версии. Попроси ученика скопировать результат ещё раз.');
         }
         return { student, assignment };
       }
     }
-    if (submission.assignment) throw new Error('Этот код относится к выдаче, которой нет в кабинете. Открой её резервную копию.');
     return {};
   }
 
-  function grade(submission, rows) {
+  function taskMap(rows) {
+    return new Map((Array.isArray(rows)?rows:[])
+      .filter(row=>Array.isArray(row)&&Number.isSafeInteger(row[0])&&typeof row[6]==='string'&&row[6].trim())
+      .map(row=>[row[0],row]));
+  }
+
+  async function recoverHomework(text,submission) {
+    if (!text.trim()) return null;
+    const homework=OgeAssignments.homework(text);
+    if (!sameIds(homework.ids,submission.ids) ||
+        (submission.assignment && homework.assignment!==submission.assignment) ||
+        (!submission.assignment && !submission.homeworkHash && homework.title!==submission.title) ||
+        (submission.homeworkHash && await OgeAssignments.homeworkHash(homework.code)!==submission.homeworkHash)) {
+      throw new Error('Исходная ссылка относится к другой версии домашки.');
+    }
+    return homework;
+  }
+
+  function resolve(submission, assignments, bank, recovery) {
+    const exact = submission.assignment && assignments.find(item=>item.id===submission.assignment && sameIds(item.ids,submission.ids));
+    const candidates = submission.assignment ? [] : assignments.filter(item=>
+      sameIds(item.ids,submission.ids) && item.title===submission.title);
+    const stored=taskMap(exact?.rows || (candidates.length===1?candidates[0].rows:null));
+    const recovered=taskMap(recovery?.rows);
+    const uncertain=new Set(), rows=new Map();
+    for (const id of submission.ids) {
+      const row=stored.get(id)||recovered.get(id)||bank.get(id);
+      if (!row) continue;
+      rows.set(id,row);
+      if (!stored.has(id) && !recovered.has(id) &&
+          (submission.assignment || candidates.length>0)) uncertain.add(id);
+    }
+    return {rows,uncertain};
+  }
+
+  function grade(submission, rows, uncertain=new Set()) {
     return submission.ids.map((id,i) => {
       const row = rows.get(id), given = submission.answers[i];
-      const checked = given.trim() && row ? OgeCore.correct(row,given) : null;
-      return { id, given, verdict:checked===null?null:checked?1:0, known:!!row, comment:'' };
+      const checked = given.trim() && row && !uncertain.has(id) ? OgeCore.correct(row,given) : null;
+      return {
+        id, given, verdict:checked===null?null:checked?1:0, known:!!row, comment:'',
+        ...(row?{task:OgeCore.snapshotRow(row)}:{}),
+        ...(uncertain.has(id)?{uncertain:true}:{}),
+      };
     });
+  }
+
+  function cardHTML(item,index,label) {
+    const esc=OgeCore.escapeHtml, row=item.task;
+    let key='Условие не восстановлено. Нужна исходная ссылка или резервная копия.';
+    if (row && item.uncertain) key='Найдено условие из банка. Сверь версию перед проверкой.';
+    else if (row && OgeCore.checkable(row)) key=`Правильный ответ: ${row[4]}`;
+    else if (row) key='Ручная проверка';
+    const solution=row?.[8]?.solution || (row && !OgeCore.checkable(row)?row[4]:'');
+    return `<h3>№${index+1} · ${esc(row?(label||row[8]?.label||`Задание ${item.id}`):`Условие не восстановлено (ID ${item.id})`)}</h3>
+      ${row?`<div class="review-condition">${OgeCore.conditionHTML(row)}</div>`:''}
+      <div class="written"><b>Ответ ученика:</b> ${esc(item.given?.trim()?item.given:'Ответ не заполнен')}</div>
+      <p class="review-key">${esc(key)}</p>
+      ${solution && !item.uncertain?`<details class="teacher-only"><summary>Ориентир для проверки</summary><div>${esc(solution)}</div></details>`:''}`;
   }
 
   function counts(items) {
@@ -31,8 +86,8 @@
     for (const item of items) {
       if (item.verdict === 1) measures.correct++;
       else if (item.verdict === 0) measures.errors++;
+      else if (item.known === false || item.uncertain) measures.unknown++;
       else if (!item.given?.trim()) measures.empty++;
-      else if (item.known === false) measures.unknown++;
       else measures.pending++;
     }
     return measures;
@@ -71,7 +126,7 @@
     return exercises;
   }
 
-  const api = { locate, grade, counts, warmup };
+  const api = { locate, resolve, recoverHomework, taskMap, grade, counts, warmup, cardHTML };
   root.OgeTeacherReview = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window === 'undefined' ? globalThis : window);

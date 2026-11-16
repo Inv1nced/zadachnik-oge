@@ -462,6 +462,7 @@ function tick() {
 const timeLeft = run => Math.max(0, run.limit - Math.floor((Date.now() - run.start) / 1000));
 const fmtTime = seconds => `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
 const answer = (run, id) => run.answers[id] || '';
+const runTask = (run,id) => run.kind==='hw' ? run.taskRows?.[id] : byId[id];
 const savedNotice = run => run.persistError ? 'Браузер не сохранил все ответы. Оставь страницу открытой и скопируй результат после сдачи.' : 'Ответы сохраняются в этом браузере.';
 function syncAnswers(run) {
  try {
@@ -492,7 +493,7 @@ function renderRun(run) {
    <p id="submit-top" class="study-warning" role="status" hidden></p>
   </div>
   <div class="study-questions">${run.ids.map((id,i)=>{
-   const row = byId[id], value = answer(run,id), title = `№${i+1} · ${taskLabel(row)}`;
+   const row = runTask(run,id), value = answer(run,id), title = `№${i+1} · ${taskLabel(row)}`;
    return `<div class="q${value.trim()?' filled':''}" data-id="${id}"><div class="qn">${esc(title)}</div><p class="tt">${fmtRow(row)}</p><div class="tr">${checkable(row)?`<input type="text" inputmode="${row[3]==='m'?'text':'decimal'}" maxlength="150" placeholder="ответ" value="${esc(value)}" aria-label="Ответ к задаче ${i+1}" id="q${id}">`:`<label class="study-written">Решение — проверит преподаватель<textarea rows="4" maxlength="2000" placeholder="Рисунок словами, закон, вычисления и вывод" aria-label="Решение задачи ${i+1}" id="q${id}">${esc(value)}</textarea></label>`}${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}<b class="src ${row[5]}">${SRC[row[5]]}</b></div></div>`;
   }).join('')}</div>
   <p id="submit-bottom" class="study-warning" role="status" hidden></p>
@@ -560,7 +561,7 @@ function finish(run) {
  run.name = myName;
  run.dur = Math.round((Date.now()-run.start)/1000);
  run.res = run.ids.map(id => {
-  const value = answer(run,id), ok = isRight(byId[id],value);
+  const value = answer(run,id), ok = isRight(runTask(run,id),value);
   if (ok !== null && value.trim()) {
    const attempt = tries[id] || [0,0];
    attempt[0]++;
@@ -571,6 +572,7 @@ function finish(run) {
  });
  const stats = OgeCore.summary(run.res);
  run.code = OgeAssignments.encode('RES-', {v:3,n:run.name,k:run.kind,t:run.title,s:run.start,d:run.dur,h:run.assignment||undefined,
+  f:run.kind==='hw'?run.draftId:undefined,
   r:run.res.map(([id,value,ok])=>[id.toString(36),value.slice(0,2000),ok])});
  history = LS.get('mk_hist', history);
  if (!history.some(record => record.code === run.code)) history.unshift({k:run.kind,t:run.title,s:run.start,d:run.dur,sc:stats.correct,n:stats.automatic,pending:stats.pending,code:run.code});
@@ -605,7 +607,7 @@ function renderResult(run) {
  <dl class="result-overview">${Object.entries(resultStates).map(([state,{label,symbol}])=>`<div class="result-${state}"><dt><span aria-hidden="true">${symbol}</span>${label}</dt><dd>${counts[state]}</dd></div>`).join('')}</dl>
  <div class="panel result-share"><h2>Отправь преподавателю</h2><p>${run.persistError?'Браузер не сохранил результат. Скопируй сообщение сейчас.':'Скопируй сообщение и приложи фотографии бумажных решений.'}</p><textarea id="msg" rows="4" aria-label="Сообщение преподавателю" readonly>${esc(msg)}</textarea><button class="btn primary" id="cp">Скопировать сообщение</button></div>
  <div class="rlist">${answers.map(({id,value,state},i)=>{
-  const row=byId[id], {label,symbol}=resultStates[state];
+  const row=runTask(run,id), {label,symbol}=resultStates[state];
   return `<article class="ri result-${state}"><div class="result-card-heading"><b>№${i+1} · ${esc(row?taskLabel(row):'Задание')}</b><span class="result-status"><span aria-hidden="true">${symbol}</span>${label}</span></div>${row?`<p>${fmtText(row[6].slice(0,220))}</p>`:''}${state==='empty'?'':`<p class="result-answer">Твой ответ: ${esc(value)}</p>`}${state==='error'&&row?`<p>Правильный ответ: ${esc(row[4])}</p>`:''}${row?.[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Разбор ↗</a>`:''}</article>`;
  }).join('')}</div>
  <div class="study-actions"><button class="btn" id="again">${run.kind==='hw'?'К домашкам':'Новый вариант'}</button><button class="btn" id="toprog">Мой прогресс</button></div></section>`;
@@ -627,29 +629,37 @@ function leaveRun(run, target) {
  else render();
 }
 function historyReplace() { window.history.replaceState(null,'',location.pathname+location.search); }
-async function parseHomework(text) {
- const hw = OgeAssignments.homework(text);
- const lessons = new Set(hw.keys.map(code=>code.split('-')[0]));
- await Promise.all(hw.keys.map(async code => {
+async function homeworkRows(hw) {
+ const blocks = await Promise.all(hw.keys.map(async code => {
   const l = code.split('-')[0];
-  if (!lockedLesson(l) || isOpen(l)) return;
-  try { addRows((await decryptLesson(l,code)).r,true); }
+  if (!lockedLesson(l) || isOpen(l)) return [];
+  try {
+   const rows=(await decryptLesson(l,code)).r;
+   const ordered=Object.keys(TYPES).flatMap(type=>rows.filter(row=>row[3]===type));
+   return ordered.map((row,i)=>OgeCore.snapshotRow(row,row[8]?.label||`Блок ${l} · №${i+1}`));
+  }
   catch { throw new Error(`Не удалось загрузить блок ${l}. Проверь интернет и попроси преподавателя проверить ссылку.`); }
  }));
- for (const row of hw.rows) byId[row[0]] = row;
- if (hw.ids.some(id => !byId[id] || (id>=-100000 && !isOpen(byId[id][2]) && !lessons.has(byId[id][2])))) {
-  throw new Error('Загрузились не все задания. Попроси преподавателя обновить ссылку.');
- }
- return hw;
+ const supplied=new Map([...blocks.flat(),...hw.rows].map(row=>[row[0],row]));
+ return Object.fromEntries(hw.ids.map((id,i)=>{
+  const bankRow=byId[id];
+  const row=supplied.get(id) || (bankRow&&(isOpen(bankRow[2])||bankRow[8]?.fipi)?bankRow:null);
+  if (!row) throw new Error(`Загрузились не все задания. Задание №${i+1} (ID ${id}) недоступно. Попроси преподавателя проверить ссылку.`);
+  return [id,OgeCore.snapshotRow(row,taskLabel(row))];
+ }));
 }
+let homeworkOpenRequest=0;
 async function openHomework(text) {
- const hw = await parseHomework(text);
- const draftId = await OgeDrafts.homeworkId(hw.code);
+ const request=++homeworkOpenRequest;
+ const hw=OgeAssignments.homework(text);
+ const draftId = await OgeAssignments.homeworkHash(hw.code);
  const legacy = drafts.legacyHomework(hw.code);
  const active = drafts.active('hw');
  const saved = drafts.homework(draftId) || (active?.hw === hw.code ? active : null);
- const run = {kind:'hw',title:hw.title,ids:hw.ids,answers:{},start:legacy?.start||Date.now(),limit:0,done:false,...saved,
-  hw:hw.code,draftId,assignment:hw.assignment,unsaved:{}};
+ const taskRows=hw.ids.every(id=>saved?.taskRows?.[id]?.[0]===id)?saved.taskRows:await homeworkRows(hw);
+ if(request!==homeworkOpenRequest)return null;
+ const run = {kind:'hw',title:hw.title,answers:{},start:legacy?.start||Date.now(),limit:0,done:false,...saved,
+  ids:hw.ids,taskRows,hw:hw.code,draftId,assignment:hw.assignment,unsaved:{}};
  if (!saved && legacy?.answers) run.answers = {...legacy.answers};
  syncAnswers(run);
  runs.hw = run;

@@ -25,6 +25,25 @@ assert.equal(review.locate([{id:'first',results:[],assignments:[]},teacherStuden
 assert.deepEqual(review.counts(review.grade(submission,new Map([[1,row('5')],[2,row('6')]]))),{correct:1,errors:0,pending:0,empty:1,unknown:0});
 assert.throws(()=>review.locate([teacherStudent],{...submission,ids:[2,1]}),/выданной версии/);
 assert.throws(()=>codes.result(codes.encode('RES-',{r:[['1','5'],['1','6']]})),/разных заданий/);
+const historic=[1,0,'1','b','5','F','Полное условие. [рисунок]',['bank/figures/fixture.svg'],{label:'Блок 1 · №1'}];
+const current=[...historic];current[4]='6';
+const legacySubmission={...submission,assignment:'',title:'Вымышленная работа'};
+const oldAssignment={ids:[1,2],rows:[historic],title:legacySubmission.title};
+const resolved=review.resolve(legacySubmission,[oldAssignment],new Map([[1,current]]),null);
+const graded=review.grade(legacySubmission,resolved.rows,resolved.uncertain);
+assert.equal(graded[0].verdict,1);
+assert.equal(graded[1].known,false);
+assert.match(review.cardHTML(graded[0],0),/Полное условие.*<img/);
+assert.match(review.cardHTML(graded[0],0),/Правильный ответ: 5/);
+assert.match(review.cardHTML(graded[1],1),/Условие не восстановлено/);
+const missing=review.resolve(submission,[],new Map([[1,current]]),null);
+assert.equal(review.grade(submission,missing.rows,missing.uncertain)[0].verdict,null);
+assert.equal(review.counts(review.grade(submission,missing.rows,missing.uncertain)).unknown,2);
+assert.match(core.conditionHTML([1,0,'1','b','5','F','[рисунок]',[null]]),/Рисунок отсутствует или повреждён/);
+const fractional=[1,0,'1','b','3.333333','A','Округли до сотых',[],{answerDecimals:2}];
+assert.equal(core.correct(fractional,'3,33'),true);
+assert.equal(core.correct(fractional,'3,333333333'),true);
+assert.equal(core.correct(fractional,'3,34'),false);
 const snapshot=core.snapshotRow([12,34,'7','b','5','F','Condition'],'Блок 7 · №10');assert.deepEqual(snapshot[7],[]);assert.equal(snapshot[8].label,'Блок 7 · №10');
 const c={window:{},btoa:s=>Buffer.from(s,'binary').toString('base64'),unescape,encodeURIComponent};vm.createContext(c);
 for(const file of ['bank/extra-physics.js','bank/fipi-tasks.js','bank/fipi-index.js','bank/fipi-native.js','fipi-mechanics-data.js']){

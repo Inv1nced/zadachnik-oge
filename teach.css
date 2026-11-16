@@ -48,3 +48,5 @@ html[data-theme] .teacher-interface button.primary { background: var(--accent-fi
   .teacher-interface #copy-feedback { min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .teacher-interface #copy-feedback[data-copy-label] { transition: none; } }
+
+.review-condition{overflow-wrap:anywhere}.review-condition .review-figure{margin:8px 0;background:#fff}.review-condition .review-figure[hidden]{display:none}.review-figure-error{font-size:.9em;color:var(--err)}

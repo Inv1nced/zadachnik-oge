@@ -30,7 +30,8 @@ async function mount(payload){
   link.rel='stylesheet';
   const file=href.split('?')[0];
   const filename=file.split('/').at(-1);
-  link.href=['teach.css','site-shell.css'].includes(filename)?file+'?v=interface-1':href;
+  const oldTeacherStyle=filename==='teach.css'&&href===file+'?v=20261116';
+  link.href=(oldTeacherStyle||filename==='site-shell.css')?file+'?v=interface-1':href;
   document.head.appendChild(link);
  }
  window.__OGE_TEACHER_BANK=await includeOpenPractice(payload.bank);

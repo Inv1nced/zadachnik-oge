@@ -45,11 +45,13 @@
     const ids = validateIds(data.i.map(taskId));
     const allowedIds = new Set(ids);
     const rows = data.a || [];
+    const isFigure = root.OgeCore?.isFigure || (typeof require === 'function' && require('./learning-core.js').isFigure);
     if (new Set(rows.map(row => row?.[0])).size !== rows.length || rows.some(row =>
       !Array.isArray(row) || !allowedIds.has(row[0]) || row[0] > -100000 ||
-      typeof row[6] !== 'string' || row[6].length > 10000 || !['b', 'm', 'q', 'r', 'e'].includes(row[3]) || row[5] !== 'A' ||
-      (row[7] != null && (!Array.isArray(row[7]) || row[7].some(img =>
-        typeof img !== 'string' || !/^data:image\/(svg\+xml|png|jpeg);/.test(img) || /["<>]/.test(img)))))) {
+      typeof row[6] !== 'string' || !row[6].trim() || row[6].length > 10000 ||
+      !['b', 'm', 'q', 'r', 'e'].includes(row[3]) || !['A','F'].includes(row[5]) ||
+      (row[5] === 'F' && row[0] > -0x10000000) ||
+      (row[7] != null && (!Array.isArray(row[7]) || row[7].some(img=>!isFigure(img)))))) {
       throw new Error('Повреждено авторское задание или его рисунок.');
     }
     const keys = data.k || [];
@@ -74,11 +76,17 @@
       code, ids, answers: data.r.map(item => String(item[1]).slice(0, 2000)),
       title: String(data.t || 'Работа ученика').slice(0, 160), name: String(data.n || '').slice(0, 50),
       started: Number.isFinite(data.s) ? data.s : null, duration: Number.isFinite(data.d) ? Math.max(0,data.d) : 0, assignment: assignmentId(data.h),
+      homeworkHash: typeof data.f==='string' && /^[a-f0-9]{64}$/.test(data.f) ? data.f : '',
       kind: data.k === 'test' ? 'test' : 'hw',
     };
   }
 
-  const api = { encode, homework, result };
+  async function homeworkHash(code) {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(code));
+    return Array.from(new Uint8Array(digest), octet => octet.toString(16).padStart(2, '0')).join('');
+  }
+
+  const api = { encode, homework, result, homeworkHash };
   root.OgeAssignments = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window === 'undefined' ? globalThis : window);

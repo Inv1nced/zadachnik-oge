@@ -5,6 +5,7 @@ const path = require('node:path');
 const http = require('node:http');
 const os = require('node:os');
 const crypto = require('node:crypto');
+const {encode}=require('../assignment-code.js');
 const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright-core');
 
@@ -204,10 +205,25 @@ async function checkPublic(browser, base) {
   for (const preset of ['impulse','dynamics','friction','ratio']) {
     await source.goto(`index.html#set=${preset}`);
     await source.waitForFunction(name=>runs.hw?.title?.includes(name), {impulse:'Импульс',dynamics:'Диагностика',friction:'Закрепление',ratio:'После блока'}[preset]);
-    const data = await source.evaluate(()=>({rows:Object.values(byId).filter(row=>row[0]>-100000),keys:OgeAssignments.homework(runs.hw.hw).keys}));
+    const data = await source.evaluate(()=>({rows:Object.values(runs.hw.taskRows).filter(row=>row[0]>-100000),keys:OgeAssignments.homework(runs.hw.hw).keys}));
     data.rows.forEach(row=>rows.set(row[0],row));
     data.keys.forEach(key=>{codes[key.split('-')[0]]=key});
   }
+  const versionedId=-199991;
+  const versionedCode=answer=>encode('HW-',{
+    v:2,t:'Вымышленная версия '+answer,i:[versionedId.toString(36)],
+    a:[[versionedId,0,'A1','b',answer,'A','Полное вымышленное условие '+answer,[],{label:'Вымышленная задача'}]],
+  });
+  const separate=await context.newPage();
+  await separate.goto('index.html?workspace=1');
+  const unchanged=await separate.evaluate(async ({first,second,id})=>{
+    const before=await openHomework(first);
+    drafts.write(before,id,'8');
+    await openHomework(second);
+    finish(before);
+    return before.res[0][2];
+  },{first:versionedCode('8'),second:versionedCode('12'),id:versionedId});
+  assert.equal(unchanged,1);
   await context.close();
   console.log('PASS: ready-made homework, old links, multiple tabs, independent test timer, submission, strict grading, mobile boards, graph focus and homework loading after reconnect.');
   return { ALL:[...rows.values()], CODES:codes, LT:{}, MAP:{} };
@@ -221,9 +237,8 @@ function makeTeacherFixture(source, bank) {
     const key=crypto.pbkdf2Sync(password,salt,200000,32,'sha256');
     const cipher=crypto.createCipheriv('aes-256-gcm',key,iv);
     const bytes=Buffer.concat([salt,iv,cipher.update(JSON.stringify(bank)),cipher.final(),cipher.getAuthTag()]);
-    fs.mkdirSync(path.join(fixture,'tutor-plan'));
     fs.writeFileSync(path.join(fixture,'zhurnal.html'),fs.readFileSync(path.join(root,'zhurnal.html'),'utf8').replace(/const ENC="[^"]+"/,`const ENC="${bytes.toString('base64')}"`));
-    execFileSync(process.execPath,[path.join(root,'scripts/protect-teacher.mjs'),source],{cwd:fixture,input:password+'\n'});
+    execFileSync(process.execPath,[path.join(root,'scripts/protect-teacher.mjs'),source,'--workspace-only'],{cwd:fixture,input:password+'\n'});
     return {fixture,password};
   } catch (error) {
     fs.rmSync(fixture,{recursive:true,force:true});throw error;
@@ -233,18 +248,24 @@ function makeTeacherFixture(source, bank) {
 async function checkTeacher(browser,base,bank,source) {
   const {fixture,password}=makeTeacherFixture(source,bank);
   const context=await browser.newContext({baseURL:base,permissions:['clipboard-read','clipboard-write']});
-  try {
-    await context.route('**/zadachnik-oge/**',async route=>{
+  async function useFixture(target) {
+    await target.route('**/zadachnik-oge/**',async route=>{
       const file=new URL(route.request().url()).pathname.slice(prefix.length);
-      if (!['teach.html','teacher-workspace.enc.json','zhurnal.html','tutor-plan/index.html','tutor-plan/teacher-plan.enc.json'].includes(file)) return route.continue();
+      if (!['teach.html','teacher-workspace.enc.json','zhurnal.html'].includes(file)) return route.continue();
       return route.fulfill({path:path.join(fixture,file),contentType:mime[path.extname(file)]});
     });
+  }
+  async function login(page) {
+    await page.goto('teach.html');
+    await page.locator('#teacher-password').fill(password);
+    await page.locator('#teacher-login button').click();
+    await page.locator('#teacher-view').waitFor();
+  }
+  try {
+    await useFixture(context);
     const teacher=await context.newPage();
     teacher.on('pageerror',error=>errors.push(error.message));
-    await teacher.goto('teach.html');
-    await teacher.locator('#teacher-password').fill(password);
-    await teacher.locator('#teacher-login button').click();
-    await teacher.locator('#teacher-view').waitFor();
+    await login(teacher);
     await teacher.locator('#add-student').click();
     await teacher.locator('#new-name').fill(studentName);
     await teacher.locator('#profile-form button[type="submit"]').click();
@@ -317,13 +338,84 @@ async function checkTeacher(browser,base,bank,source) {
     assert.equal(await pupil.locator('.study-questions .q').count(),previousDraftCount+1);
     const heatTask=pupil.locator('.study-questions .q').filter({hasText:'Блок 26 · №1'});
     await heatTask.locator('input').fill('42');
+    await pupil.reload(); await waitForForm(pupil);
+    assert.equal(await heatTask.locator('input').inputValue(),'42');
+    const expected=await pupil.evaluate(()=>runs.hw.ids.map(id=>({
+      given:runs.hw.answers[id]||'',condition:runs.hw.taskRows[id][6],
+      figures:runs.hw.taskRows[id][7]||[],key:runs.hw.taskRows[id][4],
+      automatic:OgeCore.checkable(runs.hw.taskRows[id]),
+    })));
+    assert.ok(expected.some(item=>item.figures.length));
     await pupil.locator('#fin2').click();await pupil.locator('#fin2').click();
+    const mixedMessage=await pupil.locator('#msg').inputValue();
     await teacher.locator('[data-area="review"]').click();
-    await teacher.locator('#result-code').fill(await pupil.locator('#msg').inputValue());
+    await teacher.locator('#result-code').fill(mixedMessage);
     await teacher.locator('#read-result').click();
     await teacher.locator('#accept-result').waitFor();
     await teacher.locator('#accept-result').click();
     assert.match(await teacher.locator('#review-tools').locator('..').innerText(),/Верно: 1 · Ошибки: 0/);
+    async function checkCards(page) {
+      const cards=page.locator('#teacher-view > section > article.review-item');
+      assert.equal(await cards.count(),expected.length);
+      for(let i=0;i<expected.length;i++){
+        const card=cards.nth(i), item=expected[i];
+        assert.equal(await card.locator('.review-condition img').count(),item.figures.length);
+        for(let j=0;j<item.figures.length;j++){
+          const img=card.locator('.review-condition img').nth(j);
+          assert.equal(await img.getAttribute('src'),item.figures[j]);
+          await img.evaluate(image=>image.decode());
+        }
+        const normalize=text=>text.replace(/\s+/g,' ').trim();
+        assert.equal(normalize(await card.locator('.review-condition').innerText()),normalize(item.condition.replace(/\[рисунок\]/g,'')));
+        assert.equal(await card.locator('.review-key').innerText(),item.automatic?'Правильный ответ: '+item.key:'Ручная проверка');
+        assert.equal(await card.locator('.written').innerText(),'Ответ ученика: '+(item.given||'Ответ не заполнен'));
+      }
+    }
+    await checkCards(teacher);
+    await teacher.locator('[data-comment]').first().fill('Сохранённый комментарий');
+    await teacher.reload();
+    await teacher.locator('[data-area="review"]').click();
+    await checkCards(teacher);
+    assert.equal(await teacher.locator('[data-comment]').first().inputValue(),'Сохранённый комментарий');
+    await teacher.locator('[data-area="storage"]').click();
+    const downloadPromise=teacher.waitForEvent('download');
+    await teacher.locator('#export-all').click();
+    const backupPath=await (await downloadPromise).path();
+
+    const cleanContext=await browser.newContext({baseURL:base});
+    try {
+      await useFixture(cleanContext);
+      const clean=await cleanContext.newPage();
+      clean.on('pageerror',error=>errors.push(error.message));
+      await login(clean);
+      await clean.locator('[data-area="review"]').click();
+      await clean.locator('#result-code').fill(mixedMessage);
+      await clean.locator('#read-result').click();
+      await clean.locator('#result-student').selectOption({index:1});
+      const unresolved=clean.locator('.preview-cards article');
+      assert.equal(await unresolved.count(),expected.length);
+      assert.match(await unresolved.first().innerText(),/Условие не восстановлено|Сверь версию/);
+      await clean.locator('#accept-result').click();
+      assert.match(await clean.locator('#teacher-view > section > article.review-item').first().innerText(),/Ответ ученика/);
+      await clean.locator('#result-code').fill(mixedMessage);
+      await clean.getByText('Восстановить по исходной ссылке',{exact:true}).click();
+      await clean.locator('#recovery-hw').fill(assignmentUrl);
+      await clean.locator('#read-result').click();
+      await clean.getByText('Исходная ссылка относится к другой версии домашки.',{exact:true}).waitFor();
+      await clean.locator('#recovery-hw').fill(heatHomework);
+      await clean.locator('#read-result').click();
+      await clean.locator('#open-existing-result').click();
+      assert.ok(await clean.locator('#teacher-view > section > article .review-figure').count());
+      await clean.locator('[data-area="storage"]').click();
+      await clean.locator('#import-all').setInputFiles(backupPath);
+      await clean.getByText('Копия объединена с текущими записями.',{exact:false}).waitFor();
+      await clean.locator('#student').selectOption(assigned);
+      await clean.locator('[data-area="review"]').click();
+      await checkCards(clean);
+      assert.equal(await clean.locator('[data-comment]').first().inputValue(),'Сохранённый комментарий');
+    } finally {
+      await cleanContext.close();
+    }
     await studentCtx.close();
 
     const legacy=await context.newPage();
@@ -332,7 +424,7 @@ async function checkTeacher(browser,base,bank,source) {
     assert.ok(await legacy.evaluate(()=>!localStorage.getItem('jr_pw')&&!!localStorage.getItem('oge-teacher-device-v1')));
     await legacy.locator('#inp').fill(message);await legacy.locator('#chk').click();await legacy.locator('#save').waitFor();
     assert.deepEqual(errors,[]);
-    console.log('PASS: encrypted teacher fixture, assigned-profile matching, legacy preview, duplicate detection, feedback, warmup and old login migration.');
+    console.log('PASS: encrypted teacher fixture, full review cards after reload, original-link recovery, backup restore, legacy preview, duplicate detection and warmup.');
   } finally {
     await context.close();fs.rmSync(fixture,{recursive:true,force:true});
   }

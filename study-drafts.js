@@ -17,8 +17,10 @@
     }
     function save(run) {
       const { persistError, unsaved, ...record } = run;
-      if (run.kind === 'hw') storage.setItem(homeworkKey(run.draftId), JSON.stringify(record));
-      storage.setItem(slot(run.kind), JSON.stringify(record));
+      if (run.kind === 'hw') {
+        storage.setItem(homeworkKey(run.draftId), JSON.stringify(record));
+        storage.setItem(slot(run.kind), JSON.stringify({draftId:run.draftId,kind:run.kind,ids:run.ids,done:run.done}));
+      } else storage.setItem(slot(run.kind), JSON.stringify(record));
     }
     function write(run, id, value) {
       storage.setItem(answerKey(run.draftId, id), value);
@@ -49,12 +51,7 @@
     };
   }
 
-  async function homeworkId(code) {
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(code));
-    return Array.from(new Uint8Array(digest), octet => octet.toString(16).padStart(2, '0')).join('');
-  }
-
-  const api = { store, homeworkId };
+  const api = { store };
   root.OgeDrafts = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window === 'undefined' ? globalThis : window);
