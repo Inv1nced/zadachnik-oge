@@ -34,6 +34,28 @@ async function openPreset(page, landing, quiz, written) {
   assert.equal(await page.locator('.study-questions .q textarea').count(),written);
 }
 
+async function checkStartupLoader(browser,base) {
+  const context=await browser.newContext({baseURL:base,viewport:{width:390,height:844}});
+  try {
+    const page=await context.newPage();
+    await page.route('**/bank/intro.js*',async route=>{
+      await new Promise(resolve=>setTimeout(resolve,550));
+      await route.continue();
+    });
+    await page.goto('index.html',{waitUntil:'commit'});
+    const overlay=page.locator('.physics-lab-overlay');
+    await overlay.waitFor();
+    assert.equal(await overlay.getByRole('img',{name:'Physics Lab.'}).count(),1);
+    assert.equal(await overlay.locator('.physics-lab-progress span').count(),12);
+    assert.equal(await overlay.locator('.physics-lab-orbits').evaluate(node=>getComputedStyle(node).animationName),'physics-lab-orbit');
+    await page.emulateMedia({reducedMotion:'reduce'});
+    assert.equal(await overlay.locator('.physics-lab-orbits').evaluate(node=>getComputedStyle(node).animationName),'none');
+    await overlay.waitFor({state:'detached'});
+    await page.locator('.bank-title, #bank-topics').first().waitFor();
+    await page.goto('index.html?workspace=1');
+    assert.equal(await overlay.count(),0);
+  }finally{await context.close()}
+}
 async function checkPublic(browser, base) {
   const context = await browser.newContext({baseURL:base,viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   const page = await context.newPage();
@@ -246,20 +268,26 @@ function makeTeacherFixture(source, bank) {
 }
 
 async function checkTeacher(browser,base,bank,source) {
-  const {fixture,password}=makeTeacherFixture(source,bank);
+  const expectedCode='16-TEST16';
+  const fixtureBank={...bank,CODES:{...bank.CODES,16:expectedCode},LT:{...bank.LT,16:['Вымышленный блок давления',[]]}};
+  const {fixture,password}=makeTeacherFixture(source,fixtureBank);
   const context=await browser.newContext({baseURL:base,permissions:['clipboard-read','clipboard-write']});
   async function useFixture(target) {
     await target.route('**/zadachnik-oge/**',async route=>{
       const file=new URL(route.request().url()).pathname.slice(prefix.length);
       if (!['teach.html','teacher-workspace.enc.json','zhurnal.html'].includes(file)) return route.continue();
+      if(file==='teacher-workspace.enc.json')await new Promise(resolve=>setTimeout(resolve,250));
       return route.fulfill({path:path.join(fixture,file),contentType:mime[path.extname(file)]});
     });
   }
   async function login(page) {
     await page.goto('teach.html');
+    assert.equal(await page.locator('#block-codes-dialog').count(),0);
     await page.locator('#teacher-password').fill(password);
     await page.locator('#teacher-login button').click();
+    await page.locator('.physics-lab-overlay').waitFor();
     await page.locator('#teacher-view').waitFor();
+    await page.locator('.physics-lab-overlay').waitFor({state:'detached'});
   }
   try {
     await useFixture(context);
@@ -269,6 +297,22 @@ async function checkTeacher(browser,base,bank,source) {
     await teacher.locator('.lesson-tile').first().waitFor();
     assert.equal(await teacher.locator('.cabinet-nav a').count(),3);
     assert.equal(await teacher.locator('.lesson-tile').count(),56);
+    await teacher.locator('.lesson-tile[data-lesson="9"]').click();
+    const lessonCodes=teacher.locator('[data-block-codes=lesson]');
+    await lessonCodes.click();
+    const codesDialog=teacher.locator('#block-codes-dialog');
+    await codesDialog.waitFor();
+    assert.equal(await codesDialog.locator('.block-code-row').count(),2);
+    assert.ok(await codesDialog.getByLabel('Код · Блок 16',{exact:true}).inputValue()===expectedCode);
+    await codesDialog.getByRole('button',{name:'Скопировать код · Блок 16',exact:true}).click();
+    assert.ok(await teacher.evaluate(()=>navigator.clipboard.readText())===expectedCode);
+    await codesDialog.getByRole('button',{name:'Все блоки',exact:true}).click();
+    assert.equal(await codesDialog.getByText('Открыт без кода',{exact:true}).count(),1);
+    assert.ok(await codesDialog.locator('.block-code-row').count()>2);
+    await teacher.keyboard.press('Escape');
+    await codesDialog.waitFor({state:'hidden'});
+    assert.ok(await lessonCodes.evaluate(element=>document.activeElement===element));
+    await teacher.locator('[data-area="lessons"]').click();
     assert.equal(await teacher.locator('script[src*="frog-helper.js"],.teacher-sidebar').count(),0);
     await teacher.locator('.lesson-tile').first().focus();
     await teacher.keyboard.press('Tab');
@@ -279,7 +323,7 @@ async function checkTeacher(browser,base,bank,source) {
     await teacher.emulateMedia({reducedMotion:'no-preference'});
     await teacher.locator('.cabinet-menu summary').click();
     await teacher.locator('#open-cabinet-bank').click();
-    assert.match(teacher.url(),/view=lesson&lesson=2&step=practice/);
+    assert.match(teacher.url(),/view=lesson&lesson=9&step=practice/);
     assert.equal(await teacher.locator('#task-source').inputValue(),'bank');
     await teacher.locator('[data-area="lessons"]').click();
     const fits=async page=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
@@ -507,6 +551,7 @@ async function checkTeacher(browser,base,bank,source) {
   const executablePath=process.env.OGE_CHROME || undefined;
   const browser=await chromium.launch({executablePath});
   try {
+    await checkStartupLoader(browser,base);
     const bank=await checkPublic(browser,base);
     const privateSource=path.resolve(process.env.OGE_PRIVATE_SOURCE||path.join(root,'../site-private-source'));
     if (fs.existsSync(privateSource)) await checkTeacher(browser,base,bank,privateSource);

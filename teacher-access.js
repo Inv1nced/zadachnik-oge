@@ -35,7 +35,8 @@ async function mount(payload){
   document.head.appendChild(link);
  }
  window.__OGE_TEACHER_BANK=await includeOpenPractice(payload.bank);
- document.body.innerHTML=payload.body;mounted=true;
+ root.insertAdjacentHTML('afterend',payload.body);
+ root.remove();mounted=true;
  for(const script of payload.scripts)await appendScript(script);
  const exit=document.createElement('button');exit.id='teacher-signout';exit.type='button';exit.textContent='Выйти из кабинета';exit.onclick=()=>{if(parent!==window)parent.postMessage({type:'teacher-logout'},location.origin);sessionClear();location.reload();};(document.getElementById('teacher-session-actions')||document.querySelector('.teacher-header')||document.querySelector('.topbar')||document.body).appendChild(exit);
  if(document.getElementById('teacher-view')&&!document.querySelector('.teacher-app--compact')) {
@@ -46,19 +47,23 @@ async function mount(payload){
 }
 form.addEventListener('submit',async event=>{
  event.preventDefault();button.disabled=true;error.textContent='Открываю кабинет…';
+ const finish=window.PhysicsLabLoader?.start('Открываем кабинет…',{delay:100,minimum:260});
  try {
   const data=await load(),key=await auth.derive(input.value,data.salt,data.iterations),payload=await decrypt(key,data);
   input.value='';await auth.save(key,data.salt,document.getElementById('teacher-remember').checked);await mount(payload);
  } catch (failure) {
   input.value='';input.focus();error.textContent=failure.message==='load'?'Не удалось загрузить кабинет. Обнови страницу и попробуй снова.':'Пароль не подошёл. Используй пароль журнала репетитора.';button.disabled=false;
- }
+ } finally {finish?.()}
 });
+let finishSavedSession;
 try {
  if(sessionStorage.getItem(SESSION)||localStorage.getItem(DEVICE)){
   button.disabled=true;error.textContent='Открываю кабинет…';
+  finishSavedSession=window.PhysicsLabLoader?.start('Открываем кабинет…',{delay:100,minimum:260});
   const data=await load(),key=await auth.read(data.salt);
   if(!key)throw new Error('session');
   const payload=await decrypt(key,data);await auth.save(key,data.salt);await mount(payload);
  }
 } catch {sessionClear();button.disabled=false;error.textContent='Введи пароль для входа.';}
+finally {finishSavedSession?.()}
 })();

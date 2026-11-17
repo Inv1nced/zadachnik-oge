@@ -1,0 +1,90 @@
+.physics-lab-overlay {
+  --lab-bg: #151722;
+  --lab-panel: #1f2231;
+  --lab-track: #282639;
+  --lab-line: #635389;
+  --lab-text: #eee9fb;
+  --lab-pixel: #c3b2fc;
+  --lab-core: #f1eaff;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  pointer-events: none;
+  color-scheme: dark;
+  background: var(--lab-bg);
+  color: var(--lab-text);
+  font: 13px/1.4 ui-monospace, "JetBrains Mono", monospace;
+}
+.physics-lab-overlay[data-lab-theme=light] {
+  --lab-bg: #f3f3f8;
+  --lab-panel: #fff;
+  --lab-track: #ece6f4;
+  --lab-line: #9785b4;
+  --lab-text: #292037;
+  --lab-pixel: #60438e;
+  --lab-core: #432969;
+  color-scheme: light;
+}
+.physics-lab-window {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 332px);
+  border: 1px solid var(--lab-line);
+  background: var(--lab-panel);
+  box-shadow: 0 12px 36px #140f2324;
+}
+.physics-lab-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 11px;
+  border-bottom: 1px solid var(--lab-line);
+  color: var(--lab-pixel);
+  background: var(--lab-track);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+}
+.physics-lab-indicator { width: 7px; height: 7px; background: var(--lab-pixel); }
+.physics-lab-body { padding: 13px 25px 20px; text-align: center; }
+.physics-lab-body > [role=img] { position: relative; color: var(--lab-pixel); }
+.physics-lab-body > [role=img]::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, transparent 0 3px, var(--lab-panel) 3px 4px);
+  opacity: .24;
+}
+.physics-lab-atom, .physics-lab-wordmark { display: block; margin-inline: auto; fill: currentColor; }
+.physics-lab-atom { width: 96px; height: 96px; }
+.physics-lab-wordmark { width: min(100%, 250px); margin-top: 4px; }
+.physics-lab-orbits {
+  transform-origin: 20px 20px;
+  animation: physics-lab-orbit 4.5s linear infinite;
+}
+.physics-lab-electrons, .physics-lab-nucleus { fill: var(--lab-core); }
+.physics-lab-status { margin: 13px 0 7px; font: inherit; color: var(--lab-text); }
+.physics-lab-progress {
+  display: grid;
+  grid-template-columns: repeat(12,minmax(0,1fr));
+  gap: 3px;
+  height: 14px;
+  padding: 2px;
+  border: 1px solid var(--lab-line);
+}
+.physics-lab-progress span {
+  background: var(--lab-pixel);
+  animation: physics-lab-light .9s ease-in-out infinite alternate;
+}
+.physics-lab-progress span:nth-child(3n+2) { animation-delay: -.3s; }
+.physics-lab-progress span:nth-child(3n) { animation-delay: -.6s; }
+@keyframes physics-lab-orbit { to { transform: rotate(360deg); } }
+@keyframes physics-lab-light { from { opacity: .22; } to { opacity: .79; } }
+@media (prefers-reduced-motion: reduce) {
+  .physics-lab-orbits, .physics-lab-progress span { animation: none; }
+  .physics-lab-progress span:nth-child(n+8) { opacity: .25; }
+}

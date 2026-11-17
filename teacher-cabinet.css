@@ -377,3 +377,55 @@ html[data-theme=light] .teacher-app--compact {
   .teacher-app--compact { background: #fff; color: #000; }
   .teacher-app--compact #teacher-view { width: 100%; padding: 0; }
 }
+
+.cabinet-lesson-links, .lesson-title-actions { justify-content: flex-end; }
+.lesson-title-actions { align-self: end; }
+.block-codes-trigger { padding: 7px 10px; font-size: .85rem; }
+#block-codes-dialog { width: min(560px, calc(100% - 28px)); }
+#block-codes-dialog h2 { font-size: 1.15rem; }
+#block-codes-dialog .dialog-bar { background: var(--panel); }
+.block-codes-content { padding: 5px 16px 15px; }
+.block-codes-content > .muted { padding: 7px 0; font-size: .85rem; }
+.block-codes-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 14px;
+  padding-block: 9px;
+  font-size: .85rem;
+}
+.block-code-list { list-style: none; padding: 0; margin: 0; }
+.block-code-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(92px,113px) auto;
+  align-items: center;
+  gap: 9px;
+  padding-block: 9px;
+  border-bottom: 1px solid var(--line);
+}
+.block-code-row:last-child { border-bottom: 0; }
+.block-code-row + .block-code-row { margin-top: 0; }
+.block-code-name { min-width: 0; overflow-wrap: anywhere; }
+.block-code-name strong, .block-code-name span { display: block; }
+.block-code-name span, .block-code-state { color: var(--muted); font-size: .78rem; }
+.block-code-state { grid-column: 2 / -1; justify-self: end; }
+.block-code-value {
+  min-width: 0;
+  width: 100%;
+  padding: 6px;
+  color: var(--cyan);
+  font: 600 .82rem/1.2 ui-monospace, monospace;
+  text-align: center;
+}
+.block-code-row button { padding: 5px 8px; font-size: .78rem; }
+@media (max-width: 740px) {
+  .lesson-title-actions { justify-content: flex-start; align-self: start; }
+}
+@media (max-width: 455px) {
+  .cabinet-lesson-links { justify-content: flex-start; }
+  .block-code-row { grid-template-columns: minmax(0,1fr) auto; gap: 5px 8px; }
+  .block-code-name { grid-column: 1 / -1; }
+  .block-code-value { width: min(100%,116px); justify-self: start; }
+  .block-code-state { grid-column: 1 / -1; justify-self: start; }
+}
