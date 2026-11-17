@@ -45,7 +45,7 @@ async function checkStartupLoader(browser,base) {
     await page.goto('index.html',{waitUntil:'commit'});
     const overlay=page.locator('.physics-lab-overlay');
     await overlay.waitFor();
-    assert.equal(await overlay.getByRole('img',{name:'Physics Lab.'}).count(),1);
+    assert.equal(await overlay.getByRole('img',{name:'INVARIANT'}).count(),1);
     assert.equal(await overlay.locator('.physics-lab-progress span').count(),12);
     assert.equal(await overlay.locator('.physics-lab-orbits').evaluate(node=>getComputedStyle(node).animationName),'physics-lab-orbit');
     await page.emulateMedia({reducedMotion:'reduce'});

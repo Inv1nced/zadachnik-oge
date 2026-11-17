@@ -10,7 +10,7 @@ addEventListener('pageshow',e=>{if(e.persisted&&mounted){try{if(!sessionStorage.
 addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='teacher-logout'&&[...document.querySelectorAll('iframe')].some(f=>f.contentWindow===e.source)){sessionClear();location.reload()}});
 addEventListener('storage',e=>{if([SESSION,DEVICE].includes(e.key)&&!e.newValue){sessionClear();if(mounted)location.reload()}});
 const sessionClear=()=>auth.clear();
-function appendScript(item){return new Promise((resolve,reject)=>{const script=document.createElement('script');if(item.src){script.src=item.src.includes('site-shell.js')?item.src.replace(/\?.*$/,'')+'?v=20261116':item.src;script.onload=resolve;script.onerror=reject;}else{script.textContent=item.inline;resolve();}document.body.appendChild(script);});}
+function appendScript(item){return new Promise((resolve,reject)=>{const script=document.createElement('script');if(item.src){script.src=item.src.includes('site-shell.js')?item.src.replace(/\?.*$/,'')+'?v=invariant-1':item.src;script.onload=resolve;script.onerror=reject;}else{script.textContent=item.inline;resolve();}document.body.appendChild(script);});}
 function extendBank(bank){
  if(!bank)return null;
  const extra=window.OGE_EXTRA_PHYSICS;
@@ -43,7 +43,7 @@ async function mount(payload){
   link.rel='stylesheet';
   const file=href.split('?')[0];
   const filename=file.split('/').at(-1);
-  const oldTeacherStyle=filename==='teach.css'&&href===file+'?v=20261116';
+  const oldTeacherStyle=filename==='teach.css'&&href===file+'?v=invariant-1';
   link.href=(oldTeacherStyle||filename==='site-shell.css')?file+'?v=interface-1':href;
   document.head.appendChild(link);
  }

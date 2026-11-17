@@ -1,4 +1,4 @@
-# Физика рядом — занятия по ОГЭ
+# INVARIANT — занятия по ОГЭ
 
 Основное рабочее место: [teach.html](https://inv1nced.github.io/zadachnik-oge/teach.html).
 

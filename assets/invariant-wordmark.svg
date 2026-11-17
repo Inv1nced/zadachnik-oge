@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="288" height="38" viewBox="0 0 288 38" role="img" aria-labelledby="title">
+  <title id="title">INVARIANT</title>
+  <style>
+    @media (prefers-reduced-motion: no-preference) {
+      .reflection { animation: sweep 6s linear infinite; }
+    }
+    @keyframes sweep { to { transform: translateX(-144px); } }
+  </style>
+  <defs>
+    <path id="i" d="M1 2h20v5h-6v16h6v5H1v-5h6V7H1Z"/>
+    <path id="n" d="M0 2h8v3h3v3h3v3h3v3h3v3h1V2h8v26h-8v-3h-3v-3h-3v-3h-3v-3H9v-3H8v15H0Z"/>
+    <path id="v" d="M0 2h9v5h2v5h2v5h2v4h2v-4h2v-5h2V7h2V2h9v5h-2v5h-2v5h-2v5h-2v4h-2v2H10v-2H8v-4H6v-5H4v-5H2V7H0Z"/>
+    <path id="a" fill-rule="evenodd" d="M8 8h2V5h2V2h10v3h2v3h2v4h2v4h2v5h2v7h-8v-6H10v6H2v-7h2v-5h2v-4h2Zm6 4v4h6v-4h-2V8h-2v4Z"/>
+    <path id="r" fill-rule="evenodd" d="M0 2h23v2h4v3h2v8h-2v3h-4v2h3v3h3v5H19v-3h-3v-3h-3v-3H8v9H0Zm8 6v5h12v-1h1V9h-1V8Z"/>
+    <path id="t" d="M0 2h29v7H19v19h-9V9H0Z"/>
+    <g id="letters">
+      <use href="#i" x="1"/>
+      <use href="#n" x="26"/>
+      <use href="#v" x="59"/>
+      <use href="#a" x="93"/>
+      <use href="#r" x="128"/>
+      <use href="#i" x="161"/>
+      <use href="#a" x="185"/>
+      <use href="#n" x="220"/>
+      <use href="#t" x="253"/>
+    </g>
+    <mask id="face" maskUnits="userSpaceOnUse" x="0" y="0" width="288" height="38"><use href="#letters" fill="white"/></mask>
+    <linearGradient id="surface" x2="0%" y2="100%">
+      <stop stop-color="#b9c8ff"/>
+      <stop offset=".06" stop-color="#9fb3fb"/>
+      <stop offset=".35" stop-color="#b7c7ff"/>
+      <stop offset=".48" stop-color="#e1e8ff"/>
+      <stop offset=".51" stop-color="#a6b5fa"/>
+      <stop offset=".57" stop-color="#8a9df0"/>
+      <stop offset=".85" stop-color="#9eacf6"/>
+      <stop offset="1" stop-color="#b1acfa"/>
+    </linearGradient>
+    <linearGradient id="depth" x2="0%" y2="100%">
+      <stop stop-color="#626fce"/>
+      <stop offset=".65" stop-color="#495bc4"/>
+      <stop offset="1" stop-color="#344198"/>
+    </linearGradient>
+    <linearGradient id="glint" gradientUnits="userSpaceOnUse" x2="144" y2="0" gradientTransform="skewX(-19)" spreadMethod="repeat">
+      <stop stop-color="#c8c4ff" stop-opacity="0"/>
+      <stop offset=".26" stop-color="#c8c4ff" stop-opacity="0"/>
+      <stop offset=".47" stop-color="#c2f4ff" stop-opacity=".55"/>
+      <stop offset=".59" stop-color="#dcceff" stop-opacity=".38"/>
+      <stop offset=".80" stop-color="#d8c8ff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#d8c8ff" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="pixels" width="4" height="4" patternUnits="userSpaceOnUse">
+      <path d="M0 0h2v2H0Zm2 2h2v2H2Z" fill="#242762" opacity=".38"/>
+    </pattern>
+  </defs>
+  <g shape-rendering="crispEdges">
+    <use href="#letters" x="5" y="9" fill="#262c72" opacity=".7"/>
+    <g fill="url(#depth)">
+      <use href="#letters" x="1" y="2"/>
+      <use href="#letters" x="2" y="4"/>
+      <use href="#letters" x="3" y="6"/>
+      <use href="#letters" x="4" y="8"/>
+    </g>
+    <use href="#letters" x="4" y="8" fill="url(#pixels)"/>
+    <use href="#letters" fill="url(#surface)"/>
+    <g mask="url(#face)">
+      <rect width="448" height="30" fill="url(#glint)" class="reflection"/>
+    </g>
+  </g>
+</svg>

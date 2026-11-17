@@ -2,30 +2,9 @@
   'use strict';
   const entry = document.currentScript;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const pixels = {
-    P: '11110 10001 10001 11110 10000 10000 10000',
-    H: '10001 10001 10001 11111 10001 10001 10001',
-    Y: '10001 10001 01010 00100 00100 00100 00100',
-    S: '01111 10000 10000 01110 00001 00001 11110',
-    I: '11111 00100 00100 00100 00100 00100 11111',
-    C: '01111 10000 10000 10000 10000 10000 01111',
-    L: '10000 10000 10000 10000 10000 10000 11111',
-    A: '01110 10001 10001 11111 10001 10001 10001',
-    B: '11110 10001 10001 11110 10001 10001 11110',
-    '.': '00 00 00 00 00 11 11',
-  };
+  const logoUrl = new URL('assets/invariant-wordmark.svg', entry.src).href;
+  const logoStill = new URL('assets/invariant-wordmark-still.png', entry.src).href;
   const pixel = (x,y) => 'M'+x+' '+y+'h1v1h-1z';
-
-  function wordmark() {
-    let offset=0, path='';
-    for(const letter of 'PHYSICS LAB.'){
-      if(letter===' '){offset+=3;continue;}
-      const lines=pixels[letter].split(' ');
-      lines.forEach((line,y)=>[...line].forEach((bit,x)=>{if(bit==='1')path+=pixel(offset+x,y)}));
-      offset+=lines[0].length+1;
-    }
-    return `<svg class="physics-lab-wordmark" viewBox="0 0 ${offset-1} 7" aria-hidden="true" shape-rendering="crispEdges"><path d="${path}"/></svg>`;
-  }
 
   function orbit(angle) {
     const points=new Set(), cos=Math.cos(angle), sin=Math.sin(angle);
@@ -56,9 +35,9 @@
       overlay.className='physics-lab-overlay';
       overlay.dataset.labTheme=theme();
       overlay.innerHTML=`<section class="physics-lab-window">
-        <div class="physics-lab-titlebar" aria-hidden="true"><span>ФИЗИКА РЯДОМ</span><span class="physics-lab-indicator"></span></div>
+        <div class="physics-lab-titlebar" aria-hidden="true"><span>INVARIANT</span><span class="physics-lab-indicator"></span></div>
         <div class="physics-lab-body">
-          <div role="img" aria-label="Physics Lab.">${atom()}${wordmark()}</div>
+          <div role="img" aria-label="INVARIANT">${atom()}<picture><source media="(prefers-reduced-motion: reduce)" srcset="${logoStill}"><img class="physics-lab-wordmark" src="${logoUrl}" alt="" width="288" height="38"></picture></div>
           <p class="physics-lab-status" role="status"></p>
           <div class="physics-lab-progress" aria-hidden="true">${'<span></span>'.repeat(12)}</div>
         </div>
