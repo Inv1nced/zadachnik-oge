@@ -60,26 +60,11 @@ html[data-theme=light] .teacher-app--compact {
 }
 
 .cabinet-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
+  display: block;
+  width: clamp(160px, 34vw, 220px);
+  max-width: 100%;
   justify-self: start;
-  color: var(--text);
-  font-weight: 710;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.cabinet-brand span {
-  display: grid;
-  place-items: center;
-  width: 27px;
-  height: 27px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--cyan);
-  font-size: 1.2rem;
-  line-height: 1;
+  border-radius: 3px;
 }
 
 .cabinet-nav, .cabinet-controls {
@@ -369,7 +354,6 @@ html[data-theme=light] .teacher-app--compact {
 }
 @media (max-width: 350px) {
   .lesson-grid { grid-template-columns: 1fr; }
-  .cabinet-brand { font-size: .875rem; gap: 5px; }
   .cabinet-nav > a { font-size: .78rem; }
 }
 @media print {

@@ -1,0 +1,65 @@
+.physics-wordmark {
+  --wordmark-light: #eaf0ff;
+  --wordmark-mid: #bac8f7;
+  --wordmark-shade: #a9a2eb;
+  --wordmark-glint: #f0ffff;
+  --wordmark-color: #bba9ff;
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 815 / 52;
+  overflow: hidden;
+}
+
+html[data-theme="light"] .physics-wordmark {
+  --wordmark-light: #4655a9;
+  --wordmark-mid: #333f89;
+  --wordmark-shade: #403174;
+  --wordmark-glint: #696bb8;
+  --wordmark-color: #5148a4;
+}
+
+.physics-wordmark img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+@supports (mask-image: url("assets/physics-near-wordmark.svg")) {
+  .physics-wordmark {
+    background: linear-gradient(156deg, var(--wordmark-mid), var(--wordmark-light) 35%, var(--wordmark-mid) 65%, var(--wordmark-shade));
+    mask: url("assets/physics-near-wordmark.svg") center / contain no-repeat;
+  }
+
+  .physics-wordmark img { opacity: 0; }
+
+  .physics-wordmark::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 32%;
+    background: linear-gradient(109deg, transparent 12%, var(--wordmark-color) 44%, var(--wordmark-glint) 63%, transparent 89%);
+    opacity: .7;
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .physics-wordmark::after {
+      animation: wordmark-glint 1.4s linear .4s;
+    }
+
+    @keyframes wordmark-glint {
+      to { transform: translateX(330%); }
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+    a:hover > .physics-wordmark::after {
+      animation: none;
+      transform: translateX(330%);
+      transition: transform 1.4s linear;
+    }
+  }
+}
