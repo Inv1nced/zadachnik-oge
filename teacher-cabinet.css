@@ -440,3 +440,11 @@ html[data-theme=light] .teacher-app--compact {
 .homework-draft-list .link-button {
   margin-inline-start: .45rem;
 }
+
+.review-tools:has(#homework-preset) {
+  grid-template-columns: minmax(0, 1fr);
+}
+#homework-preset {
+  flex: 1 1 16rem;
+  min-width: 0;
+}

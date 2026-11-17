@@ -23,5 +23,5 @@ function pack({entry,output,bundle,title,styles,scripts,includeBank=false,prefix
 }
 // Core and shell contain no private teaching material.
 const publicScripts=['learning-core.js','assignment-code.js','published-assignments.js','kinematics-test.js','teacher-review.js','homework-selection.js'].map(file=>({src:file+'?v=bank-coverage-1'}));
-pack({entry:'teach.html',output:'teach.html',bundle:'teacher-workspace.enc.json',title:'Вести урок · Физика рядом',styles:['teach.css?v=homework-review-1','teacher-cabinet.css?v=3'],scripts:[...publicScripts,'tutor-plan/plan-data.js','practice-data.js','teach.js'],includeBank:true});
+pack({entry:'teach.html',output:'teach.html',bundle:'teacher-workspace.enc.json',title:'Вести урок · Физика рядом',styles:['teach.css?v=homework-review-1','teacher-cabinet.css?v=4'],scripts:[...publicScripts,'tutor-plan/plan-data.js','practice-data.js','teach.js'],includeBank:true});
 if(!process.argv.includes('--workspace-only'))pack({entry:'tutor-plan/index.html',output:'tutor-plan/index.html',bundle:'tutor-plan/teacher-plan.enc.json',title:'Маршрут к ОГЭ · кабинет репетитора',styles:['style.css','../site-shell.css?v=20261103privacy'],scripts:['tutor-plan/plan-data.js',{inline:'window.__OGE_METHOD_GUIDE_TEXT='+JSON.stringify(read('tutor-plan/method-guide.md'))+';'},'tutor-plan/app.js',{src:'../site-shell.js?v=20261116'}],prefix:'../'});

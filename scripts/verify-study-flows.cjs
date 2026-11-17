@@ -323,6 +323,9 @@ async function checkTeacher(browser,base,bank,source) {
     assert.ok(await lessonCodes.evaluate(element=>document.activeElement===element));
     await teacher.locator('[data-step="homework"]').first().click();
     await teacher.locator('#draft-details summary').click();
+    await teacher.setViewportSize({width:390,height:844});
+    await teacher.waitForFunction(()=>document.querySelector('#homework-preset')?.options.length>1);
+    assert.ok(await teacher.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     const pressureList=teacher.locator('#draft-list');
     assert.equal(await pressureList.locator('li').count(),10);
     assert.match(await pressureList.innerText(),/гидравлический пресс/);
