@@ -61,7 +61,7 @@ html[data-theme=light] .teacher-app--compact {
 
 .cabinet-brand {
   display: block;
-  width: clamp(130px, 24vw, 182px);
+  width: clamp(144px, 25vw, 202px);
   max-width: 100%;
   justify-self: start;
   border-radius: 3px;

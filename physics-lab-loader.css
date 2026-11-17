@@ -61,7 +61,7 @@
 }
 .physics-lab-atom, .physics-lab-wordmark { display: block; margin-inline: auto; fill: currentColor; }
 .physics-lab-atom { width: 96px; height: 96px; }
-.physics-lab-wordmark { width: min(100%, 216px); height: auto; margin-top: 4px; }
+.physics-lab-wordmark { width: min(100%, 238px); height: auto; margin-top: 4px; }
 [data-lab-theme="light"] .physics-lab-wordmark { filter: brightness(.65) saturate(1.24); }
 .physics-lab-orbits {
   transform-origin: 20px 20px;

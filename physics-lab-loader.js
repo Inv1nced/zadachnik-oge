@@ -2,8 +2,8 @@
   'use strict';
   const entry = document.currentScript;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const logoUrl = new URL('assets/invariant-wordmark.svg', entry.src).href;
-  const logoStill = new URL('assets/invariant-wordmark-still.png', entry.src).href;
+  const logoUrl = new URL('assets/invariant-wordmark.svg?v=chrome-1', entry.src).href;
+  const logoStill = new URL('assets/invariant-wordmark-still.png?v=chrome-1', entry.src).href;
   const pixel = (x,y) => 'M'+x+' '+y+'h1v1h-1z';
 
   function orbit(angle) {
@@ -37,7 +37,7 @@
       overlay.innerHTML=`<section class="physics-lab-window">
         <div class="physics-lab-titlebar" aria-hidden="true"><span>INVARIANT</span><span class="physics-lab-indicator"></span></div>
         <div class="physics-lab-body">
-          <div role="img" aria-label="INVARIANT">${atom()}<picture><source media="(prefers-reduced-motion: reduce)" srcset="${logoStill}"><img class="physics-lab-wordmark" src="${logoUrl}" alt="" width="288" height="38"></picture></div>
+          <div role="img" aria-label="INVARIANT">${atom()}<picture><source media="(prefers-reduced-motion: reduce)" srcset="${logoStill}"><img class="physics-lab-wordmark" src="${logoUrl}" alt="" width="333" height="39"></picture></div>
           <p class="physics-lab-status" role="status"></p>
           <div class="physics-lab-progress" aria-hidden="true">${'<span></span>'.repeat(12)}</div>
         </div>
