@@ -73,7 +73,7 @@ async function checkPublic(browser, base) {
 
   // Tasks must work even when the source websites are unavailable.
   await context.route(/https:\/\/(ege-fipi\.ru|oge\.fipi\.ru)\//, route=>route.abort());
-  for (const [section,block] of [['heat','24'],['electricity','29'],['optics','34'],['quantum','37'],['methods','41']]) {
+  for (const [section,block] of [['heat','24'],['electricity','29'],['optics','34'],['quantum','37'],['methods','47']]) {
     await page.locator(`#bank-topics [data-section="${section}"]`).click();
     const lesson=page.locator(`details[data-fipi-block="${block}"]`);
     await lesson.locator('summary').click();
@@ -130,6 +130,15 @@ async function checkPublic(browser, base) {
   await experiment.waitFor();
   assert.match(await experiment.locator('.tt').innerText(),/7,5 см/);
   assert.equal(await experiment.locator('input').count(),0);
+  await page.goto('index.html?block=42');
+  const reading=page.locator('[data-fipi-block="42"] .task').first();
+  await reading.waitFor();
+  assert.match(await reading.locator('.tt').innerText(),/Горная станция/);
+  await reading.locator('img').evaluate(image=>image.decode());
+  await page.goto('index.html?block=40');
+  assert.ok(await page.locator('[data-fipi-block="40"] .task').count()>=12);
+  await page.goto('index.html?block=33&code=EFC1F6');
+  assert.equal(await page.locator('[data-fipi-block="35"] [data-fipi-code="EFC1F6"]').count(),1);
   await page.locator('#bank-topics [data-section="mechanics"]').click();
 
   await openPreset(page,'homework-friction.html',8,2);
@@ -312,6 +321,18 @@ async function checkTeacher(browser,base,bank,source) {
     await teacher.keyboard.press('Escape');
     await codesDialog.waitFor({state:'hidden'});
     assert.ok(await lessonCodes.evaluate(element=>document.activeElement===element));
+    await teacher.locator('[data-step="homework"]').first().click();
+    await teacher.locator('#draft-details summary').click();
+    const pressureList=teacher.locator('#draft-list');
+    assert.equal(await pressureList.locator('li').count(),10);
+    assert.match(await pressureList.innerText(),/гидравлический пресс/);
+    assert.match(await pressureList.innerText(),/прямой расчёт давления|площадь опоры/);
+    assert.doesNotMatch(await pressureList.innerText(),/Повторение графиков/);
+    await pressureList.locator('[data-remove-draft]').last().click();
+    assert.equal(await pressureList.locator('li').count(),9);
+    await teacher.reload();
+    await teacher.locator('#draft-details summary').click();
+    assert.equal(await pressureList.locator('li').count(),9);
     await teacher.locator('[data-area="lessons"]').click();
     assert.equal(await teacher.locator('script[src*="frog-helper.js"],.teacher-sidebar').count(),0);
     await teacher.locator('.lesson-tile').first().focus();
@@ -427,16 +448,22 @@ async function checkTeacher(browser,base,bank,source) {
     await teacher.locator('[data-step="homework"]').first().click();
     await teacher.locator('#task-source').selectOption('bank');
     await teacher.locator('#bank-block').selectOption('26');
-    assert.equal(await teacher.locator('.task-entry').count(),3);
+    assert.equal(await teacher.locator('.task-entry').count(),21);
     assert.match(await teacher.locator('.task-entry').first().innerText(),/Блок 26 · №1/);
-    const previousDraftCount=Number(await teacher.locator('#draft-count').textContent());
-    await teacher.locator('.task-entry [data-pick]').first().check();
-    assert.equal(Number(await teacher.locator('#draft-count').textContent()),previousDraftCount+1);
+    const basicHeat=teacher.locator('.task-entry[data-task="-260001"] [data-pick]');
+    const ohmId=-803001;
+    await basicHeat.uncheck();
+    const withoutBasic=Number(await teacher.locator('#draft-count').textContent());
+    await basicHeat.check();
+    assert.equal(Number(await teacher.locator('#draft-count').textContent()),withoutBasic+1);
+    await teacher.locator('#bank-block').selectOption('30');
+    await teacher.locator(`.task-entry[data-task="${ohmId}"] [data-pick]`).check();
+    const issueCount=Number(await teacher.locator('#draft-count').textContent());
     await teacher.locator('#issue-homework').click();
     const heatHomework=await teacher.locator('#draft-output a').getAttribute('href');
     await pupil.goto(heatHomework); await waitForForm(pupil);
-    assert.equal(await pupil.locator('.study-questions .q').count(),previousDraftCount+1);
-    const heatTask=pupil.locator('.study-questions .q').filter({hasText:'Блок 26 · №1'});
+    assert.equal(await pupil.locator('.study-questions .q').count(),issueCount);
+    const heatTask=pupil.locator('.study-questions .q[data-id="-260001"]');
     await heatTask.locator('input').fill('42');
     await pupil.reload(); await waitForForm(pupil);
     assert.equal(await heatTask.locator('input').inputValue(),'42');

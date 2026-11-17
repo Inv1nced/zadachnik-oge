@@ -3,14 +3,15 @@
 'use strict';
 const norm=v=>String(v??'').trim().replace(/−/g,'-').replace(/,/g,'.');
 const numeric=v=>/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(norm(v))&&Number.isFinite(Number(norm(v)));
-const checkable=r=>!!r&&['b','m'].includes(r[3])&&numeric(r[4]);
+const isTerms=r=>r?.[8]?.format==='terms'||((r?.[3]==='m'||(r?.[2]==='23'&&r[3]==='q'))&&/^\d+$/.test(String(r[4]))&&/пропуск/i.test(r[6]));
+const checkable=r=>!!r&&(['b','m'].includes(r[3])||isTerms(r))&&numeric(r[4]);
 function correct(r,value){
  if(!checkable(r))return null;
  const g=norm(value),a=norm(r[4]);
- if(r[3]==='m'){
+ if(r[3]==='m'||isTerms(r)){
   const digits=String(value??'').trim().replace(/[\s;,]/g,'');
   if(!/^\d+$/.test(digits))return false;
-  const unordered=r[8]?.answerOrder==='any'||(r[1]>=10112&&r[1]<=10116);
+  const unordered=!isTerms(r)&&(r[8]?.answerOrder==='any'||(r[1]>=10112&&r[1]<=10116));
   return unordered?digits.split('').sort().join('')===a.split('').sort().join(''):digits===a;
  }
  if (r[8]?.answerDecimals===2) return numeric(g)&&Number(g).toFixed(2)===Number(a).toFixed(2);
@@ -43,5 +44,5 @@ function markBrokenFigures(container) {
   if(img.complete&&!img.naturalWidth)showError();
  }
 }
-const api={norm,numeric,checkable,correct,summary,snapshotRow,isFigure,conditionHTML,markBrokenFigures,escapeHtml};root.OgeCore=api;if(typeof module!=='undefined')module.exports=api;
+const api={norm,numeric,isTerms,checkable,correct,summary,snapshotRow,isFigure,conditionHTML,markBrokenFigures,escapeHtml};root.OgeCore=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

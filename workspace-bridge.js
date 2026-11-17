@@ -7,7 +7,7 @@
   if(e.origin!==location.origin||e.source!==parent)return;if(e.data?.type==='close-workspace-board'){board?.close();return}if(e.data?.type!=='open-workspace-task')return;
   try{
    const {lessonCode,rowId,customRow,title,studentId}=e.data;
-   if(lessonCode){const l=String(lessonCode).split('-')[0];if(!byId[rowId]){const p=await decryptLesson(l,lessonCode);addRows(p.r,true)}}
+   if(lessonCode){const l=String(lessonCode).split('-')[0];if(!byId[rowId]){const p=await decryptLesson(l,lessonCode);addRows(COVERAGE.numberLegacy(p.r),true)}}
    const row=customRow||byId[rowId];if(!row)throw new Error('Задание не загрузилось');
    board=await loadBoard();
    board.open('student-'+String(studentId||'default').replace(/[^a-z0-9-]/gi,'')+'-'+row[0],row,String(title||taskLabel(row)));

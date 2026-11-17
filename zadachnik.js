@@ -2,6 +2,7 @@ const LESSONS={"1":["Путь, перемещение, равномерное д
 const EXTRA=window.OGE_EXTRA_PHYSICS;
 const FIPI=window.OGE_FIPI;
 const NATIVE_FIPI=window.OGE_FIPI_NATIVE;
+const COVERAGE=window.OgeBlockPractice;
 const closedLessons=new Set(Object.keys(LESSONS).filter(l=>l!=='1'));
 const MODULES=[
  {n:"Кинематика",s:"как движутся тела",l:["1","2","3","4","5"]},
@@ -9,35 +10,43 @@ const MODULES=[
  {n:"Законы сохранения",s:"импульс, работа, энергия",l:["12","13","14","15"]},
  {n:"Давление и Архимед",s:"жидкости, газы, механизмы",l:["16","17","18","19","20"]},
  {n:"Колебания и итог",s:"маятники, звук, повторение",l:["21","22","23","X"]}
-].map(module=>({...module,section:"mechanics"})).concat(EXTRA.modules,FIPI.methodModule);
-const TYPES={b:"Базовые",m:"Соответствие и утверждения",r:"Развёрнутые",e:"Эксперимент",q:"Качественные и текст"};
+].map(module=>({...module,section:"mechanics"})).concat(
+ EXTRA.modules.map(module=>({...module,l:[...module.l,...Object.values(FIPI.recaps).filter(recap=>module.l.includes(recap.after)).map(recap=>recap.id)]})),
+ {...FIPI.methodModule,l:[...FIPI.methodModule.l,'47']},
+);
+const TYPES={b:"Базовые",m:"Соответствие и утверждения",terms:"Заполнение пропусков",r:"Развёрнутые",e:"Эксперимент",q:"Качественные и текст"};
+const taskGroup=row=>OgeCore.isTerms(row)?'terms':row[3];
 const SRC={F:"ФИПИ",D:"ДЕМО",K:"К-2026",S:"ШКОЛКОВО",A:"АВТОРСКАЯ"};
 const byId={},byL={};
-const nativeBlocks=new Map();
-const nativeBlockId=id=>id==='35'?'34':id==='40'?'41':id;
-const nativeTitles={
- '34':'Отражение и преломление света',
- '38':'Альфа- и бета-распад',
- '41':'Измерения и эксперименты',
-};
-for(const [code,task] of Object.entries(NATIVE_FIPI)){
- const id=nativeBlockId(task.block);
- const title=nativeTitles[id]||FIPI.titles[id];
- if(!nativeBlocks.has(id))nativeBlocks.set(id,{title,rows:[]});
- const row=[-(0x10000000+parseInt(code,16)),0,id,task.type,task.answer,'F',task.condition,task.images,{fipi:code}];
- nativeBlocks.get(id).rows.push(row);
+const combinedBlocks=new Map();
+const titleFor=id=>COVERAGE.titles[id]||FIPI.titles[id];
+const nativeRows=COVERAGE.nativeRows(NATIVE_FIPI);
+for(const row of [...nativeRows,...Object.values(COVERAGE.rows).flat().filter(row=>+row[2]>=24)]){
+ const id=row[2];
+ if(!combinedBlocks.has(id))combinedBlocks.set(id,{title:titleFor(id),rows:[]});
+ combinedBlocks.get(id).rows.push(row);
  byId[row[0]]=row;
 }
-for(const block of nativeBlocks.values()){
- const sorted=Object.keys(TYPES).flatMap(type=>block.rows.filter(row=>row[3]===type));
- sorted.forEach((row,i)=>row[8].number=i+1);
- block.rows=sorted;
+for(const block of combinedBlocks.values()){
+ block.rows.sort((a,b)=>Object.keys(TYPES).indexOf(taskGroup(a))-Object.keys(TYPES).indexOf(taskGroup(b)));
 }
-function addRows(rows,temp){const ordered=Object.keys(TYPES).flatMap(t=>rows.filter(r=>r[3]===t));const ord=new Map(ordered.map((r,i)=>[r[0],i+1]));rows.forEach(r=>{r[8]={number:ord.get(r[0]),...(r[8]||{})};byId[r[0]]=r;if(!temp){(byL[r[2]]=byL[r[2]]||[]).push(r)}});if(!temp)DATA=DATA.concat(rows)}
-addRows(DATA.splice(0),false);
+function addRows(rows,temporary=false){
+ for(const row of rows){
+  byId[row[0]]=row;
+  if(!temporary)(byL[row[2]] ||= []).push(row);
+ }
+}
+const publicIntro=COVERAGE.numberLegacy(DATA.splice(0));
+addRows(publicIntro);
 Object.assign(LESSONS,EXTRA.lessons);
+for(const [id,title] of Object.entries(COVERAGE.titles))LESSONS[id]=[title,[]];
 Object.assign(COUNTS,EXTRA.counts);
-Object.values(EXTRA.rows).forEach(rows=>addRows(rows,false));
+for(const [id,rows] of Object.entries(COVERAGE.rows)) {
+ COUNTS[id]=(COUNTS[id]||0)+rows.length;
+}
+COUNTS['8']--;
+for(const rows of Object.values(EXTRA.rows))addRows(rows);
+for(const [id,rows] of Object.entries(COVERAGE.rows)) if(id==='1'||+id>=24)addRows(rows);
 const isOpen=l=>!!byL[l];
 let keys=LS0("mk_keys",{});
 function LS0(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
@@ -64,7 +73,7 @@ async function decryptLesson(l, code) {
 function openLesson(l, data) {
  if (isOpen(l)) return;
  LESSONS[l] = [data.t, data.f];
- addRows(data.r, false);
+ addRows([...COVERAGE.numberLegacy(data.r),...(COVERAGE.rows[l]||[])]);
 }
 const CODE_RE=/(?:^|[^A-Za-z0-9])((?:\d{1,2}|X)-[A-Za-z0-9]{6})(?![A-Za-z0-9])/;
 async function unlockCode(text){const m=String(text).toUpperCase().match(CODE_RE);if(!m)return {err:"Не вижу код — он выглядит так: 3-AB12CD"};const code=m[1];const l=code.split("-")[0];
@@ -73,7 +82,7 @@ async function unlockCode(text){const m=String(text).toUpperCase().match(CODE_RE
 const checkable=OgeCore.checkable;
 const norm=OgeCore.norm;
 const isRight=OgeCore.correct;
-function taskNumber(r){if(r[8]?.label)return r[8].label;if(r[8]?.number)return r[8].number;const rows=(byL[r[2]]||[]);const ordered=Object.keys(TYPES).flatMap(t=>rows.filter(x=>x[3]===t));return ordered.findIndex(x=>x[0]===r[0])+1||"?"}
+function taskNumber(r){return r[8]?.number||r[8]?.label||'?'}
 function taskLabel(r){return r[8]?.label||`Блок ${r[2]} · №${taskNumber(r)}`}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtText=t=>esc(t).replace(/\[рисунок\]/g,'<span class="pic">рисунок</span>').replace(/\[формула\]/g,'<span class="pic">формула</span>');
@@ -81,7 +90,7 @@ function fmtRow(r){let k=0;const imgs=r[7]||[];let body=r[6];
  if([80176,35380,38211].includes(r[0])){body=body.split("|")[0].trim();if(r[0]===35380)body=body.replace("2t2","2t²");body+="\nВ ответе запиши сначала номер изменения "+(r[0]===38211?"модуля скорости, затем — модуля ускорения.":"модуля ускорения, затем — модуля скорости.")}
  if(r[8]?.fipi)body=body.replace(/\n*\[рисунок\]\n*/g,'[рисунок]');
  const html=esc(body).replace(/\[рисунок\]/g,()=>{const src=imgs[k++];return src?`<img class="fig" src="${src}" alt="Рисунок к задаче" loading="lazy">`:'<span class="pic">рисунок</span>'}).replace(/\[формула\]/g,'<span class="pic">формула</span>');
- return r[8]?.fipi?html.replace(/\n/g,'<br>'):html;
+ return r[8]?.fipi||r[8]?.skill?html.replace(/\n/g,'<br>'):html;
 }
 const link=r=>`https://3.shkolkovo.online/catalog/${r[1]}/${r[0]}`;
 /* storage */
@@ -100,12 +109,12 @@ const bankParams=new URLSearchParams(location.search);
 const sectionParam=bankParams.get('section');
 const blockRef=bankParams.get('block');
 const codeParam=(bankParams.get('code')||'').slice(0,32);
-const codeTask=Object.hasOwn(NATIVE_FIPI,codeParam.toUpperCase())?NATIVE_FIPI[codeParam.toUpperCase()]:null;
-const blockParam=FIPI.byGroup.get(blockRef)?.parent||blockRef||codeTask?.block;
-const nativeBlockParam=nativeBlockId(codeTask?.block||blockParam);
+const codeTask=Object.hasOwn(NATIVE_FIPI,codeParam.toUpperCase())?byId[-(0x10000000+parseInt(codeParam,16))]:null;
+const blockParam=FIPI.byGroup.get(blockRef)?.parent||blockRef||codeTask?.[2];
+const nativeBlockParam=codeTask?.[2]||blockParam;
 const requestedSource=bankParams.get('source');
 const routeBlock=requestedSource==='practice'?blockParam:nativeBlockParam;
-const linkedBlock=Object.hasOwn(FIPI.titles,blockParam);
+const linkedBlock=Object.hasOwn(FIPI.titles,blockParam)||Object.hasOwn(COVERAGE.titles,blockParam);
 const exactModule=linkedBlock
  ? MODULES.findIndex(module=>module.l.includes(routeBlock))
  : MODULES.findIndex(module=>module.section===sectionParam);
@@ -123,7 +132,6 @@ const bank = {
  open:new Set(linkedBlock?[initialSource==='fipi'?nativeBlockParam:blockParam]:[]),
 };
 let fipiSolved=new Set(LS.get('mk_fipi_solved',[]));
-const nativeSolvedCount=()=>Object.keys(NATIVE_FIPI).filter(code=>fipiSolved.has(code)).length;
 const runs = { test: null, hw: null };
 const drafts = OgeDrafts.store({
  getItem:key=>localStorage.getItem(key), setItem:(key,value)=>localStorage.setItem(key,value), removeItem:key=>localStorage.removeItem(key),
@@ -150,14 +158,14 @@ function setView(v){view=v;document.querySelectorAll(".tab").forEach(t=>t.setAtt
 document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)});
 function render(){document.body.dataset.frogAssessment=Object.values(runs).some(run => run && !run.done)?"active":"inactive";window.dispatchEvent(new Event("oge-study-state"));({bank:renderBank,test:renderTest,hw:renderHw,prog:renderProg})[view]()}
 /* ====== BANK ====== */
-function lessonStats(l){const a=byL[l]||[];return [a.filter(r=>solved.has(r[0])).length,a.length]}
+function lessonStats(l){const a=(byL[l]||[]).filter(r=>!r[8]?.archived);return [a.filter(r=>solved.has(r[0])).length,a.length]}
 function modStats(m){let s=0,n=0;m.l.forEach(l=>{const [a,b]=lessonStats(l);s+=a;n+=b});return [s,n]}
 function renderBank(){
   const fipi=bank.source==="fipi";
-  const total=fipi?Object.keys(NATIVE_FIPI).length:Object.values(COUNTS).reduce((sum,count)=>sum+count,0);
+  const total=fipi?[...combinedBlocks.values()].reduce((sum,block)=>sum+block.rows.length,0):Object.values(COUNTS).reduce((sum,count)=>sum+count,0);
   const section=MODULES[bank.mod].section;
   const sectionLessons=MODULES.filter(module=>module.section===section).flatMap(module=>module.l);
-  const openN=sectionLessons.filter(id=>fipi?nativeBlocks.has(id):isOpen(id)).length;
+  const openN=sectionLessons.filter(id=>fipi?combinedBlocks.has(id):isOpen(id)).length;
   const catalog=section==="mechanics"?"fipi-mechanics.html":`fipi-mechanics.html?section=${section}`;
   const homework=runs.hw && !runs.hw.done ? runs.hw : null;
   V.innerHTML=`<section class="view bank-view">
@@ -165,13 +173,13 @@ function renderBank(){
    <div class="bank-intro"><h1>Задачи по физике</h1>
    <p class="lead">Выбери тему, реши задачу самостоятельно или открой её на доске для разбора.</p></div>
    ${homework?`<aside class="bank-resume"><span>Домашка в процессе</span><strong>${esc(homework.title)}</strong><button class="btn primary" data-continue="hw">Продолжить домашку <span aria-hidden="true">→</span></button></aside>`:
-   `<dl class="bank-overview"><div><dt>${fipi?'Задач ФИПИ на сайте':'Задач в практике'}</dt><dd>${total}</dd></div><div><dt>${fipi?'Блоков в разделе':'Открыто в разделе'}</dt><dd>${openN}${fipi?'':` <span>из ${sectionLessons.length}</span>`}</dd></div><div><dt>Решено задач</dt><dd data-bank-solved>${fipi?nativeSolvedCount():solved.size}</dd></div></dl>`}
+   `<dl class="bank-overview"><div><dt>${fipi?'Задач в подборке':'Задач в практике'}</dt><dd>${total}</dd></div><div><dt>${fipi?'Блоков в разделе':'Открыто в разделе'}</dt><dd>${openN}${fipi?'':` <span>из ${sectionLessons.length}</span>`}</dd></div><div><dt>Решено задач</dt><dd data-bank-solved>${fipi?fipiStats([...combinedBlocks.values()].flatMap(block=>block.rows))[0]:solved.size}</dd></div></dl>`}
   </div>
   <section class="bank-modules" aria-labelledby="modules-title">
    <div class="bank-section-title"><h2 id="modules-title">Разделы физики</h2><a class="bank-text-link" href="${catalog}">Банк ФИПИ <span aria-hidden="true">↗</span></a></div>
    <div class="bank-topics" id="bank-topics" role="group" aria-label="Разделы физики">${FIPI.sections.map(([id,name])=>`<button class="chip" data-section="${id}" aria-pressed="${section===id}">${name}</button>`).join('')}</div>
    ${!['mechanics','methods'].includes(section)?`<div class="bank-source" id="bank-source" role="group" aria-label="Источник задач">
-    <button class="chip" data-source="fipi" aria-pressed="${fipi}">Задания ФИПИ</button>
+    <button class="chip" data-source="fipi" aria-pressed="${fipi}">Основная подборка</button>
     <button class="chip" data-source="practice" aria-pressed="${!fipi}">${section==="mechanics"?"Практика уроков":"Авторская практика"}</button>
    </div>`:''}
    <div class="mods" id="mods">${MODULES.map((module,i)=>{
@@ -225,10 +233,10 @@ function clearBankFilters(){
  bank.open.clear();
 }
 function fipiModuleRows(module){
- return module.l.flatMap(id=>nativeBlocks.get(id)?.rows||[]);
+ return module.l.flatMap(id=>combinedBlocks.get(id)?.rows||[]);
 }
 function fipiStats(rows){
- return [rows.filter(row=>fipiSolved.has(row[8].fipi)).length,rows.length];
+ return [rows.filter(row=>row[8]?.fipi?fipiSolved.has(row[8].fipi):solved.has(row[0])).length,rows.length];
 }
 function fipiLessonBody(block,rows){
  const formulas=EXTRA.lessons[block]?.[1]||[];
@@ -240,11 +248,11 @@ function renderFipiLessons(box,module){
  const visible=new Map();
  const content=[];
  for(const id of blocks){
-  const block=nativeBlocks.get(id);
+  const block=combinedBlocks.get(id);
   if(!block)continue;
   const rows=block.rows.filter(row=>
-   (bank.type==='all'||bank.type===row[3])&&(!query||
-   row[8].fipi.toLowerCase().includes(query)||row[6].toLocaleLowerCase('ru').includes(query)||
+   (bank.type==='all'||bank.type===taskGroup(row))&&(!query||
+   row[8].fipi?.toLowerCase().includes(query)||row[6].toLocaleLowerCase('ru').includes(query)||
    block.title.toLocaleLowerCase('ru').includes(query))
   );
   if(!rows.length)continue;
@@ -274,10 +282,10 @@ function renderFipiLessons(box,module){
 }
 function refreshFipiProgress(block){
  const overview=V.querySelector('[data-bank-solved]');
- if(overview)overview.textContent=nativeSolvedCount();
+ if(overview)overview.textContent=fipiStats([...combinedBlocks.values()].flatMap(block=>block.rows))[0];
  const details=V.querySelector(`[data-fipi-block="${block}"]`);
  if(details){
-  const [done,total]=fipiStats(nativeBlocks.get(block).rows);
+  const [done,total]=fipiStats(combinedBlocks.get(block).rows);
   details.querySelector('.lmt').textContent=`${done} / ${total}`;
   details.querySelector('.meter i').style.width=`${done/total*100}%`;
  }
@@ -287,7 +295,7 @@ function refreshFipiProgress(block){
   button.querySelector('.meter i').style.width=`${total?done/total*100:0}%`;
  });
 }
-function filtered(l){if(!isOpen(l))return [];const q=bank.q.toLowerCase();return (byL[l]||[]).filter(r=>(bank.type==="all"||r[3]===bank.type)&&(!q||r[6].toLowerCase().includes(q)))}
+function filtered(l){if(!isOpen(l))return [];const q=bank.q.toLowerCase();return byL[l].filter(r=>!r[8]?.archived&&(bank.type==="all"||taskGroup(r)===bank.type)&&(!q||r[6].toLowerCase().includes(q)))}
 function taskCard(row,number){
  const code=row[8]?.fipi;
  const done=code?fipiSolved.has(code):solved.has(row[0]);
@@ -296,7 +304,7 @@ function taskCard(row,number){
   <div class="task-top"><span class="tn">${esc(taskLabel(row))}</span><b class="src ${row[5]}"${code?` title="Условие переоформлено по заданию ФИПИ ${code}"`:''}>${SRC[row[5]]}</b></div>
   <p class="tt">${fmtRow(row)}</p>
   <div class="tr task-controls">
-   ${auto?`<span class="ansbox"><input type="text" inputmode="${row[3]==='m'?'text':'decimal'}" placeholder="Ответ" aria-label="Ответ к задаче ${number}" id="a${row[0]}"><button class="btn small" data-act="check">Проверить</button></span>`:''}
+   ${auto?`<span class="ansbox"><input type="text" inputmode="${['m','terms'].includes(taskGroup(row))?'text':'decimal'}" placeholder="Ответ" aria-label="Ответ к задаче ${number}" id="a${row[0]}"><button class="btn small" data-act="check">Проверить</button></span>`:''}
    <button class="btn small board" data-act="board" data-n="${number}">Решить на доске <span aria-hidden="true">↗</span></button>
    <span class="vslot" role="status"></span>
   </div>
@@ -317,7 +325,7 @@ function renderLessons(){const box=V.querySelector("#lessons");const m=MODULES[b
 function groupedTaskCards(rows,formulas,notes=''){
  const chips=formulas.length?`<div class="formulas">${formulas.map(f=>`<span>${esc(f)}</span>`).join('')}${notes}</div>`:notes;
  const cards=Object.entries(TYPES).map(([type,label])=>{
-  const items=rows.filter(row=>row[3]===type);
+  const items=rows.filter(row=>taskGroup(row)===type);
   if(!items.length)return '';
   return `<div class="gh">${label} · ${items.length}</div><ol class="tasks">${items.map(row=>taskCard(row,taskNumber(row))).join('')}</ol>`;
  }).join('');
@@ -359,8 +367,9 @@ V.addEventListener("click",e=>{
   saveAll();
   if(code){
    LS.set('mk_fipi_solved',[...fipiSolved]);
-   refreshFipiProgress(block);
-  }else refreshLessonMeta(block);
+  }
+  if(bank.source==='fipi')refreshFipiProgress(block);
+  else refreshLessonMeta(block);
  };
  switch(button.dataset.act){
   case 'check':{
@@ -390,7 +399,7 @@ V.addEventListener("click",e=>{
    break;
   }
   case 'board':
-   openBoard(code?'fipi-'+code:id,row,(block==="X"?"Бонус":"Блок "+block)+" · задача "+button.dataset.n);
+   openBoard(code?'fipi-'+code:id,row,(!code&&row[8]?.label)||((block==="X"?"Бонус":"Блок "+block)+" · задача "+button.dataset.n));
    break;
   case 'mark':{
    const done=!marks.has(markId);
@@ -407,22 +416,22 @@ V.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".ansbox i
 let testCfg={lessons:new Set(["1"]),count:10,timer:true};
 function renderTest(){const run=runs.test;if(run)return run.done?renderResult(run):renderRun(run);
  testCfg.lessons=new Set([...testCfg.lessons].filter(isOpen));if(!testCfg.lessons.size)Object.keys(LESSONS).filter(isOpen).forEach(l=>testCfg.lessons.add(l));
- const avail=[...testCfg.lessons].reduce((a,l)=>a+(byL[l]||[]).filter(checkable).length,0);
+ const avail=[...testCfg.lessons].reduce((a,l)=>a+(byL[l]||[]).filter(row=>!row[8]?.archived&&checkable(row)).length,0);
  V.innerHTML=`<section class="view"><div class="hero"><div class="kicker">Режим · <b>тестовый вариант</b></div><h1>Собери <span class="grad">вариант</span></h1><p class="lead">Выбери уроки — сайт наберёт случайные задачи с автопроверкой. В конце — оценка, разбор ошибок и код результата для репетитора.</p></div>
  <div class="panel" style="display:grid;gap:16px">
   <div class="field"><label for="nm">Как тебя зовут?</label><input type="text" id="nm" value="${esc(myName)}" placeholder="Имя" maxlength="40"></div>
-  <div class="field"><label>Уроки</label>${MODULES.map((m,i)=>m.section==="methods"?"":`<div style="display:grid;gap:6px"><span class="muted" style="font-size:12px;font-family:var(--f-m);letter-spacing:.1em">МОДУЛЬ ${i+1} · ${m.n.toUpperCase()} <button class="linkbtn" data-mod="${i}">выбрать весь</button></span><div class="lessonpick">${m.l.map(l=>isOpen(l)?((byL[l]||[]).some(checkable)?`<button class="chip" data-l="${l}" aria-pressed="${testCfg.lessons.has(l)}">${l==="X"?"Бонус":"Урок "+l}</button>`:""):`<span class="chip" style="opacity:.45;cursor:default">🔒 ${l==="X"?"Бонус":"Урок "+l}</span>`).join("")}</div></div>`).join("")}</div>
+  <div class="field"><label>Уроки</label>${MODULES.map((m,i)=>m.section==="methods"?"":`<div style="display:grid;gap:6px"><span class="muted" style="font-size:12px;font-family:var(--f-m);letter-spacing:.1em">МОДУЛЬ ${i+1} · ${m.n.toUpperCase()} <button class="linkbtn" data-mod="${i}">выбрать весь</button></span><div class="lessonpick">${m.l.map(l=>isOpen(l)?((byL[l]||[]).some(row=>!row[8]?.archived&&checkable(row))?`<button class="chip" data-l="${l}" aria-pressed="${testCfg.lessons.has(l)}">${l==="X"?"Бонус":"Урок "+l}</button>`:""):`<span class="chip" style="opacity:.45;cursor:default">🔒 ${l==="X"?"Бонус":"Урок "+l}</span>`).join("")}</div></div>`).join("")}</div>
   <div class="grid2"><div class="field"><label>Сколько задач</label><div class="seg" id="cnt">${[5,10,15,20].map(n=>`<button data-n="${n}" aria-pressed="${testCfg.count===n}">${n}</button>`).join("")}</div></div>
   <div class="field"><label>Таймер</label><div class="seg" id="tm"><button data-t="1" aria-pressed="${testCfg.timer}">2 мин / задача</button><button data-t="0" aria-pressed="${!testCfg.timer}">без таймера</button></div></div></div>
   <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="go" ${avail?"":"disabled"}>Начать вариант →</button><span class="muted num">в выбранных уроках: ${avail} задач с автопроверкой</span></div>
  </div></section>`;
  V.querySelector("#nm").onchange=e=>{myName=e.target.value.trim();LS.set("mk_name",myName)};
  V.querySelectorAll(".lessonpick .chip").forEach(c=>c.onclick=()=>{const l=c.dataset.l;testCfg.lessons.has(l)?testCfg.lessons.delete(l):testCfg.lessons.add(l);renderTest()});
- V.querySelectorAll("[data-mod]").forEach(b=>b.onclick=()=>{MODULES[+b.dataset.mod].l.forEach(l=>{if(isOpen(l)&&(byL[l]||[]).some(checkable))testCfg.lessons.add(l)});renderTest()});
+ V.querySelectorAll("[data-mod]").forEach(b=>b.onclick=()=>{MODULES[+b.dataset.mod].l.forEach(l=>{if(isOpen(l)&&(byL[l]||[]).some(row=>!row[8]?.archived&&checkable(row)))testCfg.lessons.add(l)});renderTest()});
  V.querySelectorAll("#cnt button").forEach(b=>b.onclick=()=>{testCfg.count=+b.dataset.n;renderTest()});
  V.querySelectorAll("#tm button").forEach(b=>b.onclick=()=>{testCfg.timer=b.dataset.t==="1";renderTest()});
  V.querySelector("#go").onclick=()=>{myName=V.querySelector("#nm").value.trim();LS.set("mk_name",myName);
-   const pool=DATA.filter(r=>testCfg.lessons.has(r[2])&&checkable(r));
+   const pool=[...testCfg.lessons].flatMap(block=>byL[block]||[]).filter(row=>!row[8]?.archived&&checkable(row));
    for (let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
    // prefer not-yet-solved
    pool.sort((a,b)=>solved.has(a[0])-solved.has(b[0]));
@@ -494,7 +503,7 @@ function renderRun(run) {
   </div>
   <div class="study-questions">${run.ids.map((id,i)=>{
    const row = runTask(run,id), value = answer(run,id), title = `№${i+1} · ${taskLabel(row)}`;
-   return `<div class="q${value.trim()?' filled':''}" data-id="${id}"><div class="qn">${esc(title)}</div><p class="tt">${fmtRow(row)}</p><div class="tr">${checkable(row)?`<input type="text" inputmode="${row[3]==='m'?'text':'decimal'}" maxlength="150" placeholder="ответ" value="${esc(value)}" aria-label="Ответ к задаче ${i+1}" id="q${id}">`:`<label class="study-written">Решение — проверит преподаватель<textarea rows="4" maxlength="2000" placeholder="Рисунок словами, закон, вычисления и вывод" aria-label="Решение задачи ${i+1}" id="q${id}">${esc(value)}</textarea></label>`}${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}<b class="src ${row[5]}">${SRC[row[5]]}</b></div></div>`;
+   return `<div class="q${value.trim()?' filled':''}" data-id="${id}"><div class="qn">${esc(title)}</div><p class="tt">${fmtRow(row)}</p><div class="tr">${checkable(row)?`<input type="text" inputmode="${['m','terms'].includes(taskGroup(row))?'text':'decimal'}" maxlength="150" placeholder="ответ" value="${esc(value)}" aria-label="Ответ к задаче ${i+1}" id="q${id}">`:`<label class="study-written">Решение — проверит преподаватель<textarea rows="4" maxlength="2000" placeholder="Рисунок словами, закон, вычисления и вывод" aria-label="Решение задачи ${i+1}" id="q${id}">${esc(value)}</textarea></label>`}${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}<b class="src ${row[5]}">${SRC[row[5]]}</b></div></div>`;
   }).join('')}</div>
   <p id="submit-bottom" class="study-warning" role="status" hidden></p>
   <div class="study-actions"><button class="btn primary" id="fin2">Сдать и проверить</button><button class="btn ghost" id="quit">${run.kind==='hw'?'Сменить домашку':'Закончить без сдачи'}</button></div>
@@ -634,9 +643,7 @@ async function homeworkRows(hw) {
   const l = code.split('-')[0];
   if (!lockedLesson(l) || isOpen(l)) return [];
   try {
-   const rows=(await decryptLesson(l,code)).r;
-   const ordered=Object.keys(TYPES).flatMap(type=>rows.filter(row=>row[3]===type));
-   return ordered.map((row,i)=>OgeCore.snapshotRow(row,row[8]?.label||`Блок ${l} · №${i+1}`));
+   return COVERAGE.numberLegacy((await decryptLesson(l,code)).r).map(row=>OgeCore.snapshotRow(row,taskLabel(row)));
   }
   catch { throw new Error(`Не удалось загрузить блок ${l}. Проверь интернет и попроси преподавателя проверить ссылку.`); }
  }));

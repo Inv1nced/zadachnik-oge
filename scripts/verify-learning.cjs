@@ -96,6 +96,46 @@ assert.equal(native['F74FFB'].answer,'52 °C');
 assert.equal(native['485DFD'].answer,'12,5 Вт');
 assert.equal(native['6E8FB0'].answer,'2475');
 console.log(`PASS: ${Object.keys(native).length} full FIPI cards in ${nativeCounts.size} blocks on local data.`);
+const coverage=require('../bank/block-practice.js');
+const selector=require('../homework-selection.js');
+const supplements=Object.values(coverage.rows).flat();
+assert.equal(new Set(supplements.map(row=>row[0])).size,supplements.length);
+assert.equal(new Set(supplements.map(row=>row[8].label)).size,supplements.length);
+for(const row of supplements){
+ assert.ok(row[0]<-100000&&row[0]>-0x10000000&&row[8].solution.length>10);
+ assert.equal((row[6].match(/\[рисунок\]/g)||[]).length,row[7].length);
+ assert.ok(row[7].every(src=>core.isFigure(src)&&fs.existsSync(src)));
+ if(['b','m'].includes(row[3]))assert.ok(core.checkable(row),row[8].label);
+}
+const fullFipi=coverage.nativeRows(native);
+const water=fullFipi.find(row=>row[8].fipi==='CDC914');
+assert.match(water[6],/Найди массу воды/);
+assert.equal(parseFloat(water[4].replace(',','.')),0.3*400*7/(4200*1));
+for(const code of ['AD87D5','EFC1F6','0D58F3','D80851','FEA04E']){
+ const row=fullFipi.find(row=>row[8].fipi===code);
+ assert.equal(row[2],'35');
+ assert.equal(row[0],-(0x10000000+parseInt(code,16)));
+}
+assert.equal(fullFipi.filter(row=>row[2]==='40').length,7);
+assert.equal(fullFipi.filter(row=>row[2]==='47'&&row[3]==='e').length,11);
+assert.equal(coverage.rows['42'].filter(row=>row[3]==='q').length,5);
+assert.equal(coverage.rows['3'].find(row=>row[8].skill==='разворот и путь')[4],'13 м');
+assert.equal(coverage.rows['15'].find(row=>row[8].skill==='энергия до и после столкновения')[4],'2 м/с; 4 Дж');
+const oldTerms=[55,10112,'23','q','3275','F','Вставь на места пропусков термины.'];
+assert.equal(core.correct(oldTerms,'3,2,7,5'),true);
+assert.equal(core.correct(oldTerms,'2375'),false);
+const retained=coverage.numberLegacy(Array.from({length:6},(_,i)=>[600+i,0,'8','b','1','F','Условие '+i]));
+assert.ok(retained[3][8].archived);
+assert.equal(retained[4][8].number,5);
+assert.equal(retained[3][0],603);
+const demos=coverage.rows['16'].concat(coverage.rows['17'],coverage.rows['3']);
+const sample=selector.choose({lesson:{id:9,siteBlocks:[16,17]},bank:demos});
+assert.ok(sample.every(row=>['16','17'].includes(row[2])));
+assert.ok(sample.some(row=>row[3]==='b')&&sample.some(row=>row[3]==='m')&&sample.some(row=>row[3]==='r'));
+assert.ok(!selector.choose({lesson:{id:9,siteBlocks:[16,17]},bank:demos,done:{[sample[0][0]]:'independent'}}).some(row=>row[0]===sample[0][0]));
+assert.ok(selector.choose({lesson:{id:50},bank:supplements}).some(row=>row[2]==='42'));
+assert.ok(selector.choose({lesson:{id:44},bank:[...supplements,...fullFipi]}).some(row=>row[2]==='47'&&row[3]==='e'&&row[6].includes('линз')));
+console.log(`PASS: ${supplements.length} supplemental cards, topic placement, legacy numbering, ordered cloze and homework selection.`);
 const privateRoot=process.env.OGE_PRIVATE_SOURCE||'../site-private-source';
 const sourcePath=require('node:path');
 assert.ok(!fs.readFileSync('teach.html','utf8').includes('teacher-view'),'Locked page must not contain classroom UI');
@@ -107,6 +147,14 @@ vm.runInContext(fs.readFileSync(sourcePath.join(privateRoot,'practice-data.js'),
 assert.equal(c.window.PLAN.lessons.length,56);
 const all=new Map();for(const l of c.window.PLAN.lessons){const rows=c.window.PRACTICE[l.id];assert.ok(rows.length>=10,`Lesson ${l.id}: ${rows.length} tasks`);assert.equal(rows.filter(r=>r[8]?.graph&&r[8]?.lesson===l.id).length,2);for(const r of rows){assert.ok(Number.isSafeInteger(r[0])&&r[0]<=-100000);assert.ok(r[6].length>15);assert.ok(r[8].solution.length>10);assert.ok(r[8].label);if(r[3]==='b'){assert.ok(core.numeric(r[4]),`${l.id} ${r[6]}`);assert.equal(core.correct(r,r[4]),true)}const prev=all.get(r[0]);if(prev)assert.equal(JSON.stringify(prev),JSON.stringify(r),'Conflicting stable IDs');all.set(r[0],r)}}
 for(const [id,rows]of Object.entries(c.window.PRACTICE)){for(const r of rows.filter(r=>r[8]?.graph)){assert.ok(Number(r[4])>=0);const text=r[6],m=text.match(/до \((\d+) с; (-?\d+) м\/с\)/),v0=Number(text.match(/\(0 с; (\d+) м\/с\)/)[1]),T=Number(m[1]),v1=Number(m[2]);const expected=v0*v1>=0?(v0+v1)*T/2:(v0*v0+v1*v1)*T/(2*(v0-v1));assert.equal(Number(r[4]),expected,'Path must sum absolute triangle areas')}}
+for(const lesson of c.window.PLAN.lessons){
+ const author=c.window.PRACTICE[lesson.id], bank=[...supplements,...fullFipi,...Object.values(c.window.OGE_EXTRA_PHYSICS.rows).flat()];
+ const chosen=selector.choose({lesson,author,bank});
+ assert.ok(chosen.length>=6&&chosen.length<=10,`Lesson ${lesson.id}: ${chosen.length} homework tasks`);
+ assert.equal(new Set(chosen.map(row=>row[0])).size,chosen.length);
+ if(![1,49].includes(lesson.id))assert.ok(chosen.every(row=>!row[8]?.graph),`Unrelated graph in lesson ${lesson.id}`);
+ if(lesson.id===53)assert.ok(chosen.every(core.checkable));
+}
 for(const file of ['teach.js','practice-data.js','tutor-plan/app.js'])new vm.Script(fs.readFileSync(sourcePath.join(privateRoot,file),'utf8'),{filename:file});
 // Syntax for every inline script, including encrypted-bank entry points.
 for(const file of fs.readdirSync('.').filter(f=>f.endsWith('.html'))){const html=fs.readFileSync(file,'utf8');for(const m of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)){if(m[1].trim())new vm.Script(m[1],{filename:file})}}

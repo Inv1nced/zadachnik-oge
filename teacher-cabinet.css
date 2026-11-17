@@ -429,3 +429,14 @@ html[data-theme=light] .teacher-app--compact {
   .block-code-value { width: min(100%,116px); justify-self: start; }
   .block-code-state { grid-column: 1 / -1; justify-self: start; }
 }
+
+.homework-draft-list {
+  margin-block: .65rem;
+  padding-inline-start: 1.65rem;
+}
+.homework-draft-list li {
+  padding-block: .28rem;
+}
+.homework-draft-list .link-button {
+  margin-inline-start: .45rem;
+}
