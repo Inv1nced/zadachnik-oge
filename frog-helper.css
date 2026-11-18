@@ -1,22 +1,211 @@
-.oge-frog{position:fixed;right:22px;bottom:18px;z-index:35;font:14px/1.55 system-ui,sans-serif;color:var(--text,#203741);width:112px;isolation:isolate}.oge-frog[hidden],.frog-bubble[hidden]{display:none}.frog-body{display:block;width:112px;height:90px;border:0!important;padding:0!important;background:transparent!important;cursor:pointer;overflow:visible}.frog-body svg{width:112px;height:84px;display:block;overflow:visible;image-rendering:pixelated;shape-rendering:crispEdges}.frog-body:focus-visible{outline:3px solid var(--cyan,#006d75);outline-offset:4px;border-radius:8px}.frog-name{display:block;font-size:11px;text-align:center;color:var(--muted,#536d77);background:var(--panel,#fff);border-radius:6px;padding:1px 5px}.frog-bubble{position:absolute;bottom:106px;right:0;width:min(320px,calc(100vw - 32px));padding:16px;border:1px solid var(--line,#cddcdf);border-radius:14px 14px 4px 14px;background:var(--panel,#fff);box-shadow:0 6px 22px #0002}.frog-bubble header{display:flex;justify-content:space-between;align-items:center;gap:12px}.frog-bubble strong{font-size:14px}.frog-bubble p{margin:12px 0;min-height:65px;white-space:pre-line;font-size:15px;line-height:1.6;color:inherit}.frog-bubble button{font:inherit;min-height:34px;padding:5px 9px;border:1px solid var(--line,#cddcdf);border-radius:7px;color:inherit;background:var(--bg2,#eaf0f2);cursor:pointer}.frog-bubble .frog-close{border:0;background:none;font-size:20px;padding:0 5px;line-height:1}.frog-actions{display:flex;gap:6px;flex-wrap:wrap}.frog-caption{font-size:11px;color:var(--muted,#536d77);display:block;margin-top:9px}.frog-open-mouth{opacity:0;transform-origin:64px 57px}.oge-frog.is-talking .frog-open-mouth{opacity:1;animation:frog-talk 180ms steps(2,end) infinite}.oge-frog.is-talking .frog-smile{opacity:0}.frog-pupil{transition:transform 100ms linear}.frog-sprite{transform-origin:64px 85px;animation:frog-idle 18s linear infinite}.frog-eye{transform-origin:center;transform-box:fill-box;animation:frog-blink 7s linear infinite}.oge-frog.is-talking .frog-sprite{animation:none}.frog-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-@keyframes frog-talk{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
-@keyframes frog-idle{0%,92%,100%{transform:translateY(0)}94%,96%{transform:translateY(-7px)}95%{transform:translateY(-9px)}}
-@keyframes frog-blink{0%,94%,98%,100%{transform:scaleY(1)}96%{transform:scaleY(.12)}}
-@media(max-width:600px){.oge-frog{right:12px;bottom:12px;width:84px}.frog-body,.frog-body svg{width:84px;height:66px}.frog-bubble{bottom:85px}.frog-name{font-size:10px}}
-@media(prefers-reduced-motion:reduce){.frog-sprite,.frog-eye,.oge-frog.is-talking .frog-open-mouth{animation:none}.frog-pupil{transition:none}}
-@media print{.oge-frog,#frog-nav-toggle{display:none!important}}
+.oge-frog {
+  position: fixed;
+  inset: auto 22px 18px auto;
+  z-index: 35;
+  isolation: isolate;
+  color: var(--text, #edf4f7);
+  font: 14px/1.5 system-ui, sans-serif;
+  --frog-surface: #202538;
+  --frog-ink: #f2f4ff;
+  --frog-muted: #bac4df;
+  --frog-border: #4d587b;
+  --frog-tint: #2c3652;
+  --frog-accent: #ccdcff;
+  --frog-button-ink: #182441;
+}
 
-#frog-nav-toggle{margin-left:0}.workspace-embed .oge-frog{display:none}
+[data-theme="light"] .oge-frog {
+  --frog-surface: #f8faff;
+  --frog-ink: #233352;
+  --frog-muted: #526586;
+  --frog-border: #9aafd0;
+  --frog-tint: #e9effc;
+  --frog-accent: #344c8e;
+  --frog-button-ink: #fff;
+}
 
-.oge-frog .frog-block-label{display:block;margin:10px 0 4px;font-size:12px;color:var(--muted,#536d77)}.oge-frog #frog-block{width:100%;max-width:100%;min-height:38px;padding:6px;border:1px solid var(--line,#cddcdf);border-radius:7px;background:var(--bg2,#eaf0f2);color:var(--text,#203741);font:13px system-ui,sans-serif}.frog-bubble{max-height:calc(100dvh - 150px);overflow-y:auto}.frog-bubble p{min-height:85px}
+.oge-frog [hidden] { display: none !important; }
 
-.frog-bubble [hidden]{display:none!important}
+.frog-body {
+  width: 112px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit;
+  cursor: pointer;
+}
 
-.oge-frog .frog-body:disabled{opacity:1;cursor:default}
+.frog-body svg {
+  display: block;
+  width: 112px;
+  height: 84px;
+  overflow: visible;
+  shape-rendering: crispEdges;
+}
+
+.frog-name {
+  border: 1px solid var(--frog-border);
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: var(--frog-surface);
+  color: var(--frog-ink);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.frog-body:disabled { cursor: default; opacity: .6; }
+
+.frog-bubble {
+  position: absolute;
+  inset: auto 0 calc(100% + 12px) auto;
+  box-sizing: border-box;
+  width: min(392px, calc(100vw - 32px));
+  max-height: min(660px, calc(100dvh - 138px));
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid transparent;
+  border-radius: 20px 20px 5px 20px;
+  background:
+    linear-gradient(var(--frog-surface), var(--frog-surface)) padding-box,
+    linear-gradient(112deg, #7394de, #b9b8fb 20%, #8fe0dc 38%, #c5b7fa 62%, #7394de 80%) border-box;
+  background-size: 100% 100%, 245% 100%;
+  color: var(--frog-ink);
+  box-shadow: 0 12px 32px #10183255;
+}
+
+.frog-bubble:not([hidden]) { animation: frog-bubble-in .18s cubic-bezier(.23, 1, .32, 1) both; }
+.is-talking .frog-bubble:not([hidden]) {
+  animation: frog-bubble-in .18s cubic-bezier(.23, 1, .32, 1) both, frog-shimmer 4s ease-in-out infinite alternate;
+}
+
+.frog-bubble header, .frog-form-actions, .frog-task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.frog-bubble header { margin-bottom: 10px; }
+.frog-bubble header strong { font-size: 15px; }
+
+.frog-bubble button {
+  min-height: 36px;
+  padding: 5px 10px;
+  border: 1px solid var(--frog-border);
+  border-radius: 9px;
+  background: var(--frog-tint);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.frog-bubble :is(.frog-close, .frog-clear) {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 21px;
+}
+
+.frog-bubble .frog-send {
+  border-color: transparent;
+  background: var(--frog-accent);
+  color: var(--frog-button-ink);
+  font-weight: 650;
+}
+
+.frog-bubble button:disabled { opacity: .55; cursor: default; }
+.oge-frog :focus-visible { outline: 2px solid var(--frog-accent); outline-offset: 3px; }
+
+.frog-chat-log {
+  display: grid;
+  gap: 8px;
+  max-height: min(41dvh, 310px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  margin-bottom: 12px;
+}
+
+.frog-chat-log p {
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.frog-user-message {
+  justify-self: end;
+  background: var(--frog-tint);
+  color: var(--frog-ink);
+}
+
+.frog-answer { border-left: 2px solid var(--frog-accent); }
+
+.frog-form { display: grid; gap: 8px; }
+.frog-task {
+  min-width: 0;
+  padding-left: 9px;
+  border: 1px solid var(--frog-border);
+  border-radius: 9px;
+  background: var(--frog-tint);
+  font-size: 12px;
+}
+.frog-task span { overflow-wrap: anywhere; }
+
+.frog-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 62px;
+  max-height: 130px;
+  padding: 9px;
+  border: 1px solid var(--frog-border);
+  border-radius: 9px;
+  background: var(--frog-surface);
+  color: var(--frog-ink);
+  font: 16px/1.4 system-ui, sans-serif;
+  resize: vertical;
+}
+.frog-form textarea::placeholder { color: var(--frog-muted); }
+.frog-quota, .frog-status { font-size: 12px; color: var(--frog-muted); }
+.frog-status { margin: 0; }
+.frog-status:empty { display: none; }
+
+.frog-open-mouth { opacity: 0; transform-origin: 64px 57px; }
+.is-talking .frog-open-mouth { opacity: 1; animation: frog-talk 180ms steps(2,end) infinite; }
+.is-talking .frog-smile { opacity: 0; }
+.frog-pupil { transition: transform .1s linear; }
+.frog-eye { transform-origin: center; transform-box: fill-box; animation: frog-blink 7s linear infinite; }
+.frog-sr { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@keyframes frog-bubble-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes frog-shimmer { to { background-position: 0 0, 100% 0; } }
+@keyframes frog-talk { 0%,100% { transform: scaleY(.45); } 50% { transform: scaleY(1); } }
+@keyframes frog-blink { 0%,94%,98%,100% { transform: scaleY(1); } 96% { transform: scaleY(.12); } }
 
 @media (max-width: 600px) {
-  .oge-frog .frog-body, .oge-frog .frog-name { display: none; }
-  .oge-frog { inset: auto 12px 12px auto; width: auto; }
-  .oge-frog .frog-bubble { bottom: 0; }
-  .oge-frog:not(:has(.frog-bubble:not([hidden]))) { display: none; }
+  .oge-frog { inset: auto 12px 12px auto; }
+  .frog-body { width: 82px; }
+  .frog-body svg { width: 76px; height: 57px; }
+  .frog-name { font-size: 10px; }
+  .frog-bubble { max-height: calc(100dvh - 110px); }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .frog-eye, .is-talking .frog-open-mouth,
+  .frog-bubble:not([hidden]), .is-talking .frog-bubble:not([hidden]) { animation: none; }
+  .frog-pupil { transition: none; }
+}
+
+@media print { .oge-frog, #frog-nav-toggle, [data-frog-task] { display: none !important; } }
+
+#frog-nav-toggle { margin-left: 0; }
+.workspace-embed .oge-frog, .workspace-embed [data-frog-task],
+body[data-frog-assessment="active"] [data-frog-task] { display: none; }

@@ -8,7 +8,17 @@ const items=[['teach.html','🔒 Журнал репетитора'],['index.htm
 nav.innerHTML=items.map(([url,text])=>`<a href="${new URL(url,base).href}" ${location.pathname===new URL(url,base).pathname?'aria-current="page"':''}>${text}</a>`).join('')+'<button type="button" aria-label="Переключить светлую и тёмную тему"></button>';
 document.body.prepend(nav);const button=nav.querySelector('button');function paint(){button.textContent=document.documentElement.dataset.theme==='light'?'Тёмная тема':'Светлая тема'}paint();button.onclick=()=>{const t=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=t;try{localStorage.setItem('oge-theme',t)}catch{}paint()};
 if(!document.documentElement.classList.contains('workspace-embed')){
-const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('frog-helper.css?v=20261116',base).href;document.head.append(css);
-const helper=document.createElement('script');helper.src=new URL('frog-helper.js?v=invariant-1',base).href;const hints=document.createElement('script');hints.src=new URL('frog-blocks.js?v=20261105quiet',base).href;const coaching=document.createElement('script');coaching.src=new URL('frog-guide.js?v=20261105quiet',base).href;coaching.onload=()=>document.body.append(helper);hints.onload=()=>document.body.append(coaching);hints.onerror=()=>document.body.append(coaching);document.body.append(hints);
+ const css = document.createElement('link');
+ css.rel = 'stylesheet';
+ css.href = new URL('frog-helper.css?v=ai-1', base).href;
+ document.head.append(css);
+ const guide = document.createElement('script');
+ guide.src = new URL('frog-guide.js?v=ai-1', base).href;
+ guide.onload = () => {
+  const helper = document.createElement('script');
+  helper.src = new URL('frog-helper.js?v=ai-1', base).href;
+  document.body.append(helper);
+ };
+ document.body.append(guide);
 }
 })();

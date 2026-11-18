@@ -156,7 +156,7 @@ new ResizeObserver(()=>document.body.style.setProperty('--topbar-height',`${stud
 
 function setView(v){view=v;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));render();window.scrollTo({top:0,behavior:"smooth"})}
 document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)});
-function render(){document.body.dataset.frogAssessment=Object.values(runs).some(run => run && !run.done)?"active":"inactive";window.dispatchEvent(new Event("oge-study-state"));({bank:renderBank,test:renderTest,hw:renderHw,prog:renderProg})[view]()}
+function render(){document.body.dataset.frogAssessment=runs.test && !runs.test.done?"active":"inactive";window.dispatchEvent(new Event("oge-study-state"));({bank:renderBank,test:renderTest,hw:renderHw,prog:renderProg})[view]()}
 /* ====== BANK ====== */
 function lessonStats(l){const a=(byL[l]||[]).filter(r=>!r[8]?.archived);return [a.filter(r=>solved.has(r[0])).length,a.length]}
 function modStats(m){let s=0,n=0;m.l.forEach(l=>{const [a,b]=lessonStats(l);s+=a;n+=b});return [s,n]}
@@ -306,6 +306,7 @@ function taskCard(row,number){
   <div class="tr task-controls">
    ${auto?`<span class="ansbox"><input type="text" inputmode="${['m','terms'].includes(taskGroup(row))?'text':'decimal'}" placeholder="Ответ" aria-label="Ответ к задаче ${number}" id="a${row[0]}"><button class="btn small" data-act="check">Проверить</button></span>`:''}
    <button class="btn small board" data-act="board" data-n="${number}">Решить на доске <span aria-hidden="true">↗</span></button>
+   <button class="btn small" type="button" data-frog-task>Спросить лягушку</button>
    <span class="vslot" role="status"></span>
   </div>
   <div class="tr task-links">
@@ -503,7 +504,7 @@ function renderRun(run) {
   </div>
   <div class="study-questions">${run.ids.map((id,i)=>{
    const row = runTask(run,id), value = answer(run,id), title = `№${i+1} · ${taskLabel(row)}`;
-   return `<div class="q${value.trim()?' filled':''}" data-id="${id}"><div class="qn">${esc(title)}</div><p class="tt">${fmtRow(row)}</p><div class="tr">${checkable(row)?`<input type="text" inputmode="${['m','terms'].includes(taskGroup(row))?'text':'decimal'}" maxlength="150" placeholder="ответ" value="${esc(value)}" aria-label="Ответ к задаче ${i+1}" id="q${id}">`:`<label class="study-written">Решение — проверит преподаватель<textarea rows="4" maxlength="2000" placeholder="Рисунок словами, закон, вычисления и вывод" aria-label="Решение задачи ${i+1}" id="q${id}">${esc(value)}</textarea></label>`}${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}<b class="src ${row[5]}">${SRC[row[5]]}</b></div></div>`;
+   return `<div class="q${value.trim()?' filled':''}" data-id="${id}"><div class="qn">${esc(title)}</div><p class="tt">${fmtRow(row)}</p><div class="tr">${checkable(row)?`<input type="text" inputmode="${['m','terms'].includes(taskGroup(row))?'text':'decimal'}" maxlength="150" placeholder="ответ" value="${esc(value)}" aria-label="Ответ к задаче ${i+1}" id="q${id}">`:`<label class="study-written">Решение — проверит преподаватель<textarea rows="4" maxlength="2000" placeholder="Рисунок словами, закон, вычисления и вывод" aria-label="Решение задачи ${i+1}" id="q${id}">${esc(value)}</textarea></label>`}${row[1]?`<a href="${link(row)}" target="_blank" rel="noopener">Условие ↗</a>`:''}<b class="src ${row[5]}">${SRC[row[5]]}</b>${run.kind==='hw'?'<button class="btn small" type="button" data-frog-task>Спросить лягушку</button>':''}</div></div>`;
   }).join('')}</div>
   <p id="submit-bottom" class="study-warning" role="status" hidden></p>
   <div class="study-actions"><button class="btn primary" id="fin2">Сдать и проверить</button><button class="btn ghost" id="quit">${run.kind==='hw'?'Сменить домашку':'Закончить без сдачи'}</button></div>
@@ -591,7 +592,7 @@ function finish(run) {
  }
  saveAll();
  if (run.kind === 'test') updateTimer();
- if (view !== run.kind) document.body.dataset.frogAssessment = Object.values(runs).some(item=>item&&!item.done)?'active':'inactive';
+ if (view !== run.kind) document.body.dataset.frogAssessment = runs.test && !runs.test.done?'active':'inactive';
  if (view === run.kind) {
   render();
   V.querySelector('h1')?.focus({preventScroll:true});

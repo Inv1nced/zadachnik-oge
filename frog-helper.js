@@ -1,49 +1,317 @@
-(()=>{
+(() => {
 'use strict';
-if(document.querySelector('.oge-frog')||document.documentElement.classList.contains('workspace-embed'))return;
-const mobile=matchMedia('(max-width: 600px)'),reduced=matchMedia('(prefers-reduced-motion: reduce)'),store='oge-frog-hidden-v1';
-const frog=document.createElement('aside');frog.className='oge-frog';frog.setAttribute('aria-label','Лягушка — помощник по физике');
-frog.innerHTML=`<section class="frog-bubble" hidden aria-label="Подсказка лягушки"><header><strong id="frog-topic">Ква! INVARIANT</strong><button class="frog-close" type="button" aria-label="Закрыть подсказку">×</button></header><label class="frog-block-label" for="frog-block">Блок задачника</label><select id="frog-block" aria-label="Блок для подсказок"></select><p class="frog-typed" aria-hidden="true"></p><span class="frog-sr" role="status" aria-live="polite"></span><div class="frog-actions"><button type="button" data-tip="formula">Формула</button><button type="button" data-tip="fact">Факт</button><button type="button" data-tip="next">Ещё</button></div><small class="frog-caption">Готовые подсказки · без ИИ и звука</small></section><button class="frog-body" type="button" aria-label="Спросить лягушку: формулы и факты" aria-expanded="false"><svg viewBox="0 0 128 96" role="img" aria-label="Зелёная пиксельная лягушка"><g class="frog-sprite"><path fill="#41424d" d="M24 4h24v8h32V4h24v8h8v24h8v16h8v28h-8v8H8v-8H0V52h8V36h8V12h8z"/><path fill="#86b75d" d="M24 16h24v4h32v-4h24v24h8v16h8v20h-8v8H16v-8H8V56h8V40h8z"/><path fill="#38a16c" d="M8 60h8v12h16v12h24V72h16v12h24V72h16V60h8v16h-8v8H16v-8H8z"/><path fill="#c9ff72" d="M16 40h8v12H12v-8h4zM104 40h8v4h4v8h-12zM8 56h8v8H8zM112 56h8v8h-8zM52 64h24v12H52z"/><rect x="56" y="76" width="16" height="8" fill="#c4db59"/><g class="frog-eye"><path fill="#fffde7" d="M24 12h20v4h4v16h-4v4H24v-4h-4V16h4z"/><g class="frog-pupil"><rect x="29" y="20" width="10" height="12" rx="2" fill="#344f50"/><rect x="30" y="20" width="4" height="4" fill="#fff"/><rect x="35" y="28" width="2" height="2" fill="#b8e5d8"/></g></g><g class="frog-eye"><path fill="#fffde7" d="M84 12h20v4h4v16h-4v4H84v-4h-4V16h4z"/><g class="frog-pupil"><rect x="89" y="20" width="10" height="12" rx="2" fill="#344f50"/><rect x="90" y="20" width="4" height="4" fill="#fff"/><rect x="95" y="28" width="2" height="2" fill="#b8e5d8"/></g></g><path fill="#e9a896" d="M28 44h10v5H28zM90 44h10v5H90z"/><path class="frog-smile" fill="#364953" d="M52 47h4v6h16v-6h4v8h-4v3H56v-3h-4z"/><g class="frog-open-mouth"><rect x="52" y="48" width="24" height="16" fill="#364953"/><rect x="58" y="58" width="12" height="6" fill="#e69c9f"/></g><path fill="#364953" d="M28 68h6v12h-6zM94 68h6v12h-6z"/></g></svg></button><span class="frog-name">Нажми — подскажу</span>`;
+
+if (document.querySelector('.oge-frog') || document.documentElement.classList.contains('workspace-embed')) return;
+const root = new URL('.', document.currentScript.src);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const frog = document.createElement('aside');
+frog.className = 'oge-frog';
+frog.setAttribute('aria-label', 'Лягушка — ИИ-помощник по физике');
+frog.innerHTML = `
+  <section id="frog-chat" class="frog-bubble" hidden aria-label="Лягушка — ИИ-помощник">
+    <header>
+      <strong>Лягушка · ИИ по физике</strong>
+      <button class="frog-close" type="button" aria-label="Закрыть помощника">×</button>
+    </header>
+    <div class="frog-chat-log" aria-label="Переписка" tabindex="0" hidden></div>
+    <form class="frog-form">
+      <div class="frog-task" hidden>
+        <span></span>
+        <button type="button" class="frog-clear" aria-label="Убрать условие задачи">×</button>
+      </div>
+      <label for="frog-question" class="frog-sr">Вопрос лягушке</label>
+      <textarea id="frog-question" rows="2" maxlength="1200" required placeholder="На каком шаге ты застрял?"></textarea>
+      <div class="frog-form-actions">
+        <small class="frog-quota">5 вопросов в день</small>
+        <button class="frog-send" type="submit" disabled>Отправить</button>
+      </div>
+      <p class="frog-status" role="status" aria-atomic="true"></p>
+    </form>
+  </section>
+  <button class="frog-body" type="button" aria-controls="frog-chat" aria-expanded="false" aria-label="Задать вопрос лягушке"><svg viewBox="0 0 128 96" aria-hidden="true"><g class="frog-sprite"><path fill="#41424d" d="M24 4h24v8h32V4h24v8h8v24h8v16h8v28h-8v8H8v-8H0V52h8V36h8V12h8z"/><path fill="#86b75d" d="M24 16h24v4h32v-4h24v24h8v16h8v20h-8v8H16v-8H8V56h8V40h8z"/><path fill="#38a16c" d="M8 60h8v12h16v12h24V72h16v12h24V72h16V60h8v16h-8v8H16v-8H8z"/><path fill="#c9ff72" d="M16 40h8v12H12v-8h4zM104 40h8v4h4v8h-12zM8 56h8v8H8zM112 56h8v8h-8zM52 64h24v12H52z"/><rect x="56" y="76" width="16" height="8" fill="#c4db59"/><g class="frog-eye"><path fill="#fffde7" d="M24 12h20v4h4v16h-4v4H24v-4h-4V16h4z"/><g class="frog-pupil"><rect x="29" y="20" width="10" height="12" rx="2" fill="#344f50"/><rect x="30" y="20" width="4" height="4" fill="#fff"/><rect x="35" y="28" width="2" height="2" fill="#b8e5d8"/></g></g><g class="frog-eye"><path fill="#fffde7" d="M84 12h20v4h4v16h-4v4H84v-4h-4V16h4z"/><g class="frog-pupil"><rect x="89" y="20" width="10" height="12" rx="2" fill="#344f50"/><rect x="90" y="20" width="4" height="4" fill="#fff"/><rect x="95" y="28" width="2" height="2" fill="#b8e5d8"/></g></g><path fill="#e9a896" d="M28 44h10v5H28zM90 44h10v5H90z"/><path class="frog-smile" fill="#364953" d="M52 47h4v6h16v-6h4v8h-4v3H56v-3h-4z"/><g class="frog-open-mouth"><rect x="52" y="48" width="24" height="16" fill="#364953"/><rect x="58" y="58" width="12" height="6" fill="#e69c9f"/></g><path fill="#364953" d="M28 68h6v12h-6zM94 68h6v12h-6z"/></g></svg><span class="frog-name">Задать вопрос</span></button>`;
 document.body.append(frog);
-const nav=document.querySelector('.site-nav'),toggle=document.createElement('button');toggle.id='frog-nav-toggle';toggle.type='button';toggle.textContent='🐸 Помощник';toggle.setAttribute('aria-label','Показать или скрыть лягушку');nav?.append(toggle);
-const bubble=frog.querySelector('.frog-bubble'),body=frog.querySelector('.frog-body'),text=frog.querySelector('.frog-typed'),sr=frog.querySelector('.frog-sr'),title=frog.querySelector('strong');
-const formulae={
- general:['Fрез = ma\nУскорение направлено по равнодействующей всех сил, действующих на выбранное тело.','ρ = m/V\nПлотность — масса единицы объёма. 1 г/см³ = 1000 кг/м³.','v = Δx/Δt\nПри равномерном движении скорость показывает, как быстро меняется координата.','s — площадь под графиком скорости.\nДля графика проекции vₓ(t) путь — сумма модулей площадей, а перемещение учитывает знаки.','F₁₂ = −F₂₁\nСилы третьего закона Ньютона приложены к разным телам, поэтому не уравновешивают друг друга.'],
- spring:['Fупр = kΔl\nΔl = l − l₀ — удлинение, а не полная длина пружины.','k = F/Δl\nПеред расчётом переведи сантиметры в метры: 2 см = 0,02 м.'],
- friction:['Fтр = μN\nНа горизонтальной поверхности при горизонтальной тяге N = mg.','Если v = const, то a = 0.\nПри равномерном скольжении сила тяги равна силе трения по модулю.'],
- ohm:['I = U/R\nПри постоянном сопротивлении увеличение напряжения вдвое увеличивает ток вдвое.','R = U/I\nАмперметр подключают последовательно, вольтметр — параллельно участку цепи.'],
- density:['ρ = m/(V₂ − V₁)\nОбъём погружённого тела равен объёму вытесненной воды.','1 мл = 1 см³\nМасса в граммах и объём в см³ дают плотность в г/см³.']};
-const facts=['На Луне масса тела та же, что на Земле, а сила тяжести примерно в шесть раз меньше.','В вакууме перо и металлический шар падают с одинаковым ускорением, если отпустить их в одном месте.','Космонавты на орбите испытывают невесомость, потому что вместе со станцией непрерывно свободно падают. Притяжение Земли там есть!','Звук не распространяется в вакууме: ему нужна среда. Свет может распространяться в вакууме.','Лёд плавает в воде, потому что его плотность меньше плотности жидкой воды.','При равномерном прямолинейном движении равнодействующая сил равна нулю. Для сохранения скорости постоянная тяга нужна только при наличии сопротивления.','Отрицательная проекция скорости означает движение против выбранного направления оси. Это не обязательно торможение.'];
-const blocks=window.OGE_FROG_BLOCKS||{},blockSelect=frog.querySelector('#frog-block');
-blockSelect.add(new Option('Авто — тема страницы','auto'));
-for(const [id,b] of Object.entries(blocks))blockSelect.add(new Option(`${id==='X'?'Бонус':'Блок '+id} · ${b.title}`,id));
-try{const remembered=localStorage.getItem('oge-frog-block-v1');if(remembered==='auto'||Object.hasOwn(blocks,remembered))blockSelect.value=remembered}catch{}
-let activeBlock=document.querySelector('.lesson[open]')?.dataset.l||null;
-function selectedBlock(){return blockSelect.value!=='auto'?blockSelect.value:(location.pathname.endsWith('index.html')||location.pathname.endsWith('/'))?activeBlock:null}
-function blockLabel(id){return id==='X'?'Бонус':'Блок '+id}
-blockSelect.onchange=()=>{lastInteraction=Date.now();indexes={formula:0,fact:0};try{localStorage.setItem('oge-frog-block-v1',blockSelect.value)}catch{}speak('fact')};
-document.addEventListener('click',e=>{const summary=e.target.closest('.lesson summary');if(summary){activeBlock=summary.closest('.lesson').dataset.l;indexes={formula:0,fact:0};if(blockSelect.value==='auto'&&!bubble.hidden)speak(mode)}});
-let indexes={formula:0,fact:0},mode='formula',typing=0,raf=0,pointer=null,lastInteraction=Date.now(),locked=false;
-const guide=window.OgeFrogGuide;
-function assessmentActive(){try{return document.body.dataset.frogAssessment==='active'||guide.pending(k=>localStorage.getItem(k))}catch{return document.body.dataset.frogAssessment==='active'}}
-function syncAssessment(){const next=assessmentActive();if(next!==locked){locked=next;close();text.textContent='';sr.textContent='';mode='formula';indexes={formula:0,fact:0};}body.disabled=locked;body.setAttribute('aria-label',locked?'Лягушка отдыхает до сдачи работы':'Спросить лягушку: формулы и факты');frog.querySelector('.frog-name').textContent=locked?'Отдыхаю до сдачи':'Нажми — подскажу';frog.querySelector('.frog-caption').textContent='Формулы и факты по блокам · без ИИ и звука';}
+const body = frog.querySelector('.frog-body');
+const navButton = document.createElement('button');
+navButton.id = 'frog-nav-toggle';
+navButton.type = 'button';
+navButton.textContent = '🐸 Помощник';
+navButton.setAttribute('aria-controls', 'frog-chat');
+navButton.setAttribute('aria-expanded', 'false');
+document.querySelector('.site-nav')?.append(navButton);
 
-addEventListener('oge-study-state',syncAssessment);addEventListener('storage',syncAssessment);addEventListener('pageshow',syncAssessment);syncAssessment();
-function context(){const p=location.pathname;if(p.includes('density'))return'density';if(p.includes('laboratory'))return Object.hasOwn(formulae,location.hash.slice(1))?location.hash.slice(1):'spring';return'general'}
-function cancelSpeech(){clearTimeout(typing);typing=0;frog.classList.remove('is-talking')}
-function close(){cancelSpeech();bubble.hidden=true;body.setAttribute('aria-expanded','false');toggle.setAttribute('aria-expanded','false');if(mobile.matches)toggle.setAttribute('aria-pressed','false')}
-function speak(kind,automatic=false){syncAssessment();if(locked)return;cancelSpeech();mode=kind;const block=selectedBlock(),pool=blocks[block]?.[kind]||(kind==='fact'?facts:formulae[context()]);const i=indexes[kind]||0;indexes[kind]=i+1;const msg=pool[i%pool.length];bubble.hidden=false;body.setAttribute('aria-expanded','true');toggle.setAttribute('aria-expanded','true');if(mobile.matches)toggle.setAttribute('aria-pressed','true');title.textContent=(blocks[block]?blockLabel(block)+' · ':'')+(kind==='fact'?'Ква-факт':'Формула');sr.textContent=automatic?'':msg;text.textContent='';if(reduced.matches){text.textContent=msg;return}frog.classList.add('is-talking');let iChar=0;function type(){if(bubble.hidden||frog.hidden)return;text.textContent=msg.slice(0,iChar+=2);if(iChar<msg.length)typing=setTimeout(type,28);else cancelSpeech()}type()}
+const bubble = frog.querySelector('.frog-bubble');
+const closeButton = frog.querySelector('.frog-close');
+const form = frog.querySelector('.frog-form');
+const input = frog.querySelector('#frog-question');
+const send = frog.querySelector('.frog-send');
+const taskBadge = frog.querySelector('.frog-task');
+const log = frog.querySelector('.frog-chat-log');
+const status = frog.querySelector('.frog-status');
+const quota = frog.querySelector('.frog-quota');
+let task = '';
+let endpoint, device, quotaRequest, inFlight;
+let remaining = null;
+let resetTimer;
+let trigger = null;
+let locked = false;
 
-function show(value){frog.hidden=!value;toggle.setAttribute('aria-pressed',String(value));if(!value)close();try{localStorage.setItem(store,value?'0':'1')}catch{}}
-try{frog.hidden=localStorage.getItem(store)==='1'}catch{}toggle.setAttribute('aria-pressed',String(!mobile.matches&&!frog.hidden));
-toggle.onclick=()=>{lastInteraction=Date.now();if(!mobile.matches){show(frog.hidden);return}if(!bubble.hidden){close();return}show(true);speak(mode);if(bubble.hidden)toggle.setAttribute('aria-pressed','false');else frog.querySelector('.frog-close').focus()};
-body.onclick=()=>{lastInteraction=Date.now();speak(mode)};
-frog.querySelector('.frog-close').onclick=()=>{lastInteraction=Date.now();close();(mobile.matches?toggle:body).focus()};
-frog.querySelectorAll('[data-tip]').forEach(b=>b.onclick=()=>{lastInteraction=Date.now();speak(b.dataset.tip==='next'?(mode==='formula'?'fact':'formula'):b.dataset.tip)});
-frog.addEventListener('keydown',e=>{if(e.key==='Escape'){close();(mobile.matches?toggle:body).focus()}});
-function look(){raf=0;if(!pointer||frog.hidden||reduced.matches)return;const r=body.getBoundingClientRect(),x=Math.max(-3,Math.min(3,(pointer.x-r.left-r.width/2)/65)),y=Math.max(-2,Math.min(2,(pointer.y-r.top-r.height/3)/85));frog.querySelectorAll('.frog-pupil').forEach(p=>p.style.transform=`translate(${x}px,${y}px)`)}
-addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;pointer={x:e.clientX,y:e.clientY};if(!raf)raf=requestAnimationFrame(look)},{passive:true});
-addEventListener('hashchange',()=>{indexes.formula=0;close()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelSpeech();cancelAnimationFrame(raf);raf=0}});
-setInterval(()=>{if(!mobile.matches&&!assessmentActive()&&!document.hidden&&!frog.hidden&&bubble.hidden&&Date.now()-lastInteraction>90000){lastInteraction=Date.now();speak('fact',true)}},120000);
+function setQuota(value) {
+  remaining = Number.isInteger(value) && value >= 0 && value <= 5 ? value : null;
+  quota.textContent = remaining === null ? '5 вопросов в день' : `Осталось ${remaining} из 5 сегодня`;
+}
+
+function controls() {
+  send.disabled = locked || !!inFlight || !!quotaRequest || !endpoint || remaining === 0;
+  input.readOnly = locked || !!inFlight;
+  frog.querySelector('.frog-clear').disabled = !!inFlight;
+}
+
+function deviceId() {
+  if (device) return device;
+  try {
+    device = localStorage.getItem('invariant-frog-device');
+    if (!device) {
+      device = crypto.randomUUID();
+      localStorage.setItem('invariant-frog-device', device);
+      device = localStorage.getItem('invariant-frog-device');
+    }
+  } catch {
+    device = crypto.randomUUID();
+  }
+  return device;
+}
+
+async function connect() {
+  if (endpoint) return endpoint;
+  const response = await fetch(new URL('frog-api.json', root), { signal: AbortSignal.timeout(8_000) });
+  if (!response.ok) throw new Error();
+  const config = await response.json();
+  if (!config.url) throw new Error('ИИ пока не подключён.');
+  const url = new URL(config.url, root);
+  if (url.protocol !== 'https:' && url.origin !== location.origin) throw new Error();
+  endpoint = url.href.replace(/\/$/, '');
+  return endpoint;
+}
+
+function showQuota() {
+  if (quotaRequest || locked || inFlight) return;
+  status.textContent = 'Проверяю, сколько вопросов осталось…';
+  quotaRequest = (async () => {
+    try {
+      const response = await fetch((await connect()) + '/quota', {
+        headers: { 'X-Frog-Device': deviceId() }, signal: AbortSignal.timeout(8_000),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Не удалось проверить лимит.');
+      setQuota(data.remaining);
+      clearTimeout(resetTimer);
+      if (Number.isFinite(data.resetAt) && data.resetAt > Date.now()) {
+        resetTimer = setTimeout(() => {
+          if (!bubble.hidden) showQuota();
+        }, data.resetAt - Date.now() + 300);
+      }
+      status.textContent = remaining === 0 ? 'Новые вопросы будут доступны в полночь по Москве.' : '';
+    } catch (error) {
+      endpoint = null;
+      setQuota(null);
+      status.textContent = error.message && !(error instanceof TypeError) && !(error instanceof DOMException)
+        ? error.message : 'ИИ пока недоступен. Попробуй позже.';
+    } finally {
+      quotaRequest = null;
+      controls();
+    }
+  })();
+  controls();
+}
+
+function close(restoreFocus = false) {
+  bubble.hidden = true;
+  body.setAttribute('aria-expanded', 'false');
+  navButton.setAttribute('aria-expanded', 'false');
+  if (restoreFocus && trigger?.isConnected && !trigger.disabled) trigger.focus({ preventScroll: true });
+}
+
+function open(button) {
+  if (locked) return;
+  trigger = button;
+  bubble.hidden = false;
+  body.setAttribute('aria-expanded', 'true');
+  navButton.setAttribute('aria-expanded', 'true');
+  input.focus({ preventScroll: true });
+  showQuota();
+}
+
+function setTask(label = '', condition = '') {
+  task = condition ? [label, condition].filter(Boolean).join('\n').slice(0, 3000) : '';
+  taskBadge.hidden = !task;
+  taskBadge.querySelector('span').textContent = label || 'Условие задачи';
+}
+
+function assessmentChanged() {
+  const next = document.body.dataset.frogAssessment === 'active' || !!window.OgeFrogGuide?.pending(key => localStorage.getItem(key));
+  if (next && !locked) {
+    inFlight?.abort();
+    close();
+  }
+  locked = next;
+  body.disabled = locked;
+  navButton.disabled = locked;
+  frog.querySelector('.frog-name').textContent = locked ? 'До конца теста' : 'Задать вопрос';
+  navButton.title = locked ? 'Помощник доступен после сдачи теста' : '';
+  controls();
+}
+
+function addMessage(className, message) {
+  const node = document.createElement('p');
+  node.className = className;
+  node.textContent = message;
+  log.hidden = false;
+  log.append(node);
+  while (log.children.length > 10) log.firstElementChild.remove();
+  log.scrollTop = log.scrollHeight;
+  return node;
+}
+
+async function readAnswer(response, onEvent) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let pending = '';
+  let doneEvent = false;
+  const accept = line => {
+    if (!line.trim()) return;
+    const event = JSON.parse(line);
+    doneEvent ||= event.done === true;
+    onEvent(event);
+  };
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      pending += decoder.decode(value, { stream: !done });
+      let newline;
+      while ((newline = pending.indexOf('\n')) !== -1) {
+        accept(pending.slice(0, newline));
+        pending = pending.slice(newline + 1);
+      }
+      if (done) {
+        accept(pending);
+        if (!doneEvent) throw new Error('Ответ прервался. Попробуй ещё раз.');
+        return;
+      }
+    }
+  } finally {
+    await reader.cancel().catch(() => {});
+  }
+}
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  const question = input.value.trim();
+  if (!question || send.disabled) return;
+  const controller = new AbortController();
+  inFlight = controller;
+  controls();
+  const userMessage = addMessage('frog-user-message', question);
+  const answer = addMessage('frog-answer', '');
+  answer.hidden = true;
+  frog.classList.add('is-talking');
+  status.textContent = 'Думаю над вопросом…';
+  let assembled = '';
+  let frame = 0;
+  let errored = false;
+  const paint = () => {
+    frame = 0;
+    const nearBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 48;
+    answer.hidden = false;
+    answer.textContent = assembled;
+    if (nearBottom) log.scrollTop = log.scrollHeight;
+  };
+  try {
+    const response = await fetch(endpoint + '/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Frog-Device': deviceId() },
+      signal: controller.signal,
+      body: JSON.stringify({ question, task }),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      if (Number.isInteger(data.remaining)) setQuota(data.remaining);
+      throw new Error(data.error || 'Не удалось отправить вопрос.');
+    }
+    const header = response.headers.get('X-Frog-Remaining');
+    if (header !== null) setQuota(Number(header));
+    await readAnswer(response, event => {
+      if (Number.isInteger(event.remaining)) setQuota(event.remaining);
+      if (event.error) throw new Error(event.error);
+      if (typeof event.delta !== 'string') return;
+      assembled += event.delta;
+      status.textContent = 'Пишу ответ…';
+      if (!frame) frame = requestAnimationFrame(paint);
+    });
+    input.value = '';
+  } catch (error) {
+    errored = true;
+    status.textContent = controller.signal.aborted ? '' :
+      (error instanceof TypeError ? 'Связь прервалась. Попробуй ещё раз.' : error.message);
+    if (!assembled) {
+      userMessage.remove();
+      answer.remove();
+      log.hidden = log.children.length === 0;
+    }
+  } finally {
+    cancelAnimationFrame(frame);
+    if (assembled) paint();
+    if (!errored) status.textContent = 'Ответ готов. Лягушка может ошибаться.';
+    frog.classList.remove('is-talking');
+    inFlight = null;
+    controls();
+  }
+});
+
+function toggle(button) {
+  if (bubble.hidden) open(button);
+  else close();
+}
+navButton.onclick = () => toggle(navButton);
+body.onclick = () => toggle(body);
+closeButton.onclick = () => close(true);
+frog.querySelector('.frog-clear').onclick = () => setTask();
+frog.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !bubble.hidden) close(true);
+  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey) && !send.disabled) form.requestSubmit();
+});
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-frog-task]');
+  if (!button || locked) return;
+  const card = button.closest('[data-id]');
+  const condition = card?.querySelector('.tt');
+  if (!condition) return;
+  if (!inFlight) {
+    const label = card.querySelector('.tn, .qn')?.textContent.trim();
+    const text = condition.innerText + (condition.querySelector('img') ? '\nВ задаче есть рисунок. Изображение в чат не передано.' : '');
+    setTask(label, text);
+    if (!input.value.trim()) input.value = 'Подскажи первый шаг.';
+  }
+  open(button);
+});
+
+addEventListener('oge-study-state', assessmentChanged);
+addEventListener('storage', assessmentChanged);
+addEventListener('pageshow', assessmentChanged);
+assessmentChanged();
+
+if (!reduced.matches) {
+  const pupils = frog.querySelectorAll('.frog-pupil');
+  let frame = 0;
+  addEventListener('pointermove', event => {
+    if (event.pointerType === 'touch' || frame || !body.getClientRects().length || reduced.matches) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      const rect = body.getBoundingClientRect();
+      const x = Math.max(-3, Math.min(3, (event.clientX - rect.left - rect.width / 2) / 65));
+      const y = Math.max(-2, Math.min(2, (event.clientY - rect.top - rect.height / 3) / 85));
+      pupils.forEach(pupil => { pupil.style.transform = `translate(${x}px, ${y}px)`; });
+    });
+  }, { passive: true });
+}
 })();

@@ -1,0 +1,5 @@
+frog-api/.dev.vars*
+frog-api/.env*
+.wrangler/
+
+node_modules/
