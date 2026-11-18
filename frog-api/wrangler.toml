@@ -6,6 +6,9 @@ workers_dev = true
 [vars]
 FROG_ORIGINS = "https://inv1nced.github.io"
 
+[ai]
+binding = "AI"
+
 [[durable_objects.bindings]]
 name = "QUOTA"
 class_name = "DailyQuota"
