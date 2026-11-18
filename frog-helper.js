@@ -83,7 +83,10 @@ function deviceId() {
 
 async function connect() {
   if (endpoint) return endpoint;
-  const response = await fetch(new URL('frog-api.json', root), { signal: AbortSignal.timeout(8_000) });
+  const response = await fetch(new URL('frog-api.json', root), {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(8_000),
+  });
   if (!response.ok) throw new Error();
   const config = await response.json();
   if (!config.url) throw new Error('ИИ пока не подключён.');
