@@ -49,19 +49,28 @@ const log = frog.querySelector('.frog-chat-log');
 const status = frog.querySelector('.frog-status');
 const quota = frog.querySelector('.frog-quota');
 let task = '';
-let endpoint, device, quotaRequest, inFlight;
+let endpointRequest, device, quotaRequest, inFlight;
 let remaining = null;
 let resetTimer;
 let trigger = null;
 let locked = false;
 
-function setQuota(value) {
+function setQuota(value, resetAt) {
   remaining = Number.isInteger(value) && value >= 0 && value <= 5 ? value : null;
   quota.textContent = remaining === null ? '5 вопросов в день' : `Осталось ${remaining} из 5 сегодня`;
+  if (Number.isFinite(resetAt) && resetAt > Date.now()) {
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+      resetTimer = null;
+      setQuota(null);
+      controls();
+      if (!bubble.hidden) showQuota();
+    }, resetAt - Date.now() + 300);
+  }
 }
 
 function controls() {
-  send.disabled = locked || !!inFlight || !!quotaRequest || !endpoint || remaining === 0;
+  send.disabled = locked || !!inFlight || remaining === 0;
   input.readOnly = locked || !!inFlight;
   frog.querySelector('.frog-clear').disabled = !!inFlight;
 }
@@ -81,50 +90,53 @@ function deviceId() {
   return device;
 }
 
-async function connect() {
-  if (endpoint) return endpoint;
-  const response = await fetch(new URL('frog-api.json', root), {
-    cache: 'no-store',
-    signal: AbortSignal.timeout(8_000),
-  });
-  if (!response.ok) throw new Error();
-  const config = await response.json();
-  if (!config.url) throw new Error('ИИ пока не подключён.');
-  const url = new URL(config.url, root);
-  if (url.protocol !== 'https:' && url.origin !== location.origin) throw new Error();
-  endpoint = url.href.replace(/\/$/, '');
-  return endpoint;
+function connect() {
+  if (!endpointRequest) {
+    endpointRequest = fetch(new URL('frog-api.json', root), {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5_000),
+    }).then(async response => {
+      if (!response.ok) throw new Error('Не удалось загрузить настройки помощника.');
+      const config = await response.json();
+      if (!config.url) throw new Error('ИИ пока не подключён.');
+      const url = new URL(config.url, root);
+      if (url.protocol !== 'https:' && url.origin !== location.origin) throw new Error('Недоступен адрес помощника.');
+      if (url.origin !== location.origin) {
+        const hint = document.createElement('link');
+        hint.rel = 'preconnect';
+        hint.href = url.origin;
+        hint.crossOrigin = 'anonymous';
+        document.head.append(hint);
+      }
+      return url.href.replace(/\/$/, '');
+    }).catch(error => {
+      endpointRequest = null;
+      throw error;
+    });
+  }
+  return endpointRequest;
 }
 
-function showQuota() {
+async function showQuota() {
   if (quotaRequest || locked || inFlight) return;
-  status.textContent = 'Проверяю, сколько вопросов осталось…';
-  quotaRequest = (async () => {
-    try {
-      const response = await fetch((await connect()) + '/quota', {
-        headers: { 'X-Frog-Device': deviceId() }, signal: AbortSignal.timeout(8_000),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Не удалось проверить лимит.');
-      setQuota(data.remaining);
-      clearTimeout(resetTimer);
-      if (Number.isFinite(data.resetAt) && data.resetAt > Date.now()) {
-        resetTimer = setTimeout(() => {
-          if (!bubble.hidden) showQuota();
-        }, data.resetAt - Date.now() + 300);
-      }
-      status.textContent = remaining === 0 ? 'Новые вопросы будут доступны в полночь по Москве.' : '';
-    } catch (error) {
-      endpoint = null;
-      setQuota(null);
-      status.textContent = error.message && !(error instanceof TypeError) && !(error instanceof DOMException)
-        ? error.message : 'ИИ пока недоступен. Попробуй позже.';
-    } finally {
-      quotaRequest = null;
-      controls();
-    }
-  })();
-  controls();
+  const controller = new AbortController();
+  quotaRequest = controller;
+  try {
+    const response = await fetch((await connect()) + '/quota', {
+      headers: { 'X-Frog-Device': deviceId() },
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(3_000)]),
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (controller.signal.aborted) return;
+    setQuota(data.remaining, data.resetAt);
+    if (remaining === 0) status.textContent = 'Новые вопросы будут доступны в полночь по Москве.';
+    controls();
+  } catch {
+    // The server also checks the quota on submission. Keep the form usable.
+  } finally {
+    if (quotaRequest === controller) quotaRequest = null;
+  }
 }
 
 function close(restoreFocus = false) {
@@ -212,12 +224,13 @@ form.addEventListener('submit', async event => {
   if (!question || send.disabled) return;
   const controller = new AbortController();
   inFlight = controller;
+  quotaRequest?.abort();
   controls();
   const userMessage = addMessage('frog-user-message', question);
   const answer = addMessage('frog-answer', '');
   answer.hidden = true;
   frog.classList.add('is-talking');
-  status.textContent = 'Думаю над вопросом…';
+  status.textContent = 'Отправляю вопрос…';
   let assembled = '';
   let frame = 0;
   let errored = false;
@@ -229,19 +242,20 @@ form.addEventListener('submit', async event => {
     if (nearBottom) log.scrollTop = log.scrollHeight;
   };
   try {
-    const response = await fetch(endpoint + '/ask', {
+    const response = await fetch((await connect()) + '/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Frog-Device': deviceId() },
-      signal: controller.signal,
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(55_000)]),
       body: JSON.stringify({ question, task }),
     });
     if (!response.ok) {
       const data = await response.json();
-      if (Number.isInteger(data.remaining)) setQuota(data.remaining);
+      if (Number.isInteger(data.remaining)) setQuota(data.remaining, data.resetAt);
       throw new Error(data.error || 'Не удалось отправить вопрос.');
     }
     const header = response.headers.get('X-Frog-Remaining');
     if (header !== null) setQuota(Number(header));
+    status.textContent = 'Думаю над вопросом…';
     await readAnswer(response, event => {
       if (Number.isInteger(event.remaining)) setQuota(event.remaining);
       if (event.error) throw new Error(event.error);
@@ -254,7 +268,8 @@ form.addEventListener('submit', async event => {
   } catch (error) {
     errored = true;
     status.textContent = controller.signal.aborted ? '' :
-      (error instanceof TypeError ? 'Связь прервалась. Попробуй ещё раз.' : error.message);
+      (error instanceof TypeError || error.name === 'TimeoutError' ?
+        'Не удалось связаться с сервером помощника. Попробуй ещё раз.' : error.message);
     if (!assembled) {
       userMessage.remove();
       answer.remove();
@@ -267,6 +282,7 @@ form.addEventListener('submit', async event => {
     frog.classList.remove('is-talking');
     inFlight = null;
     controls();
+    if (remaining === 0 && !resetTimer) showQuota();
   }
 });
 
@@ -302,6 +318,7 @@ addEventListener('oge-study-state', assessmentChanged);
 addEventListener('storage', assessmentChanged);
 addEventListener('pageshow', assessmentChanged);
 assessmentChanged();
+connect().catch(() => {});
 
 if (!reduced.matches) {
   const pupils = frog.querySelectorAll('.frog-pupil');

@@ -140,6 +140,7 @@ let testTimer;
 
 let boardRequest;
 function loadBoard() {
+ if (typeof BD !== 'undefined') return Promise.resolve(BD);
  if (!boardRequest) boardRequest = new Promise((resolve, reject) => {
   const script = document.createElement('script');
   script.src = 'task-board.js?v=native-fipi';
@@ -149,7 +150,10 @@ function loadBoard() {
  });
  return boardRequest;
 }
-function openBoard(...args) { loadBoard().then(board => board.open(...args)).catch(error => toast(error.message)); }
+function openBoard(...args) {
+ if (typeof BD !== 'undefined') return BD.open(...args);
+ loadBoard().then(board => board.open(...args)).catch(error => toast(error.message));
+}
 const V=document.getElementById("view");
 const studyTopbar=document.querySelector('.study-site .topbar');
 new ResizeObserver(()=>document.body.style.setProperty('--topbar-height',`${studyTopbar.offsetHeight}px`)).observe(studyTopbar);

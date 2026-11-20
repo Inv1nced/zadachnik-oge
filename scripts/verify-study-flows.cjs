@@ -62,12 +62,32 @@ async function checkPublic(browser, base) {
   page.on('pageerror',error=>errors.push(error.message));
   const requested = [];
   page.on('request',request=>requested.push(request.url()));
+  let releaseFrogQuota;
+  const frogQuota = new Promise(resolve=>{ releaseFrogQuota=resolve; });
+  await page.route('**/frog-api.json',route=>route.fulfill({json:{url:'/test-frog'}}));
+  await page.route('**/test-frog/quota',async route=>{
+    await frogQuota;
+    await route.fulfill({json:{remaining:5,resetAt:Date.now()+60_000}}).catch(()=>{});
+  });
+  await page.route('**/test-frog/ask',route=>route.fulfill({
+    headers:{'Content-Type':'application/x-ndjson','X-Frog-Remaining':'4'},
+    body:'{"delta":"Совет для теста"}\n{"done":true}\n'
+  }));
   await page.goto('index.html');
   await page.locator('#freeBd').waitFor();
   assert.equal(await page.locator('#mods .mod').count(),5);
-  assert.ok(!requested.some(url=>/bank\/\w+\.json|task-board\.js/.test(url)));
+  assert.ok(!requested.some(url=>/bank\/\w+\.json/.test(url)));
+  assert.ok(requested.some(url=>/task-board\.js/.test(url)));
+  const quotaStarted=page.waitForRequest('**/test-frog/quota');
   await page.locator('#frog-nav-toggle').click();
   assert.ok(await page.locator('.frog-bubble').isVisible());
+  await quotaStarted;
+  assert.ok(await page.locator('.frog-send').isEnabled(), 'A slow quota check must not block sending.');
+  await page.locator('#frog-question').fill('Проверка подсказки');
+  await page.locator('.frog-send').click();
+  await page.getByText('Совет для теста',{exact:true}).waitFor();
+  releaseFrogQuota();
+  assert.match(await page.locator('.frog-quota').innerText(),/Осталось 4 из 5/);
   await page.locator('.frog-close').click();
   assert.ok(!(await page.locator('.frog-bubble').isVisible()));
 
@@ -101,8 +121,10 @@ async function checkPublic(browser, base) {
   assert.match(await thermal.locator('.lmt').innerText(),/^1 \/ 12$/);
   await task.locator('[data-act="show"]').click();
   assert.match(await task.locator('.vslot').innerText(),/2475/);
-  await task.locator('[data-act="board"]').click();
-  await page.locator('#bd').waitFor();
+  assert.ok(await task.locator('[data-act="board"]').evaluate(button=>{
+    button.click();
+    return !document.getElementById('bd').hidden;
+  }), 'The task board must open in the click handler.');
   assert.match(await page.locator('#bdTn').textContent(),/Блок 24 · задача/);
   assert.match(await page.locator('#bdTb').innerText(),/Колбу с жидкостью/);
   assert.equal(await page.locator('#bdTb img.fig').count(),1);

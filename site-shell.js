@@ -16,7 +16,7 @@ if(!document.documentElement.classList.contains('workspace-embed')){
  guide.src = new URL('frog-guide.js?v=ai-1', base).href;
  guide.onload = () => {
   const helper = document.createElement('script');
-  helper.src = new URL('frog-helper.js?v=ai-2', base).href;
+  helper.src = new URL('frog-helper.js?v=ai-3', base).href;
   document.body.append(helper);
  };
  document.body.append(guide);
