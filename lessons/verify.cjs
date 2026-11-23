@@ -90,12 +90,18 @@ let encryptedFixture;
 
 function makeTeacherFixture() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'invariant-lessons-check-'));
+  const testSource = path.join(directory, 'source');
+  fs.mkdirSync(path.join(testSource, 'tutor-plan'), { recursive: true });
+  // Project only the lesson sources. Live mock access codes never enter the fixture.
+  for (const file of ['teach.html', 'teach.js', 'practice-data.js', 'lessons-data.js', 'tutor-plan/plan-data.js']) {
+    fs.copyFileSync(path.join(source, file), path.join(testSource, file));
+  }
   const salt = crypto.randomBytes(16), iv = crypto.randomBytes(12);
   const key = crypto.pbkdf2Sync(fixturePassword, salt, 200000, 32, 'sha256');
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
   const data = Buffer.concat([salt, iv, cipher.update(JSON.stringify({ ALL: [], LT: {}, CODES: {} })), cipher.final(), cipher.getAuthTag()]);
   fs.writeFileSync(path.join(directory, 'zhurnal.html'), read('zhurnal.html').replace(/const ENC="[^"]+"/, `const ENC="${data.toString('base64')}"`));
-  execFileSync(process.execPath, [path.join(root, 'scripts/protect-teacher.mjs'), source, '--workspace-only'],
+  execFileSync(process.execPath, [path.join(root, 'scripts/protect-teacher.mjs'), testSource, '--workspace-only'],
     { cwd: directory, input: fixturePassword + '\n' });
   return directory;
 }

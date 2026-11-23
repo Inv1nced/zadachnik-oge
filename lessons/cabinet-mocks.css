@@ -1,0 +1,23 @@
+.cabinet-nav:has([data-mock-tools] button) {
+  flex-wrap: wrap;
+}
+
+[data-mock-tools]:empty {
+  display: none;
+}
+
+[data-mock-tools] button {
+  min-height: 38px;
+  padding: 6px 9px;
+  font-size: .85rem;
+}
+
+@media (max-width: 740px) {
+  [data-mock-tools] {
+    flex: 1 1 auto;
+  }
+
+  [data-mock-tools] button {
+    width: 100%;
+  }
+}
