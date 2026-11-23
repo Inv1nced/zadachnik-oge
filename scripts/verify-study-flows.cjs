@@ -328,6 +328,7 @@ async function checkTeacher(browser,base,bank,source) {
     await login(teacher);
     await teacher.locator('.lesson-tile').first().waitFor();
     assert.equal(await teacher.locator('.cabinet-nav a').count(),3);
+    assert.equal(await teacher.locator('#teacher-session-actions a').first().getAttribute('href'),'oge.html');
     assert.equal(await teacher.locator('.lesson-tile').count(),56);
     await teacher.locator('.lesson-tile[data-lesson="9"]').click();
     const lessonCodes=teacher.locator('[data-block-codes=lesson]');

@@ -7,7 +7,7 @@
 - Пример прямой ссылки для общей сборки — `lessons.html?exam=ege&lesson=velocity-graph&stage=explain`. Доступные этапы — `diagnostic`, `explain`, `together`, `practice`, `review`, `homework`.
 - Вход ОГЭ в сборке главной — ссылка `lessons.html?exam=oge` с текстом «Уроки ОГЭ» из `oge.html`. Прежние переходы к карточкам используют `index.html?block=…`, а переход в кабинет — `teach.html?view=lessons`.
 - В сборке главной `ege.html` использует `entry/exam-preference.js` для запоминания выбранного экзамена. В отдельной ветке переключатель ОГЭ ведёт к списку уроков.
-- ЕГЭ передаёт тему банку через `ege-bank.html?topic=<slug>`. Вход в пробники — `mocks.html?exam=ege`. При отсутствии страницы открываются материалы ФИПИ. Карты покрытия: [ЕГЭ](coverage/ege.md) и [ОГЭ](coverage/oge.md).
+- ЕГЭ передаёт тему банку через `ege-bank.html?topic=<slug>`. Вход в пробники — `mocks.html?exam=ege`. В первой публикации ссылки с главной, курсов и уроков ведут к материалам ФИПИ. При подключении банка и пробников вернуть маршруты `ege-bank.html?topic=<slug>` и `mocks.html?exam=oge|ege`. Карты покрытия: [ЕГЭ](coverage/ege.md) и [ОГЭ](coverage/oge.md).
 
 ## Локальные закрытые исходники
 

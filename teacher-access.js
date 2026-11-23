@@ -49,6 +49,8 @@ async function mount(payload){
  }
  window.__OGE_TEACHER_BANK=await includeOpenPractice(payload.bank);
  root.insertAdjacentHTML('afterend',payload.body);
+ const oldTaskbookLink=document.querySelector('#teacher-session-actions a[href="index.html"]');
+ if(oldTaskbookLink)oldTaskbookLink.href='oge.html';
  root.remove();mounted=true;
  for(const script of payload.scripts)await appendScript(script);
  const exit=document.createElement('button');exit.id='teacher-signout';exit.type='button';exit.textContent='Выйти из кабинета';exit.onclick=()=>{if(parent!==window)parent.postMessage({type:'teacher-logout'},location.origin);sessionClear();location.reload();};(document.getElementById('teacher-session-actions')||document.querySelector('.teacher-header')||document.querySelector('.topbar')||document.body).appendChild(exit);

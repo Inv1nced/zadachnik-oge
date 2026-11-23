@@ -6,15 +6,16 @@
   <meta name="description" content="Курс INVARIANT по физике для подготовки к ЕГЭ. Уроки, модели и задачи для 11 класса.">
   <title>Курс ЕГЭ по физике · INVARIANT</title>
   <link rel="stylesheet" href="lessons/course.css">
-  <script src="entry/exam-preference.js" defer></script>
+  <script src="entry/exam-preference.js"></script>
+  <link rel="stylesheet" href="entry/exam-handoff.css">
   <script type="module" src="lessons/course.js"></script>
 </head>
 <body data-page="course">
   <header class="site-header">
     <a class="wordmark" href="index.html?choose=1" aria-label="INVARIANT · Выбрать экзамен">INVARIANT</a>
     <div class="header-links">
-      <nav aria-label="Курс по физике">
-        <a href="oge.html" data-exam-choice="oge" data-integration data-fallback="lessons.html?exam=oge" data-fallback-title="ОГЭ">ОГЭ</a>
+      <nav class="exam-switch" aria-label="Курс по физике">
+        <a href="oge.html" data-exam-choice="oge">ОГЭ</a>
         <a href="ege.html" data-exam-choice="ege" aria-current="page">ЕГЭ</a>
       </nav>
       <a href="teach.html?view=lessons&amp;exam=ege">Кабинет</a>
@@ -49,8 +50,8 @@
       </figure>
     </section>
     <div class="tools">
-      <div><h2>Банк задач</h2><a href="ege-bank.html" data-integration data-fallback="https://fipi.ru/navigator-podgotovki/navigator-ege" data-fallback-title="Задачи из навигатора ФИПИ">Открыть задачи ЕГЭ</a></div>
-      <div><h2>Пробники</h2><a href="mocks.html?exam=ege" data-integration data-fallback="https://fipi.ru/ege/demoversii-specifikacii-kodifikatory" data-fallback-title="Демоверсия ФИПИ">Открыть варианты ЕГЭ</a></div>
+      <div><h2>Банк задач</h2><a href="https://fipi.ru/navigator-podgotovki/navigator-ege">Задачи из навигатора ФИПИ</a></div>
+      <div><h2>Пробники</h2><a href="https://fipi.ru/ege/demoversii-specifikacii-kodifikatory">Демоверсия ФИПИ</a></div>
     </div>
     <section id="route" aria-labelledby="route-title">
       <h2 id="route-title" class="section-title">План курса</h2>

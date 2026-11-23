@@ -25,19 +25,6 @@ function lessonURL(lesson, stageId = '', embed = false) {
   return 'lessons.html?' + params;
 }
 
-async function updateIntegration(link) {
-  // Bank and mocks are merged independently. The official resource stays usable in an isolated checkout.
-  try {
-    const response = await fetch(link.href, { method: 'HEAD' });
-    if (response.ok) return;
-  } catch {
-    // The official source also works when the project's module is temporarily unavailable.
-  }
-  link.href = link.dataset.fallback;
-  link.textContent = link.dataset.fallbackTitle;
-}
-document.querySelectorAll('[data-integration]').forEach(updateIntegration);
-
 function lessonIndex(lesson) {
   return String(lesson.number).padStart(2, '0');
 }
@@ -102,8 +89,7 @@ function studentLesson(data, lesson) {
     <h1>${e(lesson.title)}</h1>
     ${full ? `<p class="intro">${e(lesson.goal)}</p><p class="meta">${e(lesson.level)} · ${lesson.duration} мин</p>
     <p class="meta"><strong>Перед занятием</strong> · ${e(lesson.prerequisites)}</p>` : '<p class="meta">9 класс · Повторение</p>'}
-    ${exam === 'ege' ? `<p class="meta"><a href="ege-bank.html?topic=${e(lesson.topic)}" data-integration
-      data-fallback="https://fipi.ru/navigator-podgotovki/navigator-ege" data-fallback-title="Задачи из навигатора ФИПИ">Задачи банка по теме</a></p>` : ''}
+    ${exam === 'ege' ? `<p class="meta"><a href="https://fipi.ru/navigator-podgotovki/navigator-ege">Задачи из навигатора ФИПИ</a></p>` : ''}
   </header>
   ${full ? `<div class="lesson-layout">
     <nav class="stage-nav" aria-label="Этапы урока">
@@ -144,7 +130,6 @@ async function load() {
     return;
   }
   content.innerHTML = lesson ? studentLesson(data, lesson) : directory(data);
-  if (!document.body.classList.contains('embedded')) content.querySelectorAll('[data-integration]').forEach(updateIntegration);
   const demo = document.getElementById('demo');
   if (demo) showLab(demo, lesson.demo, lesson.id);
 }

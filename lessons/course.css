@@ -35,6 +35,16 @@ h3 { font-size: 1.15rem; }
 .site-header :is(nav, .header-links) { display: flex; flex-wrap: wrap; gap: .2rem .85rem; align-items: center; }
 .site-header a { text-decoration: none; color: var(--ink); padding-block: .4rem; }
 .site-header a[aria-current], .site-header a:hover { color: var(--accent); text-decoration: underline; }
+.site-header .exam-switch {
+  --line: var(--border);
+  --text: var(--ink);
+  --cyan: var(--pale);
+  --bg: var(--accent-strong);
+  --panel2: var(--paper);
+  gap: 2px;
+}
+.site-header .exam-switch a { text-decoration: none; }
+.site-header .exam-switch a:focus-visible { outline-color: var(--accent); }
 .site-header .wordmark { font-weight: 850; font-size: 1.12rem; letter-spacing: .09em; }
 .wrap { width: min(1080px, calc(100% - 2.25rem)); margin-inline: auto; }
 main.wrap { min-height: 58vh; padding-block: clamp(1.4rem, 5vw, 4.2rem); }
