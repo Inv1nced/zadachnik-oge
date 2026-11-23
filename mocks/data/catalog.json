@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "variants": [
+    {
+      "exam": "oge",
+      "id": "oge-01",
+      "version": 1,
+      "title": "Вариант 1",
+      "access": "open",
+      "archived": false,
+      "count": 22,
+      "minutes": 180,
+      "max": 39,
+      "file": "oge-01-v1.json"
+    },
+    {
+      "exam": "oge",
+      "id": "oge-02",
+      "version": 1,
+      "title": "Вариант 2",
+      "access": "code",
+      "archived": false,
+      "count": 22,
+      "minutes": 180,
+      "max": 39,
+      "file": "oge-02-v1.enc.json"
+    },
+    {
+      "exam": "ege",
+      "id": "ege-01",
+      "version": 1,
+      "title": "Вариант 1",
+      "access": "open",
+      "archived": false,
+      "count": 26,
+      "minutes": 235,
+      "max": 45,
+      "file": "ege-01-v1.json"
+    },
+    {
+      "exam": "ege",
+      "id": "ege-02",
+      "version": 1,
+      "title": "Вариант 2",
+      "access": "code",
+      "archived": false,
+      "count": 26,
+      "minutes": 235,
+      "max": 45,
+      "file": "ege-02-v1.enc.json"
+    }
+  ]
+}

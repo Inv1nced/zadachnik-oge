@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Пробные экзамены INVARIANT по физике для 9-го и 11-го классов.">
+  <title>Пробники по физике · INVARIANT</title>
+  <link rel="stylesheet" href="mocks/mocks.css">
+</head>
+<body class="mock-site">
+  <header class="mock-header mock-wrap">
+    <a class="mock-brand" href="./">INVARIANT</a>
+    <nav aria-label="Навигация">
+      <a href="mocks.html?exam=ege" data-exam="ege">ЕГЭ</a>
+      <a href="mocks.html?exam=oge" data-exam="oge">ОГЭ</a>
+    </nav>
+  </header>
+  <main id="mock-app" class="mock-wrap">
+    <p role="status">Загружаем пробники…</p>
+    <noscript>Для прохождения пробника включите JavaScript.</noscript>
+  </main>
+  <dialog id="mock-confirm" class="mock-ui">
+    <form method="dialog">
+      <h2>Сдать пробник?</h2>
+      <p id="mock-confirm-count"></p>
+      <div class="mock-row">
+        <button class="mock-button secondary" value="cancel" autofocus>Вернуться</button>
+        <button class="mock-button primary" value="submit">Сдать работу</button>
+      </div>
+    </form>
+  </dialog>
+  <script type="module" src="mocks/app.mjs"></script>
+</body>
+</html>
