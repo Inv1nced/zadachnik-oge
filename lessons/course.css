@@ -1,0 +1,137 @@
+:root {
+  color-scheme: light;
+  --ink: #18213b;
+  --muted: #485572;
+  --paper: #f6f7fc;
+  --white: #fff;
+  --accent: #3548b2;
+  --accent-strong: #26358f;
+  --pale: #e9edff;
+  --border: #d8deed;
+  --night: #202b59;
+  --motion: 150ms cubic-bezier(.23, 1, .32, 1);
+  font: 16px/1.6 "Onest", "Avenir Next", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); background: var(--paper); min-height: 100vh; }
+a { color: var(--accent); text-underline-offset: .22em; }
+a:hover { color: var(--accent-strong); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+h1, h2, h3, p { margin-block: 0; }
+h1, h2, h3 { line-height: 1.16; text-wrap: balance; }
+h1 { font-size: clamp(2.15rem, 6vw, 4.4rem); letter-spacing: -.05em; }
+h2 { font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.025em; }
+h3 { font-size: 1.15rem; }
+.site-header {
+  min-height: 64px;
+  padding: .6rem max(1.125rem, calc((100vw - 1080px) / 2));
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem;
+}
+.site-header :is(nav, .header-links) { display: flex; flex-wrap: wrap; gap: .2rem .85rem; align-items: center; }
+.site-header a { text-decoration: none; color: var(--ink); padding-block: .4rem; }
+.site-header a[aria-current], .site-header a:hover { color: var(--accent); text-decoration: underline; }
+.site-header .wordmark { font-weight: 850; font-size: 1.12rem; letter-spacing: .09em; }
+.wrap { width: min(1080px, calc(100% - 2.25rem)); margin-inline: auto; }
+main.wrap { min-height: 58vh; padding-block: clamp(1.4rem, 5vw, 4.2rem); }
+.hero { display: grid; align-items: center; grid-template-columns: 1.1fr 1fr; gap: clamp(1rem, 5vw, 4rem); }
+.hero h1 { font-size: clamp(3.3rem, 9vw, 7.2rem); line-height: .97; }
+.kicker { color: var(--accent); font-size: .94rem; font-weight: 700; margin-bottom: .65rem; }
+.intro { color: var(--muted); font-size: clamp(1rem, 2.1vw, 1.22rem); max-width: 37ch; margin-top: 1.15rem; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; margin-top: 1.35rem; }
+.button {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  border: 1px solid var(--border); background: var(--white); color: var(--ink);
+  border-radius: .55rem; padding: .45rem .9rem; text-decoration: none;
+  font-weight: 660; transition: background-color var(--motion), border-color var(--motion);
+}
+.button:hover { background: var(--pale); color: var(--ink); border-color: var(--accent); }
+.button:disabled { opacity: .5; cursor: default; }
+.primary, .primary:hover { color: white; background: var(--accent); border-color: var(--accent); }
+.primary:hover { background: var(--accent-strong); }
+.hero-figure { margin: 0; background: var(--night); color: #edf0ff; border-radius: 1.1rem; padding: 1rem; }
+.hero-figure svg { display: block; width: 100%; height: auto; }
+.hero-figure figcaption { margin: 0 1rem .55rem; color: #e4eaff; font-size: .9rem; }
+.tools { display: grid; grid-template-columns: 1fr 1fr; margin: clamp(2rem, 6vw, 4.5rem) 0 3rem; border-block: 1px solid var(--border); }
+.tools > div { padding: 1rem .8rem 1.15rem 0; }
+.tools > div + div { padding-left: 1.15rem; border-left: 1px solid var(--border); }
+.tools h2 { font-size: 1.1rem; margin-bottom: .25rem; }
+.section-title { margin-bottom: 1.2rem; }
+.course-block { border-top: 1px solid var(--border); padding-block: 1.35rem; }
+.course-block h2, .course-block h3 { margin-bottom: .4rem; }
+.course-block ul { list-style: none; margin: 0; padding: 0; }
+.course-block li + li { border-top: 1px solid var(--border); }
+.lesson-row {
+  display: grid; grid-template-columns: 2.2rem 1fr auto; align-items: baseline; gap: .55rem;
+  padding: .78rem .6rem; color: var(--ink); text-decoration: none; border-radius: .25rem;
+}
+.lesson-row:hover { background: var(--pale); color: var(--accent); }
+.lesson-index { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; }
+.lesson-duration { font-size: .9rem; color: var(--muted); }
+.course-block .actions { margin: .2rem 0 .8rem; }
+.route-top, .lesson-heading { margin-bottom: 1.6rem; }
+.route-top p { margin-top: .45rem; color: var(--muted); }
+.lesson-heading .kicker { margin-top: .9rem; }
+.lesson-heading h1 { max-width: 24ch; }
+.lesson-heading .intro { max-width: 66ch; }
+.lesson-heading .meta { margin-top: .55rem; color: var(--muted); }
+.lesson-layout { display: grid; grid-template-columns: minmax(11rem, 1fr) minmax(0, 3.3fr); gap: 1.15rem; }
+.stage-nav { display: grid; align-content: start; gap: .32rem; }
+.stage-nav a {
+  display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; padding: .58rem .68rem;
+  border-radius: .5rem; border: 1px solid transparent; color: var(--ink); text-decoration: none;
+}
+.stage-nav a:hover, .stage-nav a[aria-current] { background: var(--pale); border-color: #c2ccfb; }
+.stage-nav small { color: var(--muted); font-size: .79rem; white-space: nowrap; }
+.stage { min-width: 0; background: var(--white); border: 1px solid var(--border); border-radius: .9rem; padding: clamp(1rem, 4vw, 2.1rem); }
+.stage h2 { margin-bottom: 1rem; }
+.stage h3, .stage p + p { margin-top: 1rem; }
+.stage p { max-width: 70ch; overflow-wrap: anywhere; }
+.stage .formula { display: block; font-size: 1.13rem; background: var(--pale); padding: .75rem; border-radius: .5rem; margin-block: .9rem; }
+.task { padding: 1rem 0; border-top: 1px solid var(--border); }
+.task h3 { font-size: 1rem; margin: 0 0 .35rem; }
+.task details { margin-top: .65rem; }
+summary { color: var(--accent); cursor: pointer; width: fit-content; min-height: 32px; }
+details p { margin-top: .35rem; }
+.lesson-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .7rem 1.3rem; margin-top: 1.25rem; }
+.site-footer { border-top: 1px solid var(--border); padding-block: 1rem 2rem; font-size: .9rem; }
+.demo { margin-block: 1.15rem; background: #f4f6ff; border: 1px solid var(--border); border-radius: .7rem; padding: clamp(.6rem, 2vw, 1rem); }
+.demo svg { display: block; width: 100%; height: auto; }
+.demo svg text { fill: var(--ink); }
+.demo label { display: grid; gap: .35rem; margin-top: .9rem; }
+.demo input { width: 100%; accent-color: var(--accent); }
+.demo .actions { margin-top: .7rem; }
+.demo .readout { margin-top: .65rem; font-variant-numeric: tabular-nums; }
+.demo-frame { display: grid; gap: .7rem; min-height: 6rem; align-content: center; }
+.demo-values { display: flex; flex-wrap: wrap; align-items: stretch; gap: .55rem; }
+.demo-values span { background: white; border: 1px solid var(--border); border-radius: .4rem; padding: .4rem .65rem; }
+body.embedded .site-header, body.embedded .lesson-heading, body.embedded .stage-nav,
+body.embedded .lesson-footer, body.embedded .site-footer { display: none; }
+body.embedded .lesson-layout { display: block; }
+body.embedded main.wrap { padding-block: .8rem; }
+@media (max-width: 700px) {
+  .hero { grid-template-columns: 1fr; gap: 1.4rem; }
+  .hero-figure { width: min(100%, 420px); }
+  .lesson-layout { grid-template-columns: 1fr; gap: .85rem; }
+  .stage-nav { grid-template-columns: 1fr 1fr; }
+  .stage-nav a { flex-direction: column; align-items: flex-start; row-gap: .05rem; min-height: 44px; }
+}
+@media (max-width: 380px) {
+  .lesson-row { grid-template-columns: 1.45rem 1fr; }
+  .lesson-duration { grid-column: 2; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0s !important; } }
+
+/* The main exam chooser supplies this state in the combined release. */
+html[data-exam-arrival]::after {
+  content: ""; position: fixed; inset: 0; z-index: 10000; background: #111419; pointer-events: none;
+}
+html[data-exam-arrival="revealing"]::after {
+  animation: course-arrival 330ms cubic-bezier(.23, 1, .32, 1) both;
+}
+@keyframes course-arrival { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { html[data-exam-arrival]::after { display: none; } }

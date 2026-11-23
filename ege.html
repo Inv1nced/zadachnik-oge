@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Курс INVARIANT по физике для подготовки к ЕГЭ. Уроки, модели и задачи для 11 класса.">
+  <title>Курс ЕГЭ по физике · INVARIANT</title>
+  <link rel="stylesheet" href="lessons/course.css">
+  <script src="entry/exam-preference.js" defer></script>
+  <script type="module" src="lessons/course.js"></script>
+</head>
+<body data-page="course">
+  <header class="site-header">
+    <a class="wordmark" href="index.html?choose=1" aria-label="INVARIANT · Выбрать экзамен">INVARIANT</a>
+    <div class="header-links">
+      <nav aria-label="Курс по физике">
+        <a href="oge.html" data-exam-choice="oge" data-integration data-fallback="lessons.html?exam=oge" data-fallback-title="ОГЭ">ОГЭ</a>
+        <a href="ege.html" data-exam-choice="ege" aria-current="page">ЕГЭ</a>
+      </nav>
+      <a href="teach.html?view=lessons&amp;exam=ege">Кабинет</a>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <section class="hero">
+      <div>
+        <p class="kicker">11 класс · ЕГЭ</p>
+        <h1>Физика</h1>
+        <p class="intro">Построй модель, проверь её по графику, реши задачу. Начни с механики или выбери тему для повторения.</p>
+        <div class="actions">
+          <a class="button primary" href="lessons.html?exam=ege&amp;lesson=velocity-graph">Начать с кинематики</a>
+          <a class="button" href="#route">План курса</a>
+        </div>
+      </div>
+      <figure class="hero-figure">
+        <svg viewBox="0 0 360 222" role="img" aria-labelledby="graph-title">
+          <title id="graph-title">Три секунды со скоростью плюс два, две секунды со скоростью минус один</title>
+          <defs>
+            <pattern id="grid" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M22 0H0V22" fill="none" stroke="currentColor" opacity=".22"/></pattern>
+          </defs>
+          <rect x="26" y="22" width="310" height="176" fill="url(#grid)"/>
+          <path d="M55 116V54H211V116Z" fill="#9faef9" opacity=".42"/>
+          <path d="M211 116V148H315V116Z" fill="#d39b71" opacity=".48"/>
+          <path d="M55 173V41M44 116H332" fill="none" stroke="currentColor"/>
+          <path d="M55 54H211M211 148H315" fill="none" stroke="#d8dfff" stroke-width="3"/>
+          <path d="M211 54V148M315 148V116" fill="none" stroke="currentColor" stroke-dasharray="4 4"/>
+          <g fill="currentColor" font-size="14"><text x="31" y="34">vₓ, м/с</text><text x="31" y="59">+2</text><text x="36" y="153">−1</text><text x="44" y="136">0</text><text x="206" y="105">3</text><text x="309" y="104">5</text><text x="302" y="175">t, с</text></g>
+        </svg>
+        <figcaption>Кинематика · График проекции скорости</figcaption>
+      </figure>
+    </section>
+    <div class="tools">
+      <div><h2>Банк задач</h2><a href="ege-bank.html" data-integration data-fallback="https://fipi.ru/navigator-podgotovki/navigator-ege" data-fallback-title="Задачи из навигатора ФИПИ">Открыть задачи ЕГЭ</a></div>
+      <div><h2>Пробники</h2><a href="mocks.html?exam=ege" data-integration data-fallback="https://fipi.ru/ege/demoversii-specifikacii-kodifikatory" data-fallback-title="Демоверсия ФИПИ">Открыть варианты ЕГЭ</a></div>
+    </div>
+    <section id="route" aria-labelledby="route-title">
+      <h2 id="route-title" class="section-title">План курса</h2>
+      <div id="course-content"><p role="status">Загружаем план курса…</p></div>
+    </section>
+  </main>
+  <footer class="wrap site-footer"><a href="https://fipi.ru/ege/demoversii-specifikacii-kodifikatory">Документы ФИПИ · ЕГЭ 2027</a></footer>
+</body>
+</html>
