@@ -103,6 +103,23 @@ async function checkEntryInteraction(browser, base) {
     await page.locator('#bank-topics').waitFor();
     await page.goBack();
 
+    const early = await context.newPage();
+    let loadedWordmark;
+    const wordmarkReady = new Promise(resolve => { loadedWordmark = resolve; });
+    await early.route('**/assets/invariant-wordmark-still.png', async route => {
+      await wordmarkReady;
+      await route.continue().catch(() => {});
+    });
+    await early.goto('index.html?choose=1', {waitUntil:'domcontentloaded'});
+    try {
+      assert.equal(await early.locator('.wordmark').evaluate(logo => logo.complete), false);
+      await early.getByRole('link', {name:/Я ученик ЕГЭ/}).click();
+    } finally {
+      loadedWordmark();
+    }
+    await early.waitForURL(base+'ege.html');
+    await early.close();
+
     await page.addInitScript(() => { HTMLCanvasElement.prototype.getContext = () => null; });
     await page.goto('index.html?choose=1');
     await ege.click();

@@ -235,5 +235,7 @@
     clearTimeout(selection.backup);
     cancelAnimationFrame(selection.frame);
   });
-  addEventListener('pageshow', reset);
+  addEventListener('pageshow', event => {
+    if (event.persisted) reset();
+  });
 })();
