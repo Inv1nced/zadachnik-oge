@@ -100,6 +100,7 @@ async function checkEntryInteraction(browser, base) {
     assert.equal(page.url(), base);
     await oge.click();
     await page.waitForURL(base+'oge.html', {waitUntil:'commit'});
+    await page.locator('#bank-topics').waitFor();
     await page.goBack();
 
     await page.addInitScript(() => { HTMLCanvasElement.prototype.getContext = () => null; });
@@ -132,7 +133,7 @@ async function checkEntryInteraction(browser, base) {
       await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
     }
     await page.waitForURL(base+'oge.html', {waitUntil:'commit'});
-
+    await page.locator('#bank-topics').waitFor();
     await page.goBack({waitUntil:'domcontentloaded'});
     await page.emulateMedia({reducedMotion:'reduce'});
     assert.equal(await oge.locator('.exam-shine').evaluate(shine => getComputedStyle(shine).display), 'none');
