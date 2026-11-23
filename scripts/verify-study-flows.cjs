@@ -8,10 +8,11 @@ const crypto = require('node:crypto');
 const {encode}=require('../assignment-code.js');
 const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright-core');
+const { checkEntryRoutes, checkEntryInteraction, checkExamPreference } = require('./verify-entry.cjs');
 
 const root = path.resolve(__dirname, '..');
 const prefix = '/zadachnik-oge/';
-const mime = {'.js':'application/javascript','.html':'text/html; charset=utf-8','.css':'text/css','.json':'application/json','.svg':'image/svg+xml'};
+const mime = {'.js':'application/javascript','.html':'text/html; charset=utf-8','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.woff2':'font/woff2','.png':'image/png'};
 const server = http.createServer((request,response)=>{
   const route = new URL(request.url,'http://localhost').pathname;
   const file = path.resolve(root,route.slice(prefix.length) || 'index.html');
@@ -42,7 +43,7 @@ async function checkStartupLoader(browser,base) {
       await new Promise(resolve=>setTimeout(resolve,550));
       await route.continue();
     });
-    await page.goto('index.html',{waitUntil:'commit'});
+    await page.goto('oge.html',{waitUntil:'commit'});
     const overlay=page.locator('.physics-lab-overlay');
     await overlay.waitFor();
     assert.equal(await overlay.getByRole('img',{name:'INVARIANT'}).count(),1);
@@ -73,7 +74,7 @@ async function checkPublic(browser, base) {
     headers:{'Content-Type':'application/x-ndjson','X-Frog-Remaining':'4'},
     body:'{"delta":"Совет для теста"}\n{"done":true}\n'
   }));
-  await page.goto('index.html');
+  await page.goto('oge.html');
   await page.locator('#freeBd').waitFor();
   assert.equal(await page.locator('#mods .mod').count(),5);
   assert.ok(!requested.some(url=>/bank\/\w+\.json/.test(url)));
@@ -222,7 +223,7 @@ async function checkPublic(browser, base) {
   await page.locator('#finish').click();
   assert.match(await page.locator('#t1 .verdict').innerText(),/^неверно/);
   assert.match(await page.locator('#report').inputValue(),/RES-/);
-  await page.goto('index.html');
+  await page.goto('oge.html');
   await page.locator('[data-v="bank"]').click();
   await page.locator('.lesson[data-l="1"] summary').click();
   await page.locator('input[aria-label="Ответ к задаче 31"]').fill('1, 4');
@@ -241,7 +242,7 @@ async function checkPublic(browser, base) {
   const offline=await browser.newContext({baseURL:base});
   try {
     const retry=await offline.newPage();
-    await retry.goto('index.html');
+    await retry.goto('oge.html');
     await offline.setOffline(true);
     await retry.evaluate(()=>{location.hash='set=impulse'});
     await retry.locator('#retry-homework').waitFor();
@@ -254,7 +255,7 @@ async function checkPublic(browser, base) {
   const source = await context.newPage();
   const codes = {};
   const rows = new Map();
-  await source.goto('index.html');
+  await source.goto('oge.html');
   for (const preset of ['impulse','dynamics','friction','ratio']) {
     await source.goto(`index.html#set=${preset}`);
     await source.waitForFunction(name=>runs.hw?.title?.includes(name), {impulse:'Импульс',dynamics:'Диагностика',friction:'Закрепление',ratio:'После блока'}[preset]);
@@ -603,6 +604,9 @@ async function checkTeacher(browser,base,bank,source) {
   const executablePath=process.env.OGE_CHROME || undefined;
   const browser=await chromium.launch({executablePath});
   try {
+    await checkEntryRoutes(browser,base);
+    await checkEntryInteraction(browser,base);
+    await checkExamPreference(browser,base);
     await checkStartupLoader(browser,base);
     const bank=await checkPublic(browser,base);
     const privateSource=path.resolve(process.env.OGE_PRIVATE_SOURCE||path.join(root,'../site-private-source'));

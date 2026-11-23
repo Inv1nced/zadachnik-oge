@@ -2,7 +2,7 @@
   'use strict';
   const select = selector => document.querySelector(selector);
   // Native homework payload keeps progress, labels and result submission in the task app.
-  select('#open-homework').href = 'index.html#set=friction';
+  select('#open-homework').href = 'oge.html#set=friction';
   const format = value => Number(value.toFixed(2)).toLocaleString('ru-RU');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const mass = 1;

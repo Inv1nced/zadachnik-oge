@@ -71,7 +71,8 @@
   }
 
   window.PhysicsLabLoader={start};
-  if(entry?.hasAttribute('data-lab-entry') && !new URLSearchParams(location.search).has('workspace')){
+  if(entry?.hasAttribute('data-lab-entry') && !document.documentElement.hasAttribute('data-exam-arrival') &&
+     !new URLSearchParams(location.search).has('workspace')){
     const label=entry.dataset.labEntry;
     const finish=start(label||'Загружаем задачник…',label?{delay:125,minimum:180}:{});
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>finish(),{once:true});

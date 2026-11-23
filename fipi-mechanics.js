@@ -32,7 +32,7 @@ function practiceUrl(block, taskCode) {
     query.set('section', section);
   }
   if (taskCode) query.set('code', taskCode);
-  return 'index.html?' + query.toString();
+  return 'oge.html?' + query.toString();
 }
 
 for (const [id, name] of sections) {

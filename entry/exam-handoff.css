@@ -1,0 +1,58 @@
+html[data-exam-arrival]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  background: #111419;
+}
+
+html[data-exam-arrival="revealing"]::after {
+  animation: reveal-course 330ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes reveal-course {
+  to { opacity: 0; }
+}
+
+.exam-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line, #343943);
+  border-radius: 7px;
+  white-space: nowrap;
+}
+
+.exam-switch a {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 36px;
+  padding-inline: 6px;
+  border-radius: 4px;
+  color: var(--text, #f2f1f4);
+  font: 600 13px/1 system-ui, sans-serif;
+  text-decoration: none;
+}
+
+.exam-switch a[aria-current="page"] {
+  background: var(--cyan, #9ed7fb);
+  color: var(--bg, #111419);
+}
+
+.exam-switch a:focus-visible {
+  outline: 2px solid var(--cyan, #9ed7fb);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .exam-switch a:not([aria-current]):hover {
+    background: var(--panel2, #222731);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-exam-arrival]::after { display: none; }
+}
