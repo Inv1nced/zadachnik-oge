@@ -44,7 +44,7 @@ async function cabinetFixture(root, temp, codes) {
     const html=await readFile(join(privateSource,'teach.html'),'utf8');
     const anchor='<div data-mock-tools></div>';
     assert(html.includes('<main id="teacher-view"'));
-    await writeFile(join(source,'teach.html'),html.replace('<main id="teacher-view"',anchor+'<main id="teacher-view"'));
+    await writeFile(join(source,'teach.html'),html.includes('data-mock-tools') ? html : html.replace('<main id="teacher-view"',anchor+'<main id="teacher-view"'));
     for (const file of ['teach.js','practice-data.js','lessons-data.js','tutor-plan']) {
       await cp(join(privateSource,file),join(source,file),{recursive:true});
     }
@@ -58,11 +58,7 @@ async function cabinetFixture(root, temp, codes) {
   const data=Buffer.concat([salt,iv,cipher.update(JSON.stringify({ALL:[],LT:{},CODES:{}})),cipher.final(),cipher.getAuthTag()]);
   const journal=await readFile(join(home,'zhurnal.html'),'utf8');
   await writeFile(join(output,'zhurnal.html'),journal.replace(/const ENC="[^"]+"/,`const ENC="${data.toString('base64')}"`));
-  const pack=await readFile(join(home,'scripts/protect-teacher.mjs'),'utf8');
-  const adapted = pack.replace("...lessonScripts,'teach.js'","...lessonScripts,'teach.js','mocks-entry.js'");
-  assert.notEqual(adapted,pack);
-  const script=join(temp,'pack.mjs');
-  await writeFile(script,adapted);
+  const script=join(home,'scripts/protect-teacher.mjs');
   execFileSync(process.execPath,[script,source,'--workspace-only'],{cwd:output,input:fixturePassword+'\n'});
   return output;
 }

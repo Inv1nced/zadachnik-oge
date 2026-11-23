@@ -7,7 +7,7 @@ let teacher=false;try{teacher=!!(sessionStorage.getItem('oge-teacher-session-v1'
 const onOge = location.pathname === new URL('oge.html',base).pathname;
 const items = [
  ['teach.html','🔒 Журнал репетитора'], ['oge.html','Задачник'],
- ...(onOge ? [['lessons.html?exam=oge','Уроки ОГЭ'], ['https://fipi.ru/oge/demoversii-specifikacii-kodifikatory','Демоверсия ОГЭ']] : []),
+ ...(onOge ? [['lessons.html?exam=oge','Уроки ОГЭ'], ['mocks.html?exam=oge','Пробники ОГЭ']] : []),
  ['grafiki.html','Графики'], ['forces.html','Силы'], ['laboratory.html','Лаборатория'],
  ...(teacher ? [['tutor-plan/','Маршрут ОГЭ']] : []),
 ];

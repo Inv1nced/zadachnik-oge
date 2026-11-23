@@ -22,7 +22,7 @@ async function checkEntryRoutes(browser, base) {
     assert.equal(await page.getByRole('heading', {name:'Выбери свой экзамен'}).count(), 1);
     assert.deepEqual(
       await page.locator('a').evaluateAll(links => links.map(link => link.getAttribute('href'))),
-      ['teach.html', 'oge.html', 'ege.html', 'https://fipi.ru/ege/demoversii-specifikacii-kodifikatory']
+      ['teach.html', 'oge.html', 'ege.html', 'mocks.html?exam=ege']
     );
     assert.ok(!requests.some(url => /bank\/|zadachnik\.js|physics-lab-loader|teacher-workspace/.test(url)));
     await page.getByRole('link', {name:'Кабинет репетитора'}).click();
@@ -42,7 +42,7 @@ async function checkEntryRoutes(browser, base) {
     await page.waitForURL(base+'oge.html#set=impulse');
     await waitForForm(page);
     assert.equal(await page.getByRole('link', {name:'Уроки ОГЭ'}).getAttribute('href'), base+'lessons.html?exam=oge');
-    assert.equal(await page.getByRole('link', {name:'Демоверсия ОГЭ'}).getAttribute('href'), 'https://fipi.ru/oge/demoversii-specifikacii-kodifikatory');
+    assert.equal(await page.getByRole('link', {name:'Пробники ОГЭ'}).getAttribute('href'), base+'mocks.html?exam=oge');
 
     // An actual iframe is required for the cabinet's workspace bridge.
     await page.route('**/entry-iframe-test.html', route => route.fulfill({
@@ -70,8 +70,8 @@ async function checkEntryInteraction(browser, base) {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       const [oge,ege] = await Promise.all((await page.locator('.exam').all()).map(link => link.boundingBox()));
       assert.equal(ege.y > oge.y, width <= 650);
-      await page.getByRole('link', {name:'Демоверсия ЕГЭ'}).scrollIntoViewIfNeeded();
-      const mocks = await page.getByRole('link', {name:'Демоверсия ЕГЭ'}).boundingBox();
+      await page.getByRole('link', {name:'Пробники'}).scrollIntoViewIfNeeded();
+      const mocks = await page.getByRole('link', {name:'Пробники'}).boundingBox();
       assert.ok(mocks.y >= 0 && mocks.y + mocks.height <= height);
     }
 
