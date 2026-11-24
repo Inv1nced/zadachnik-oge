@@ -1,4 +1,5 @@
 import {answerIsCorrect, buildCatalog, taskLessons, taskTopics} from './catalog.mjs';
+import {readPersonalBank, setupPersonalBank} from './personal-bank.mjs';
 import {bankLine, originalAnswerMatches} from './fipi.mjs';
 import {officialLink, renderParts, sitePath} from '../../ege-bank/render.js';
 import {readJSON, typeLabel} from '../../mocks/config.mjs';
@@ -13,7 +14,7 @@ const types = {...typeLabel, short: 'Краткий ответ', long: 'Разв
 const sources = {course: 'Уроки Invariant', mock: 'Открытый пробник Invariant', bank: 'Авторская задача Invariant', fipi: 'Задачи по открытому банку ФИПИ', reference: 'Ссылки на оригиналы ФИПИ'};
 const e = value => String(value ?? '').replace(/[&<>"']/g, char =>
   ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[char]);
-let catalog, state, progress = readProgress();
+let catalog, state, personalBank, progress = readProgress();
 
 function readProgress() {
   try {
@@ -296,12 +297,22 @@ async function drawOriginal(task, article) {
   const solution = article.querySelector('[data-original-solution]');
   const fail = () => { article.querySelector('[data-asset-error]').hidden = false; };
   try {
-    const card = await readJSON(sitePath(task.cardPath));
+    const card = personalBank?.cards[task.cardPath] ?? await readJSON(sitePath(task.cardPath));
     if (card.id !== task.id) throw new Error('Mismatched card ID');
     if (!article.isConnected) return;
-    body.replaceChildren(renderParts(card.parts, fail));
+    const viewOptions = personalBank ? {
+      imageSource: path => personalBank.assets[path] ?? sitePath(path),
+      enlarge: visual => {
+        const dialog = document.querySelector('.ege-image-dialog');
+        dialog.querySelector('.ege-dialog-visual').replaceChildren(visual.cloneNode());
+        dialog.showModal();
+      },
+    } : undefined;
+    body.replaceChildren(renderParts(card.parts, fail, viewOptions));
+    const board = article.querySelector('[data-ege-board]');
+    if (board) board.disabled = false;
     if (card.solution?.parts) {
-      solution.querySelector('div').append(renderParts(card.solution.parts, fail));
+      solution.querySelector('div').append(renderParts(card.solution.parts, fail, viewOptions));
       solution.hidden = false;
     }
     if (!task.key && task.type === 'long' && card.solution?.parts) {
@@ -365,7 +376,8 @@ function showTask(task) {
         <a class="btn primary" href="${e(origin)}" target="_blank" rel="noopener">Открыть условие на ФИПИ ↗</a>` : ''}
       ${task.clarify ? `<p class="tt">${e(task.clarify)}</p>` : ''}
       <div data-visuals></div>
-      ${task.source === 'reference' ? '' : `<div class="task-controls">${formMarkup(task)} <output class="verdict" aria-live="polite"></output></div>`}
+      ${task.source === 'reference' ? '' : `<div class="task-controls">${formMarkup(task)} <output class="verdict" aria-live="polite"></output></div>
+      ${window.InvariantEgeBoard && task.source !== 'reference' ? `<div class="task-controls"><button class="btn board" type="button" data-ege-board${task.cardPath ? ' disabled' : ''}>Доска для решения</button></div>` : ''}`}
       ${task.cardPath ? `<details class="ege-solution ege-original" data-original-solution hidden><summary>Показать разбор</summary><div></div></details>` : ''}
       ${task.hint ? `<details class="ege-solution"><summary>Подсказка</summary><p>${e(task.hint)}</p></details>` : ''}
       ${solutionMarkup(task)}
@@ -381,6 +393,12 @@ function showTask(task) {
   document.title = taskLabel(task) + ' · Задачник ЕГЭ · INVARIANT';
   drawVisuals(task);
   if (task.cardPath) drawOriginal(task, view.querySelector('[data-task-card]'));
+  const board = view.querySelector('[data-ege-board]');
+  if (board) board.addEventListener('click', () => {
+    const condition = document.createElement('div');
+    for (const part of view.querySelectorAll('[data-original], .tt, [data-visuals]')) condition.append(part.cloneNode(true));
+    window.InvariantEgeBoard.open(task.id, taskLabel(task), condition);
+  });
   view.querySelector('[data-copy-link]').addEventListener('click', async event => {
     const button = event.currentTarget;
     const direct = new URL(url({task: task.id}), location.href).href;
@@ -466,18 +484,22 @@ view.addEventListener('change', event => {
 });
 
 async function load() {
-  const [course, variant, inventory, keys] = await Promise.all([
+  const [course, variant, inventory, keys, savedBank] = await Promise.all([
     readJSON(new URL('../../lessons/ege.json', import.meta.url)),
     readJSON(new URL('../../mocks/data/ege-01-v1.json', import.meta.url)),
     readJSON(sitePath('ege-data/v1/catalog.json')),
     readJSON(sitePath('ege-data/v1/verified-keys.json')),
+    readPersonalBank().catch(() => null),
   ]);
-  catalog = buildCatalog(course, variant, inventory, keys);
+  personalBank = savedBank;
+  catalog = buildCatalog(course, variant, personalBank?.inventory ?? inventory, keys);
+  setupPersonalBank(Boolean(savedBank));
   window.addEventListener('popstate', event => {
     render();
     if (!location.hash && Number.isFinite(event.state?.scroll)) window.scrollTo(0, event.state.scroll);
   });
   render();
+  window.InvariantEgeBoard?.join();
 }
 
 load().catch(error => {

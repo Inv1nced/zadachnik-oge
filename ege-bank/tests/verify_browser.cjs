@@ -66,6 +66,11 @@ async function checkEgeBank(browser, baseURL) {
       await page.getByText('Показать разбор', {exact: true}).click();
       await page.getByRole('button', {name: 'Отметить разобранной'}).click();
       await page.getByText('Разобрана', {exact: true}).last().waitFor();
+      await page.getByRole('button', {name: 'Доска для решения'}).click();
+      await page.locator('#bdCv').waitFor();
+      assert.match(await page.locator('#bdTb').innerText(), /нерастяжимой нити/);
+      await page.getByRole('button', {name: 'Закрыть доску'}).click();
+      assert.equal(await page.locator('#bd').isVisible(), false);
       await noOverflow();
 
       await page.goto('ege-bank.html?task=ege-fipi-474F4B');
@@ -80,6 +85,33 @@ async function checkEgeBank(browser, baseURL) {
       assert.ok(await page.locator('.quest-list .task').count());
       assert.ok(await page.evaluate(() => Object.keys(localStorage).includes('invariant-ege-bank-v1')));
       await noOverflow();
+      if (width === 390) {
+        const row = {
+          id: 'ege-fipi-474F4B', sourceCode: '474F4B', status: 'ready', kes: ['2.2.1'], topicSlugs: ['measurement'],
+          title: 'Локальная карточка для проверки', answerType: 'short',
+          sourceUrl: 'https://ege.fipi.ru/bank/index.php?proj=BA1F39653304A5B041B656915DC36B38&search=1&qid=474F4B',
+          cardPath: 'ege-data/v1/cards/test-card.json',
+        };
+        const payload = {
+          objects: {'catalog.json': {schemaVersion: 1, tasks: [row]},
+            'test-card.json': {id: row.id, parts: [{type: 'text', text: 'Условие из личной копии.'}]}},
+          assets: {},
+        };
+        const bank = page.locator('[data-personal-bank]');
+        await bank.locator('summary').click();
+        await bank.locator('input').setInputFiles({
+          name: 'invariant-test.html', mimeType: 'text/html',
+          buffer: Buffer.from('<script type="application/json" id="offline-data">' + JSON.stringify(payload) + '</script>'),
+        });
+        await bank.getByText('Полный банк подключён').waitFor();
+        await page.goto('ege-bank.html?task=ege-fipi-474F4B');
+        await page.getByText('Условие из личной копии.', {exact: true}).waitFor();
+        await page.reload();
+        await page.getByText('Условие из личной копии.', {exact: true}).waitFor();
+        await bank.locator('summary').click();
+        await bank.getByRole('button', {name: 'Отключить личную копию'}).click();
+        await page.getByRole('link', {name: /Открыть условие на ФИПИ/}).waitFor();
+      }
       assert.deepEqual(errors, []);
       console.log('PASS: EGE bank links, topic and number filters, images, MathML, table, answers, drafts, and layout at ' + width + 'px.');
     } finally { await context.close(); }

@@ -28,8 +28,8 @@ export function officialLink(url) {
   return link.href;
 }
 
-function image(part, onFailure) {
-  const src = sitePath(part.path);
+function image(part, onFailure, options) {
+  const src = options.imageSource ? options.imageSource(part.path) : sitePath(part.path);
   const link = el('a', 'figure-link');
   link.href = src;
   link.target = '_blank';
@@ -42,40 +42,44 @@ function image(part, onFailure) {
     link.replaceWith(el('span', 'notice', 'Иллюстрация не загрузилась.'));
     onFailure();
   }, {once: true});
+  if (options.enlarge) link.addEventListener('click', event => {
+    event.preventDefault();
+    options.enlarge(img);
+  });
   link.append(img);
   return link;
 }
 
-export function renderParts(parts, onFailure = () => {}) {
+export function renderParts(parts, onFailure = () => {}, options = {}) {
   const fragment = document.createDocumentFragment();
   for (const part of parts) {
     if (part.type === 'text') {
       fragment.append(document.createTextNode(part.text));
     } else if (part.type === 'image') {
-      fragment.append(image(part, onFailure));
+      fragment.append(image(part, onFailure, options));
     } else if (part.type === 'options') {
       const list = el('ol', 'options');
       for (const item of part.items) {
         const li = el('li');
-        li.append(renderParts(item, onFailure));
+        li.append(renderParts(item, onFailure, options));
         list.append(li);
       }
       fragment.append(list);
     } else if (part.type === 'prompt') {
-      fragment.append(renderParts(part.children, onFailure));
+      fragment.append(renderParts(part.children, onFailure, options));
     } else if (part.type === 'math' && MATH.has(part.tag)) {
       const node = document.createElementNS('http://www.w3.org/1998/Math/MathML', part.tag);
       for (const [name, value] of Object.entries(part.attrs || {})) {
         if (MATH_ATTRS.has(name)) node.setAttribute(name, value);
       }
-      node.append(renderParts(part.children, onFailure));
+      node.append(renderParts(part.children, onFailure, options));
       fragment.append(node);
     } else if (part.type === 'element' && HTML.has(part.tag)) {
       const node = el(part.tag);
       for (const [name, value] of Object.entries(part.attrs || {})) {
         if (['rowspan', 'colspan', 'start', 'value'].includes(name) && /^\d{1,3}$/.test(value)) node.setAttribute(name, value);
       }
-      node.append(renderParts(part.children, onFailure));
+      node.append(renderParts(part.children, onFailure, options));
       if (part.tag === 'table') {
         if (part.attrs?.grid) node.className = 'data-table';
         const wrap = el('div', 'table-scroll');

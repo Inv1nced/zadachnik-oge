@@ -132,3 +132,14 @@ html[data-theme] .ege-bank .tab[aria-current] {
 .ege-bank .ege-original math { max-width: 100%; }
 .ege-bank .ege-original math[display="block"] { overflow-x: auto; }
 .ege-bank .chip[aria-current] { border-color: var(--cyan); background: var(--accent-soft); }
+
+.ege-bank .bd .ege-original .table-scroll { margin-bottom: 8px; }
+.ege-bank .bd .mock-figure { max-width: 100%; }
+.ege-bank .bd .bd-session-actions { min-width: 0; }
+.ege-bank .bd-task, .ege-bank .bd-pop { background: var(--panel); }
+.ege-bank .bd-tb .ege-text { margin-top: 0; }
+.ege-bank .ege-dialog-visual img { display: block; max-width: 100%; max-height: 76vh; height: auto; margin-inline: auto; }
+.ege-bank .ege-personal { margin-top: 12px; }
+.ege-bank .ege-personal summary { cursor: pointer; width: fit-content; color: var(--cyan); }
+.ege-bank .ege-personal input { max-width: 100%; }
+.ege-bank .ege-personal output { display: block; margin-block: 6px; }
