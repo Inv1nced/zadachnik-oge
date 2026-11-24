@@ -17,7 +17,7 @@ async function checkEgeBank(browser, baseURL) {
 
       await page.getByRole('link', {name: /Механика.*задач/}).click();
       await page.getByRole('link', {name: /Импульс, работа и энергия/}).click();
-      await page.getByRole('link', {name: /Импульс и закон его сохранения/}).click();
+      await page.getByRole('navigation', {name: 'Подтемы'}).getByRole('link', {name: /Импульс и закон его сохранения/}).click();
       await page.getByRole('heading', {name: 'Импульс и закон его сохранения', exact: true}).waitFor();
       await noOverflow();
       await page.getByRole('link', {name: 'К уроку', exact: true}).click();
