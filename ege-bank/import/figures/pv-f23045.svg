@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="336" height="274" viewBox="0 0 336 274" role="img" aria-label="Диаграмма p(V), состояния 1, 2 и 3">
+  <rect width="336" height="274" rx="12" fill="#fff"/>
+  <g fill="none" stroke="#bfcbd9" stroke-width="1">
+    <path d="M48 34H248V234H48Z M48 74H248 M48 114H248 M48 154H248 M48 194H248 M88 34V234 M128 34V234 M168 34V234 M208 34V234"/>
+  </g>
+  <path d="M48 16V234H287 M43 25L48 16L53 25 M278 229L287 234L278 239" fill="none" stroke="#17263a" stroke-width="2"/>
+  <path d="M88 74H168L248 154" fill="none" stroke="#086c83" stroke-width="4"/>
+  <g fill="#086c83"><circle cx="88" cy="74" r="4"/><circle cx="168" cy="74" r="4"/><circle cx="248" cy="154" r="4"/></g>
+  <g fill="#17263a" font-family="system-ui, sans-serif" font-size="17">
+    <text x="22" y="30" font-style="italic">p</text><text x="290" y="250" font-style="italic">V</text>
+    <text x="28" y="255">0</text><text x="72" y="63">1</text><text x="155" y="63">2</text><text x="258" y="160">3</text>
+  </g>
+</svg>

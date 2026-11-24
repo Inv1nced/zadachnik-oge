@@ -12,20 +12,24 @@ const label = (x,y,text,anchor='middle') => svg('text',{x,y,'text-anchor':anchor
 const fmt = value => Number(value.toFixed(3)).toLocaleString('ru-RU');
 
 function graph(figure) {
-  const x0=50, y0=196, w=330, h=155;
-  const xvals = [...new Set(figure.points.map(([x]) => x))];
-  const yvals = [...new Set(figure.points.map(([,y]) => y))];
-  const px = x => x0 + w * x / Math.max(...xvals);
-  const py = y => y0 - h * y / Math.max(...yvals);
-  const img = svg('svg',{viewBox:'0 0 450 225',role:'img',
+  const left = 54, right = 392, top = 34, bottom = 184;
+  const xvals = [...new Set(figure.points.map(([x]) => x))].sort((a,b) => a-b);
+  const yvals = [...new Set(figure.points.map(([,y]) => y))].sort((a,b) => a-b);
+  const xMin = Math.min(0, ...xvals), xMax = Math.max(0, ...xvals);
+  const yMin = Math.min(0, ...yvals), yMax = Math.max(0, ...yvals);
+  const px = x => left + (right - left) * (x - xMin) / (xMax - xMin || 1);
+  const py = y => bottom - (bottom - top) * (y - yMin) / (yMax - yMin || 1);
+  const x0 = px(0), y0 = py(0);
+  const img = svg('svg',{viewBox:'0 0 455 220',role:'img',
     'aria-label': `График. Ось X — ${figure.x}. Ось Y — ${figure.y}. Точки: ${figure.points.map(([x,y])=>`(${fmt(x)}; ${fmt(y)})`).join(', ')}.`});
-  img.append(line(x0,y0,407,y0), line(x0,y0,x0,23), label(413,201,figure.x,'start'), label(53,18,figure.y,'start'));
-  for (const x of xvals) {
-    img.append(line(px(x),y0,px(x),33,'grid'), line(px(x),y0,px(x),201),label(px(x),219,fmt(x)));
+  for (const x of xvals.filter(Boolean)) {
+    img.append(line(px(x),top,px(x),bottom,'grid'), line(px(x),y0-3,px(x),y0+4), label(px(x),y0+17,fmt(x)));
   }
   for (const y of yvals.filter(Boolean)) {
-    img.append(line(x0,py(y),397,py(y),'grid'), line(x0-4,py(y),x0,py(y)),label(38,py(y)+5,fmt(y),'end'));
+    img.append(line(left,py(y),right,py(y),'grid'), line(x0-4,py(y),x0+3,py(y)), label(x0-8,py(y)+4,fmt(y),'end'));
   }
+  img.append(line(left,y0,405,y0), line(x0,bottom,x0,24), label(444,y0+5,figure.x,'end'),
+    label(x0,16,figure.y,'start'), label(x0-7,y0+17,'0','end'));
   img.append(svg('polyline',{points:figure.points.map(([x,y])=>`${px(x)},${py(y)}`).join(' '),class:'curve',fill:'none'}));
   for (const [x,y] of figure.points) img.append(svg('circle',{cx:px(x),cy:py(y),r:4,class:'point'}));
   return img;

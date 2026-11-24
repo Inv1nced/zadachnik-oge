@@ -1,0 +1,222 @@
+{
+  "ege-fipi-05D648": {
+    "digest": "864f65980819481557fce540b82b6689fe6e45d01dc91eaa31244281f0301541",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "1,5"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-0A3E4F": {
+    "digest": "c06d822c7623b17a387460f90216bfbc273458c5580a6db24a20502d3ef5f542",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "3"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-0FDA4F": {
+    "digest": "b9dc9d72df6578fe3ef853636d99a2fb2a798bb0ae5ed0c82feac250f8645b0b",
+    "key": {
+      "rule": "unordered-digits",
+      "accepted": [
+        "134"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-17F546": {
+    "digest": "ca918c6ce163006ad40d286792726f580f39151f5f77d6f85077c66bce0e6f2b",
+    "key": {
+      "rule": "unordered-digits",
+      "accepted": [
+        "35"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-1CCC46": {
+    "digest": "dff59df208970004e181417cf785d2e31a824f74b4d42b9b0e2d7db40386c38b",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "3"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-2CB64F": {
+    "digest": "f2b03e8ac5d617e36e4fd0df924c3e9332ee7cf0088d55b61d273125fd3f8f2c",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "0,15"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-4C2E4A": {
+    "digest": "27b104353c2feac812f7551cc8de730bfd79aff6c3910c3c68d1b63af1580d92",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "15"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-4EAC46": {
+    "digest": "85c4fb159d6db0c2023f70de9e5c13b702aad780f78cf6e4b80b05eb437068f1",
+    "key": {
+      "rule": "ordered-digits",
+      "accepted": [
+        "14"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-4EF342": {
+    "digest": "f400775af3930e5ca656600835c40a9d873f5de250e59fa3c2b1ccf2d32d2460",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "60"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-8FC4FE": {
+    "digest": "eceb773d5a7961b6b2e1a75147ced0018bd39173379a7a27e3766e00c027901d",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "2,25"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-9BA851": {
+    "digest": "6b4b38244f033127c98d55aea05636a22841f2eb3710b8cf22f83f0b0fc8ab7c",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "30"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-B00D03": {
+    "digest": "4609181da1661f6526fc8182309daa394e39fed0aa40cb9511f6d7cb7bcc5eb0",
+    "key": {
+      "rule": "ordered-digits",
+      "accepted": [
+        "12"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-B02B49": {
+    "digest": "4ca9004ccf524f6915e5e9b45a1521157e9fa7382ffa782f5c82248990b33ab4",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "36"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-BFC0DC": {
+    "digest": "8849cb9a3eedc3f72d5698e1eed3f2d35903c255a89585483e1d10b7fd101a54",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "90"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-C0DF4F": {
+    "digest": "4d9c86e48642e27a1c6bf6e0ccb1e3834c2435bef4600520ac4004882e31a6f1",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "1"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-C274FA": {
+    "digest": "42ca76bfa429aceb595b2660a60c96e826c35ea539be694c6b7c125404373714",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "9"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-CFDDFB": {
+    "digest": "4a0c2e444998ae467060384438bf05b23711f15bfbd41b73d9b32de2498d757e",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "2"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-E4EF4A": {
+    "digest": "3caa63e3af20ab73c7873084aa992c3c2dbac6a4d448a7a9274790b536eda2a8",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "3"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-F120FE": {
+    "digest": "3ef29acd73f1ea6a8cf2b30a8a0dbaa8e9efa69ffbaa9d2a43394762b56904d2",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "1800"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-F13F4D": {
+    "digest": "5bf0089ed5b1a58e39bf659193ac4961ba6d3b1715d685218fe28a9bd8518439",
+    "key": {
+      "rule": "measurement-pair",
+      "accepted": [
+        "0,75 ± 0,05"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-F23045": {
+    "digest": "8d74a9ee4f337710fb94cf6d23efbb5fb50353149b7082f41a8016df98f29ac5",
+    "key": {
+      "rule": "number",
+      "accepted": [
+        "0,75"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  },
+  "ege-fipi-FC2D8A": {
+    "digest": "1a9ccad5a1f41a4e776a21543c911f699c8fd8097bc05137f93761698af5828a",
+    "key": {
+      "rule": "ordered-digits",
+      "accepted": [
+        "4"
+      ],
+      "credit": "INVARIANT, самостоятельный расчёт"
+    }
+  }
+}

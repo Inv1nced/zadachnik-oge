@@ -5,7 +5,11 @@ if(new URLSearchParams(location.search).has('workspace'))document.documentElemen
 const nav=document.createElement('nav');nav.className='site-nav';nav.setAttribute('aria-label','Материалы и кабинет');
 let teacher=false;try{teacher=!!(sessionStorage.getItem('oge-teacher-session-v1')||localStorage.getItem('oge-teacher-device-v1'))}catch{}
 const onOge = location.pathname === new URL('oge.html',base).pathname;
-const items = [
+const onEgeBank = location.pathname === new URL('ege-bank.html',base).pathname;
+const items = onEgeBank ? [
+ ['teach.html?view=lessons&exam=ege','🔒 Журнал репетитора'], ['ege-bank.html','Задачник ЕГЭ'],
+ ['ege.html#route','Курс ЕГЭ'], ['mocks.html?exam=ege','Пробники ЕГЭ'], ['oge.html','Задачник ОГЭ'],
+] : [
  ['teach.html','🔒 Журнал репетитора'], ['oge.html','Задачник'],
  ...(onOge ? [['lessons.html?exam=oge','Уроки ОГЭ'], ['mocks.html?exam=oge','Пробники ОГЭ']] : []),
  ['grafiki.html','Графики'], ['forces.html','Силы'], ['laboratory.html','Лаборатория'],
