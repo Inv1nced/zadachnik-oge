@@ -55,7 +55,9 @@ async function checkEgeBank(browser, baseURL) {
       const figure = page.locator('.figure-link img').first();
       await figure.waitFor();
       await figure.evaluate(img => img.decode());
-      assert.ok(await page.locator('[data-original] math').count());
+      await noOverflow();
+      await page.goto('ege-bank.html?task=ege-fipi-F23045');
+      await page.locator('[data-original] math').first().waitFor();
       await noOverflow();
 
       await page.goto('ege-bank.html?task=ballistic-pendulum');
