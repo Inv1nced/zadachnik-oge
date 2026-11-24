@@ -72,7 +72,7 @@ export function adaptFipi(inventory, keys) {
     const tags = [...new Set([...methods, ...combined, ...exact, ...(exact.length ? [] : broad)])];
     const topic = tags[0] ?? 'general-laws';
     const verified = keys[entry.id];
-    const key = entry.status === 'ready' && verified?.digest === entry.sourceDigest ? verified.key : null;
+    const key = entry.status === 'ready' && verified && verified.digest === entry.sourceDigest ? verified.key : null;
     const type = keyType[key?.rule] ?? sourceType[entry.answerType] ?? 'short';
     const inferred = suggestedLine(type, topic, entry, tags);
     return {
