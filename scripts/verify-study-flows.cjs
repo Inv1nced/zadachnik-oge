@@ -10,9 +10,11 @@ const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright-core');
 const { checkEntryRoutes, checkEntryInteraction, checkExamPreference } = require('./verify-entry.cjs');
 
+const {checkEgeBank} = require('../ege-bank/tests/verify_browser.cjs');
+
 const root = path.resolve(__dirname, '..');
 const prefix = '/zadachnik-oge/';
-const mime = {'.js':'application/javascript','.html':'text/html; charset=utf-8','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.woff2':'font/woff2','.png':'image/png'};
+const mime = {'.mjs':'application/javascript','.js':'application/javascript','.html':'text/html; charset=utf-8','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.woff2':'font/woff2','.png':'image/png'};
 const server = http.createServer((request,response)=>{
   const route = new URL(request.url,'http://localhost').pathname;
   const file = path.resolve(root,route.slice(prefix.length) || 'index.html');
@@ -609,6 +611,7 @@ async function checkTeacher(browser,base,bank,source) {
     await checkEntryInteraction(browser,base);
     await checkExamPreference(browser,base);
     await checkStartupLoader(browser,base);
+    await checkEgeBank(browser,base);
     const bank=await checkPublic(browser,base);
     const privateSource=path.resolve(process.env.OGE_PRIVATE_SOURCE||path.join(root,'../site-private-source'));
     if (fs.existsSync(privateSource)) await checkTeacher(browser,base,bank,privateSource);

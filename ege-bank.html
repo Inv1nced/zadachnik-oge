@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Задачник ЕГЭ по физике INVARIANT. Задачи по школьным темам и по номерам экзамена.">
+  <title>Задачник ЕГЭ по физике · INVARIANT</title>
+  <script src="entry/exam-preference.js"></script>
+  <link rel="stylesheet" href="entry/exam-handoff.css">
+  <link rel="preload" href="entry/onest.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="site-shell.css?v=interface-1">
+  <link rel="stylesheet" href="wordmark.css?v=chrome-1">
+  <link rel="stylesheet" href="study-bank.css?v=shared-1">
+  <link rel="stylesheet" href="study-interface.css?v=native-fipi">
+  <link rel="stylesheet" href="bank/ege/styles.css">
+  <script src="site-shell.js?v=ege-bank-1" defer></script>
+  <script type="module" src="bank/ege/app.mjs"></script>
+</head>
+<body class="study-site ege-bank">
+  <div class="app">
+    <div class="topbar">
+      <a class="brand" href="index.html?choose=1" aria-label="INVARIANT · Выбрать экзамен"><span class="physics-wordmark"><picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/invariant-wordmark-still.png?v=chrome-1"><img src="assets/invariant-wordmark.svg?v=chrome-1" alt="INVARIANT" width="333" height="39"></picture></span></a>
+      <nav class="exam-switch" aria-label="Курс по физике">
+        <a href="oge.html" data-exam-choice="oge">ОГЭ</a>
+        <a href="ege.html" data-exam-choice="ege" aria-current="page">ЕГЭ</a>
+      </nav>
+      <nav class="tabs" aria-label="Материалы ЕГЭ">
+        <a class="tab" href="ege-bank.html" aria-current="page">Задачник</a>
+        <a class="tab" href="ege.html#route">Уроки</a>
+        <a class="tab" href="mocks.html?exam=ege">Пробники</a>
+      </nav>
+    </div>
+    <main id="ege-bank-content"><p class="foot" role="status">Загружаем банк задач…</p></main>
+    <footer class="foot ege-sources">
+      <a href="https://fipi.ru/ege/otkrytyy-bank-zadaniy-ege/">Открытый банк ФИПИ</a>
+      <a href="https://ege-fipi.ru/physics">Подборки заданий ФИПИ по темам</a>
+      <a href="https://1.shkolkovo.online/st/6/o/Молекулярная_физика__svy7.pdf">Школково · Молекулярная физика</a>
+    </footer>
+  </div>
+  <dialog class="ege-image-dialog" aria-label="Рисунок крупным планом">
+    <form method="dialog"><button class="btn" type="submit">Закрыть</button></form>
+    <div class="ege-dialog-visual"></div>
+  </dialog>
+</body>
+</html>

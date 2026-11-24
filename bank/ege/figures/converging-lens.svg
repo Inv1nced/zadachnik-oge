@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 200">
+  <rect width="420" height="200" fill="#f8fbfc"/>
+  <g fill="none" stroke="#243943" stroke-width="2.5">
+    <path d="M24 108h369m-8-6 8 6-8 6M216 29v148m-6-139 6-9 6 9m-12 130 6 9 6-9"/>
+    <path d="M72 108V60m-5 8 5-8 5 8" stroke-width="4"/>
+    <path d="M288 108v24m-5-7 5 7 5-7" stroke-width="4"/>
+    <path d="M72 60h144l100 100M72 60l266 88" stroke="#006d75"/>
+  </g>
+  <g fill="#243943" font-family="system-ui, sans-serif" font-size="16" text-anchor="middle">
+    <circle cx="168" cy="108" r="3"/><circle cx="216" cy="108" r="3"/><circle cx="264" cy="108" r="3"/>
+    <text x="168" y="131">F</text><text x="264" y="101">F</text><text x="227" y="104">O</text>
+    <text x="79" y="145">Предмет</text><text x="305" y="181">Изображение</text>
+  </g>
+</svg>

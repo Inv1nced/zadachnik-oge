@@ -89,7 +89,7 @@ function studentLesson(data, lesson) {
     <h1>${e(lesson.title)}</h1>
     ${full ? `<p class="intro">${e(lesson.goal)}</p><p class="meta">${e(lesson.level)} · ${lesson.duration} мин</p>
     <p class="meta"><strong>Перед занятием</strong> · ${e(lesson.prerequisites)}</p>` : '<p class="meta">9 класс · Повторение</p>'}
-    ${exam === 'ege' ? `<p class="meta"><a href="https://fipi.ru/navigator-podgotovki/navigator-ege">Задачи из навигатора ФИПИ</a></p>` : ''}
+    ${exam === 'ege' ? `<p class="meta"><a href="ege-bank.html?lesson=${encodeURIComponent(lesson.id)}"${embed ? ' target="_blank" rel="noopener"' : ''}>Задачи по теме</a></p>` : ''}
   </header>
   ${full ? `<div class="lesson-layout">
     <nav class="stage-nav" aria-label="Этапы урока">
