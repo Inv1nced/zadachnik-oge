@@ -133,7 +133,14 @@ try {
   await button('Следующая').click();
   await button('Пропустить').click();
   await choose('KIN-03');
-  for (const option of ['2','3','5']) await page.locator(`[name=choices][value="${option}"]`).check();
+  assert.equal(await heading(),'Машина на прямой');
+  assert.equal(await page.locator('.figure img').count(),1);
+  assert.equal(await page.locator('[name=choices]').count(),3);
+  await page.locator('[name=choices][value="3"]').check();
+  await button('Проверить').click();
+  assert.equal(await page.locator('.answer-status').getAttribute('data-result'),'wrong');
+  await page.locator('[name=choices][value="3"]').uncheck();
+  for (const option of ['1','2']) await page.locator(`[name=choices][value="${option}"]`).check();
   await button('Проверить').click();
   assert.equal(await page.locator('.answer-status').innerText(),'Верно.');
   await testPlayer();

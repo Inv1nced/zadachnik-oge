@@ -84,7 +84,7 @@ export function figureImages(task) {
   return f.graphs.map(g => plot(g.series.map(s => ({
     label: s.label,
     points: s.points ?? samples(g.timeDomain[1], task.id === 'KIN-03' ? t => carExam(t)[0] : t => 6 * t - t ** 2)
-  })), {domain: g.timeDomain, xLabel: g.xAxis, yLabel: g.yAxis}));
+  })), {domain: g.timeDomain, xLabel: g.xAxis, yLabel: g.yAxis, marks: g.marks, yTicks: g.yTicks}));
 }
 
 export function figureMarkup(task) {

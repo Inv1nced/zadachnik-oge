@@ -18,8 +18,8 @@ function axisScale(all, left = 45, right = 415) {
 function track(x, y, caption) {
   return line(30,y + 9,432,y + 9) + text(32,y - 22,caption) + line(x,y + 9,x,y + 15) + cart(x,y);
 }
-function graph(points, end, label, cursor, secondary) {
-  return plot([{points, label:'Автомобиль'}, ...(secondary ? [{label:'Камера', points:secondary}] : [])], {domain:[0,end],yLabel:label,cursor});
+function graph(points, end, label, cursor) {
+  return plot([{points}], {domain:[0,end],yLabel:label,cursor});
 }
 
 function car(task) {
@@ -30,7 +30,7 @@ function car(task) {
     title:'Движение и три графика', defaults,
     controls: exam ? [control('x0','Начальная координата, м',-15,30,1),control('a','Модуль ускорения, м/с²',1,8,.5)]
       : [control('x0','Начальная координата, м',-20,20,1),control('v0','Начальная скорость, м/с',-20,20,.5),control('a','Ускорение, м/с²',-5,5,.5)],
-    note: exam ? '0–2 с · разгон. 2–4 с · равномерное движение. 4–8 с · ускорение направлено влево.' : 'Модель с постоянным ускорением вдоль прямой.',
+    note: exam ? 'Передвинь ползунок времени и сравни положение машины на дорожке с её положением на графике.' : 'Модель с постоянным ускорением вдоль прямой.',
     duration: () => exam ? 8 : p.endTime,
     frame(t, values, end) {
       const evaluate = u => {
@@ -40,14 +40,12 @@ function car(task) {
       };
       const series = [0, 1, 2].map(i => samples(end,u => evaluate(u)[i],48));
       if (exam) series[2] = [[0,values.a],[2,values.a],[2,0],[4,0],[4,-values.a],[8,-values.a]];
-      const camera = exam ? [[0,22],[8,38]] : null;
-      const x = axisScale([...series[0].map(point => point[1]), ...(exam ? [22, 38] : [])]);
+      const x = axisScale(series[0].map(point => point[1]));
       const [position, speed, a] = evaluate(t);
       const figure = track(x(position),65,'Автомобиль') + arrow(x(position),87,x(position) + Math.sign(speed) * Math.min(44,4 * Math.abs(speed)),87);
-      const second = exam ? track(x(22 + 2 * t),135,'Камера') : '';
-      return result(svg(figure + second,'Движение по прямой',460,exam ? 170 : 105),
+      return result(svg(figure,'Движение по прямой',460,105),
         [v('x',position,'м'),v('vₓ',speed,'м/с'),v('aₓ',a,'м/с²')],
-        ['x, м','vₓ, м/с','aₓ, м/с²'].map((label,i) => graph(series[i],end,label,t,i === 0 && camera)));
+        ['x, м','vₓ, м/с','aₓ, м/с²'].map((label,i) => graph(series[i],end,label,t)));
     }
   };
 }
