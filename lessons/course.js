@@ -7,6 +7,7 @@ const exams = { ege: 'ЕГЭ', oge: 'ОГЭ' };
 const exam = overview ? 'ege' : query.getAll('exam').length <= 1 ? (query.get('exam') ?? 'oge') : '';
 const title = Object.hasOwn(exams, exam) ? exams[exam] : '';
 const id = query.get('lesson');
+const homeworkDirectory = !overview && !id && exam === 'ege' && query.get('view') === 'homework';
 const stages = [
   ['diagnostic', 'Диагностика', '0–5'],
   ['explain', 'Объясняем', '5–18'],
@@ -31,17 +32,25 @@ function lessonIndex(lesson) {
 
 function directory(data) {
   const tag = overview ? 'h3' : 'h2';
-  return (overview ? '' : `<div class="route-top"><p class="kicker">${title} · ${exam === 'ege' ? 11 : 9} класс</p>
-    <h1>Уроки физики</h1><p>${exam === 'oge'
+  const heading = homeworkDirectory
+    ? 'Домашние задания ЕГЭ'
+    : 'Уроки физики';
+  const description = homeworkDirectory
+    ? 'Выбери пройденную тему, чтобы открыть задания к уроку.'
+    : exam === 'oge'
       ? 'Выбери тему для повторения. План проведения прежних занятий доступен в кабинете.'
-      : 'Выбери тему или двигайся по порядку, от механики к анализу эксперимента.'}</p></div>`) +
+      : 'Выбери тему или двигайся по порядку, от механики к анализу эксперимента.';
+  if (homeworkDirectory) document.title = heading + ' · INVARIANT';
+  return (overview ? '' : `<div class="route-top"><p class="kicker">${title} · ${exam === 'ege' ? 11 : 9} класс</p>
+    <h1>${heading}</h1><p>${description}</p></div>`) +
     data.blocks.map(block => {
-      const items = data.lessons.filter(lesson => lesson.block === block.id);
+      const items = data.lessons.filter(lesson => lesson.block === block.id && (!homeworkDirectory || lesson.homework?.length));
+      if (!items.length) return '';
       return `<section class="course-block" id="${e(block.id)}">
         <${tag}>${e(block.title)}</${tag}>
-        <ul>${items.map(lesson => `<li><a class="lesson-row" href="${e(lessonURL(lesson))}">
+        <ul>${items.map(lesson => `<li><a class="lesson-row" href="${e(lessonURL(lesson, homeworkDirectory ? 'homework' : ''))}">
           <span class="lesson-index">${lessonIndex(lesson)}</span><strong>${e(lesson.title)}</strong>
-          <span class="lesson-duration">${lesson.duration ? lesson.duration + ' мин' : 'Повторение'}</span>
+          <span class="lesson-duration">${homeworkDirectory ? 'Домашняя работа' : lesson.duration ? lesson.duration + ' мин' : 'Повторение'}</span>
         </a></li>`).join('')}</ul>
       </section>`;
     }).join('');

@@ -2,7 +2,14 @@
   const script = document.currentScript;
   const preferenceKey = 'invariant-exam-preference-v1';
   const arrivalKey = 'invariant-exam-arrival-v1';
-  const examPaths = new Map(['oge', 'ege'].map(exam => [exam, new URL('../' + exam + '.html', script.src)]));
+  const examPaths = new Map([
+    ['oge', new URL('../oge.html', script.src)],
+    ['ege', new URL('../ege-bank.html', script.src)],
+  ]);
+  if (script.hasAttribute('data-legacy-course') && !location.search && !location.hash) {
+    location.replace(examPaths.get('ege'));
+    return;
+  }
   const root = document.documentElement;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 

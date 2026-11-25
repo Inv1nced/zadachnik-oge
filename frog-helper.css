@@ -191,11 +191,13 @@
 @keyframes frog-blink { 0%,94%,98%,100% { transform: scaleY(1); } 96% { transform: scaleY(.12); } }
 
 @media (max-width: 600px) {
-  .oge-frog { inset: auto 12px 12px auto; }
-  .frog-body { width: 82px; }
-  .frog-body svg { width: 76px; height: 57px; }
-  .frog-name { font-size: 10px; }
-  .frog-bubble { max-height: calc(100dvh - 110px); }
+  .oge-frog {
+    inset: auto max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) auto;
+  }
+  .frog-body { width: max-content; min-width: 56px; min-height: 44px; gap: 0; }
+  .frog-body svg { width: 56px; height: 42px; }
+  .frog-name { padding: 1px 4px; font-size: 9px; }
+  .frog-bubble { max-height: calc(100dvh - 92px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -204,8 +206,7 @@
   .frog-pupil { transition: none; }
 }
 
-@media print { .oge-frog, #frog-nav-toggle, [data-frog-task] { display: none !important; } }
+@media print { .oge-frog, [data-frog-task] { display: none !important; } }
 
-#frog-nav-toggle { margin-left: 0; }
 .workspace-embed .oge-frog, .workspace-embed [data-frog-task],
 body[data-frog-assessment="active"] [data-frog-task] { display: none; }

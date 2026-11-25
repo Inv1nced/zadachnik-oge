@@ -6,18 +6,20 @@
   <meta name="description" content="Уроки INVARIANT по физике для ОГЭ и ЕГЭ.">
   <title>Уроки физики · INVARIANT</title>
   <link rel="stylesheet" href="lessons/course.css">
-  <script type="module" src="lessons/course.js"></script>
+  <link rel="stylesheet" href="site-shell.css?v=study-rail-1">
+  <script src="site-shell.js?v=study-rail-1" defer></script>
+  <script type="module" src="lessons/course.js?v=study-rail-1"></script>
 </head>
 <body data-page="lessons">
   <header class="site-header">
     <a class="wordmark" href="index.html?choose=1" aria-label="INVARIANT · Выбрать экзамен">INVARIANT</a>
     <nav aria-label="Экзамены">
       <a href="lessons.html?exam=oge" data-exam="oge">ОГЭ</a>
-      <a href="ege.html" data-exam="ege">ЕГЭ</a>
+      <a href="lessons.html?exam=ege" data-exam="ege">ЕГЭ</a>
       <a id="cabinet-link" href="teach.html?view=lessons">Кабинет</a>
     </nav>
   </header>
-  <main id="main" class="wrap">
+  <main id="main" class="wrap" tabindex="-1">
     <div id="course-content"><p role="status">Загружаем уроки…</p></div>
   </main>
   <footer class="wrap site-footer"><a id="exam-source" href="https://fipi.ru/oge/demoversii-specifikacii-kodifikatory">Документы ФИПИ</a></footer>

@@ -1,9 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Задачник по физике · INVARIANT</title><script src="entry/exam-preference.js"></script><link rel="stylesheet" href="entry/exam-handoff.css"><link rel="stylesheet" href="site-shell.css?v=interface-1"><link rel="stylesheet" href="wordmark.css?v=chrome-1"><script src="site-shell.js?v=mocks-1" defer></script><link rel="stylesheet" href="physics-lab-loader.css?v=chrome-1"><link rel="preload" href="task-board.js?v=native-fipi" as="script"></head><body class="study-site">
+<!doctype html><html lang="ru" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Задачник по физике · INVARIANT</title><script src="entry/exam-preference.js?v=practice-first"></script><link rel="stylesheet" href="entry/exam-handoff.css"><link rel="stylesheet" href="site-shell.css?v=study-rail-1"><link rel="stylesheet" href="wordmark.css?v=study-rail-1"><script src="site-shell.js?v=study-rail-1" defer></script><link rel="stylesheet" href="physics-lab-loader.css?v=chrome-1"><link rel="preload" href="task-board.js?v=native-fipi" as="script"><link rel="preload" href="entry/onest.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="study-bank.css?v=shared-1"><link rel="stylesheet" href="study-interface.css?v=study-rail-2"></head><body class="study-site">
 <script src="physics-lab-loader.js?v=entry-1" data-lab-entry="Загружаем задачник…"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="study-bank.css?v=shared-1">
 
 <div class="gridbg" aria-hidden="true"></div>
 <div class="app">
@@ -11,16 +7,16 @@
     <a class="brand" href="index.html?choose=1" aria-label="INVARIANT · Выбрать экзамен"><span class="physics-wordmark"><picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/invariant-wordmark-still.png?v=chrome-1"><img src="assets/invariant-wordmark.svg?v=chrome-1" alt="INVARIANT" width="333" height="39"></picture></span></a>
     <nav class="exam-switch" aria-label="Курс по физике">
       <a href="oge.html" data-exam-choice="oge" aria-current="page">ОГЭ</a>
-      <a href="ege.html" data-exam-choice="ege">ЕГЭ</a>
+      <a href="ege-bank.html" data-exam-choice="ege">ЕГЭ</a>
     </nav>
-    <div class="tabs" role="tablist" id="tabs">
-      <button class="tab" role="tab" data-v="bank" aria-selected="true">Задачник</button>
-      <button class="tab" role="tab" data-v="test" aria-selected="false">Тест</button>
-      <button class="tab" role="tab" data-v="hw" aria-selected="false">Домашка</button>
-      <button class="tab" role="tab" data-v="prog" aria-selected="false">Прогресс</button>
+    <div class="tabs" role="group" aria-label="Учебные разделы" id="tabs">
+      <button type="button" class="tab" data-v="bank" aria-pressed="true">Задачник</button>
+      <button type="button" class="tab" data-v="test" aria-pressed="false">Тест</button>
+      <button type="button" class="tab" data-v="hw" aria-pressed="false">Домашка</button>
+      <button type="button" class="tab" data-v="prog" aria-pressed="false">Прогресс</button>
     </div>
   </div>
-  <main id="view"></main>
+  <main id="view" tabindex="-1"></main>
   <p class="foot">Задачи — из открытого банка ФИПИ, проекта демоверсии 2026, сборника Камзеевой 2026 и каталога «Школково»; авторские — от репетитора. Нажми на рисунок, чтобы увеличить. По ссылке «Условие ↗» — задача на «Школково» с подсказками и решением. Твой прогресс хранится только в этом браузере.</p>
 </div>
 <div class="lightbox" id="lb" hidden><img alt="Рисунок крупно"></div>
@@ -77,5 +73,5 @@
 <script src="bank/fipi-native.js?v=bank-coverage-1"></script>
 <script src="bank/block-practice.js?v=1"></script>
 <script src="task-board.js?v=native-fipi"></script>
-<script src="zadachnik.js?v=board-ready-1"></script>
-<script src="workspace-bridge.js?v=bank-coverage-1"></script><link rel="stylesheet" href="study-interface.css?v=native-fipi"></body></html>
+<script src="zadachnik.js?v=study-rail-1"></script>
+<script src="workspace-bridge.js?v=bank-coverage-1"></script></body></html>

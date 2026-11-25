@@ -270,6 +270,10 @@ def main():
     files[DATA_PREFIX + "import-report.json"] = json_bytes(report)
     files[DATA_PREFIX + "ready-by-topic.json"] = json_bytes(ready)
     files[DATA_PREFIX + "catalog.json"] = json_bytes({"schemaVersion": 1, "topics": TOPICS, "tasks": tasks})
+    if mode == "references":
+        files[DATA_PREFIX + "practice-catalog.json"] = json_bytes({
+            "tasks": [row for row in tasks if row["status"] == "ready"],
+        })
     if args.check:
         for name, data in files.items():
             if not (output / name).is_file() or (output / name).read_bytes() != data:

@@ -26,6 +26,13 @@ const server = http.createServer((request,response)=>{
 });
 const waitForForm = page => page.locator('#fin2').waitFor();
 const target = (page,n) => page.locator('.study-questions .q').nth(n-1);
+async function selectOgeView(page, view) {
+  const menu = page.getByRole('button', {name: 'Разделы', exact: true});
+  if (await menu.isVisible() && await menu.getAttribute('aria-expanded') === 'false') {
+    await menu.click();
+  }
+  await page.locator(`#tabs [data-v="${view}"]`).click();
+}
 const studentName = 'Ученик для проверки';
 const errors = [];
 
@@ -81,8 +88,18 @@ async function checkPublic(browser, base) {
   assert.equal(await page.locator('#mods .mod').count(),5);
   assert.ok(!requested.some(url=>/bank\/\w+\.json/.test(url)));
   assert.ok(requested.some(url=>/task-board\.js/.test(url)));
+  assert.equal(await page.locator('html').getAttribute('data-theme'), 'light');
+  assert.equal(await page.locator('#frog-nav-toggle').count(), 0);
+  const menu = page.getByRole('button', {name: 'Разделы', exact: true});
+  await menu.focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await menu.getAttribute('aria-expanded'), 'true');
+  assert.ok(await page.getByRole('link', {name: 'Графики', exact: true}).isVisible());
+  await page.keyboard.press('Escape');
+  assert.equal(await menu.getAttribute('aria-expanded'), 'false');
+  assert.ok(await menu.evaluate(button => document.activeElement === button));
   const quotaStarted=page.waitForRequest('**/test-frog/quota');
-  await page.locator('#frog-nav-toggle').click();
+  await page.getByRole('button', {name:'Задать вопрос лягушке'}).click();
   assert.ok(await page.locator('.frog-bubble').isVisible());
   await quotaStarted;
   assert.ok(await page.locator('.frog-send').isEnabled(), 'A slow quota check must not block sending.');
@@ -184,15 +201,15 @@ async function checkPublic(browser, base) {
   assert.equal(await target(page,2).locator('input').inputValue(),'6000');
   await second.close();
 
-  await page.locator('[data-v="test"]').click();
+  await selectOgeView(page, 'test');
   await page.locator('#go').click();
   await target(page,1).locator('input').fill('123');
-  await page.locator('[data-v="hw"]').click();
+  await selectOgeView(page, 'hw');
   assert.equal(await target(page,2).locator('input').inputValue(),'6000');
-  await page.locator('[data-v="test"]').click();
+  await selectOgeView(page, 'test');
   assert.equal(await target(page,1).locator('input').inputValue(),'123');
   assert.notEqual(await page.locator('#timer').innerText(),'∞');
-  await page.locator('[data-v="hw"]').click();
+  await selectOgeView(page, 'hw');
   await page.locator('#fin').click();
   assert.ok(await page.locator('#submit-top').isVisible());
   assert.match(await page.locator('#submit-top').innerText(),/3, 4/);
@@ -226,7 +243,7 @@ async function checkPublic(browser, base) {
   assert.match(await page.locator('#t1 .verdict').innerText(),/^неверно/);
   assert.match(await page.locator('#report').inputValue(),/RES-/);
   await page.goto('oge.html');
-  await page.locator('[data-v="bank"]').click();
+  await selectOgeView(page, 'bank');
   await page.locator('.lesson[data-l="1"] summary').click();
   await page.locator('input[aria-label="Ответ к задаче 31"]').fill('1, 4');
   await page.locator('input[aria-label="Ответ к задаче 31"]').press('Enter');

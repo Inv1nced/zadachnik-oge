@@ -127,7 +127,7 @@ async function checkPublic(browser, base) {
   const page = await mobile.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('ege.html');
+  await page.goto('ege.html#route');
   await page.getByRole('heading', { name: 'Физика', exact: true }).waitFor();
   await page.locator('.lesson-row').first().waitFor();
   assert.equal(await page.locator('.lesson-row').count(), ege.lessons.length);
@@ -190,7 +190,7 @@ async function checkPublic(browser, base) {
   assert.deepEqual(errors, []);
   await mobile.close();
   const desktop = await browser.newPage({ baseURL: base, viewport: { width: 1440, height: 920 } });
-  await desktop.goto('ege.html');
+  await desktop.goto('ege.html#route');
   await desktop.locator('.lesson-row').first().waitFor();
   assert.ok(await fits(desktop));
   if (process.env.LESSON_SCREENSHOTS) await desktop.screenshot({ path: path.join(process.env.LESSON_SCREENSHOTS, 'course-desktop.png') });

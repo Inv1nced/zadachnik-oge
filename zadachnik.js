@@ -104,8 +104,9 @@ const saveAll=()=>{LS.set("mk_solved",[...solved]);LS.set("mk_tries",tries);LS.s
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2200)}
 async function copy(text,ta){try{await navigator.clipboard.writeText(text);toast("Скопировано")}catch(e){if(ta){ta.focus();ta.select()}toast("Выдели текст и скопируй вручную")}}
 /* ====== state ====== */
-let view = 'bank';
 const bankParams=new URLSearchParams(location.search);
+const studyRoutes = new Map([['test', 'test'], ['homework', 'hw'], ['progress', 'prog']]);
+let view = studyRoutes.get(bankParams.get('view')) ?? 'bank';
 const sectionParam=bankParams.get('section');
 const blockRef=bankParams.get('block');
 const codeParam=(bankParams.get('code')||'').slice(0,32);
@@ -158,9 +159,17 @@ const V=document.getElementById("view");
 const studyTopbar=document.querySelector('.study-site .topbar');
 new ResizeObserver(()=>document.body.style.setProperty('--topbar-height',`${studyTopbar.offsetHeight}px`)).observe(studyTopbar);
 
-function setView(v){view=v;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));render();window.scrollTo({top:0,behavior:"smooth"})}
-document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(t)setView(t.dataset.v)});
-function render(){document.body.dataset.frogAssessment=runs.test && !runs.test.done?"active":"inactive";window.dispatchEvent(new Event("oge-study-state"));({bank:renderBank,test:renderTest,hw:renderHw,prog:renderProg})[view]()}
+const studyTabs = document.getElementById("tabs");
+function setView(nextView) {
+ view = nextView;
+ render();
+ window.scrollTo({top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+}
+studyTabs.addEventListener("click", event => {
+ const button = event.target.closest('button[data-v]');
+ if (button) setView(button.dataset.v);
+});
+function render(){studyTabs.querySelectorAll('button[data-v]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.v === view)));document.body.dataset.frogAssessment=runs.test && !runs.test.done?"active":"inactive";window.dispatchEvent(new Event("oge-study-state"));({bank:renderBank,test:renderTest,hw:renderHw,prog:renderProg})[view]()}
 /* ====== BANK ====== */
 function lessonStats(l){const a=(byL[l]||[]).filter(r=>!r[8]?.archived);return [a.filter(r=>solved.has(r[0])).length,a.length]}
 function modStats(m){let s=0,n=0;m.l.forEach(l=>{const [a,b]=lessonStats(l);s+=a;n+=b});return [s,n]}
@@ -200,7 +209,7 @@ function renderBank(){
   </section>
   <div class="bank-utilities">
    <form class="unlock" id="unlock-form"><label for="uc">Код урока</label><input type="text" id="uc" placeholder="Например, 3-AB12CD" autocomplete="off"><button class="btn" type="submit" id="ub">Открыть урок</button><span id="um" class="t2" role="status"></span></form>
-   <div class="bank-resources">${section==="mechanics"?'<a href="forces.html">Силы и векторы</a><a href="grafiki.html">Тренажёр графиков</a>':'<a href="https://3.shkolkovo.online/catalog?SubjectId=33" target="_blank" rel="noopener">Банк Школково ↗</a>'}<button class="btn board" id="freeBd">Чистая доска <span aria-hidden="true">↗</span></button></div>
+   <div class="bank-resources">${section==="mechanics"?'':'<a href="https://3.shkolkovo.online/catalog?SubjectId=33" target="_blank" rel="noopener">Банк Школково ↗</a>'}<button class="btn board" id="freeBd">Чистая доска <span aria-hidden="true">↗</span></button></div>
   </div>
   <div class="tools"><input type="search" id="bq" aria-label="${fipi?'Поиск по условию или номеру ФИПИ':'Поиск по условию'}" placeholder="${fipi?'Условие или номер ФИПИ':'Найти задачу по условию'}" value="${esc(bank.q)}" autocomplete="off">
    <div id="bt" style="display:flex;flex-wrap:wrap;gap:6px">${[["all","Все"],...Object.entries(TYPES)].map(([k,v])=>`<button class="chip" data-t="${k}" aria-pressed="${bank.type===k}">${v}</button>`).join("")}</div></div>
@@ -790,5 +799,5 @@ if (!embedded) (async () => {
   if (runs.hw && !runs.hw.done) setView('hw');
   else if (runs.test && !runs.test.done) setView('test');
   else render();
- } else if (view==='test' && runs.test) render();
+ } else if (runs[view]) render();
 })().catch(error=>toast(error.message));

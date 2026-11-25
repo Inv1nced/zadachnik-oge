@@ -31,14 +31,6 @@ frog.innerHTML = `
   <button class="frog-body" type="button" aria-controls="frog-chat" aria-expanded="false" aria-label="Задать вопрос лягушке"><svg viewBox="0 0 128 96" aria-hidden="true"><g class="frog-sprite"><path fill="#41424d" d="M24 4h24v8h32V4h24v8h8v24h8v16h8v28h-8v8H8v-8H0V52h8V36h8V12h8z"/><path fill="#86b75d" d="M24 16h24v4h32v-4h24v24h8v16h8v20h-8v8H16v-8H8V56h8V40h8z"/><path fill="#38a16c" d="M8 60h8v12h16v12h24V72h16v12h24V72h16V60h8v16h-8v8H16v-8H8z"/><path fill="#c9ff72" d="M16 40h8v12H12v-8h4zM104 40h8v4h4v8h-12zM8 56h8v8H8zM112 56h8v8h-8zM52 64h24v12H52z"/><rect x="56" y="76" width="16" height="8" fill="#c4db59"/><g class="frog-eye"><path fill="#fffde7" d="M24 12h20v4h4v16h-4v4H24v-4h-4V16h4z"/><g class="frog-pupil"><rect x="29" y="20" width="10" height="12" rx="2" fill="#344f50"/><rect x="30" y="20" width="4" height="4" fill="#fff"/><rect x="35" y="28" width="2" height="2" fill="#b8e5d8"/></g></g><g class="frog-eye"><path fill="#fffde7" d="M84 12h20v4h4v16h-4v4H84v-4h-4V16h4z"/><g class="frog-pupil"><rect x="89" y="20" width="10" height="12" rx="2" fill="#344f50"/><rect x="90" y="20" width="4" height="4" fill="#fff"/><rect x="95" y="28" width="2" height="2" fill="#b8e5d8"/></g></g><path fill="#e9a896" d="M28 44h10v5H28zM90 44h10v5H90z"/><path class="frog-smile" fill="#364953" d="M52 47h4v6h16v-6h4v8h-4v3H56v-3h-4z"/><g class="frog-open-mouth"><rect x="52" y="48" width="24" height="16" fill="#364953"/><rect x="58" y="58" width="12" height="6" fill="#e69c9f"/></g><path fill="#364953" d="M28 68h6v12h-6zM94 68h6v12h-6z"/></g></svg><span class="frog-name">Задать вопрос</span></button>`;
 document.body.append(frog);
 const body = frog.querySelector('.frog-body');
-const navButton = document.createElement('button');
-navButton.id = 'frog-nav-toggle';
-navButton.type = 'button';
-navButton.textContent = '🐸 Помощник';
-navButton.setAttribute('aria-controls', 'frog-chat');
-navButton.setAttribute('aria-expanded', 'false');
-document.querySelector('.site-nav')?.append(navButton);
-
 const bubble = frog.querySelector('.frog-bubble');
 const closeButton = frog.querySelector('.frog-close');
 const form = frog.querySelector('.frog-form');
@@ -142,7 +134,6 @@ async function showQuota() {
 function close(restoreFocus = false) {
   bubble.hidden = true;
   body.setAttribute('aria-expanded', 'false');
-  navButton.setAttribute('aria-expanded', 'false');
   if (restoreFocus && trigger?.isConnected && !trigger.disabled) trigger.focus({ preventScroll: true });
 }
 
@@ -151,7 +142,6 @@ function open(button) {
   trigger = button;
   bubble.hidden = false;
   body.setAttribute('aria-expanded', 'true');
-  navButton.setAttribute('aria-expanded', 'true');
   input.focus({ preventScroll: true });
   showQuota();
 }
@@ -170,9 +160,7 @@ function assessmentChanged() {
   }
   locked = next;
   body.disabled = locked;
-  navButton.disabled = locked;
   frog.querySelector('.frog-name').textContent = locked ? 'До конца теста' : 'Задать вопрос';
-  navButton.title = locked ? 'Помощник доступен после сдачи теста' : '';
   controls();
 }
 
@@ -290,7 +278,6 @@ function toggle(button) {
   if (bubble.hidden) open(button);
   else close();
 }
-navButton.onclick = () => toggle(navButton);
 body.onclick = () => toggle(body);
 closeButton.onclick = () => close(true);
 frog.querySelector('.frog-clear').onclick = () => setTask();

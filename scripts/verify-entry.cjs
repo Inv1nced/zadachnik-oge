@@ -1,8 +1,5 @@
 /* Browser checks for the exam chooser, visual handoff and remembered choice. */
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const root = path.resolve(__dirname, '..');
 const waitForForm = page => page.locator('#fin2').waitFor();
 
 async function newEntryContext(browser, options) {
@@ -22,7 +19,7 @@ async function checkEntryRoutes(browser, base) {
     assert.equal(await page.getByRole('heading', {name:'Выбери свой экзамен'}).count(), 1);
     assert.deepEqual(
       await page.locator('a').evaluateAll(links => links.map(link => link.getAttribute('href'))),
-      ['teach.html', 'oge.html', 'ege.html', 'mocks.html?exam=ege']
+      ['teach.html', 'oge.html', 'ege-bank.html', 'mocks.html?exam=ege']
     );
     assert.ok(!requests.some(url => /bank\/|zadachnik\.js|physics-lab-loader|teacher-workspace/.test(url)));
     await page.getByRole('link', {name:'Кабинет репетитора'}).click();
@@ -59,10 +56,6 @@ async function checkEntryRoutes(browser, base) {
 async function checkEntryInteraction(browser, base) {
   const context = await newEntryContext(browser, {baseURL:base, viewport:{width:1440,height:900}});
   try {
-    // When testing the entry branch alone, the EGE course belongs to another branch.
-    if (!fs.existsSync(path.join(root, 'ege.html'))) {
-      await context.route('**/ege.html', route => route.fulfill({contentType:'text/html', body:'<h1>Проверка маршрута ЕГЭ</h1>'}));
-    }
     const page = await context.newPage();
     for (const [width,height] of [[360,700],[390,844],[768,900],[1440,900],[740,320]]) {
       await page.setViewportSize({width,height});
@@ -89,7 +82,7 @@ async function checkEntryInteraction(browser, base) {
     await page.keyboard.press('Enter');
     await ege.locator('canvas:not([hidden])').waitFor();
     assert.equal(await oge.locator('canvas:not([hidden])').count(), 0);
-    await page.waitForURL(base+'ege.html');
+    await page.waitForURL(base+'ege-bank.html');
     await page.goBack();
     assert.equal(await page.locator('.exam.is-choosing').count(), 0);
     const popupPromise = context.waitForEvent('page');
@@ -117,19 +110,19 @@ async function checkEntryInteraction(browser, base) {
     } finally {
       loadedWordmark();
     }
-    await early.waitForURL(base+'ege.html');
+    await early.waitForURL(base+'ege-bank.html');
     await early.close();
 
     await page.addInitScript(() => { HTMLCanvasElement.prototype.getContext = () => null; });
     await page.goto('index.html?choose=1');
     await ege.click();
-    await page.waitForURL(base+'ege.html');
+    await page.waitForURL(base+'ege-bank.html');
 
     const stalled = await context.newPage();
     await stalled.addInitScript(() => { window.requestAnimationFrame = () => 0; });
     await stalled.goto('index.html?choose=1');
     await stalled.getByRole('link', {name:/Я ученик ЕГЭ/}).click();
-    await stalled.waitForURL(base+'ege.html', {timeout:2000});
+    await stalled.waitForURL(base+'ege-bank.html', {timeout:2000});
   } finally { await context.close(); }
 
   const touch = await newEntryContext(browser, {baseURL:base, viewport:{width:390,height:844}, hasTouch:true, isMobile:true, deviceScaleFactor:3});
@@ -171,17 +164,6 @@ async function checkEntryInteraction(browser, base) {
 async function checkExamPreference(browser, base) {
   const context = await newEntryContext(browser, {baseURL:base, viewport:{width:390,height:844}});
   try {
-    if (!fs.existsSync(path.join(root, 'ege.html'))) {
-      await context.route('**/ege.html', route => route.fulfill({
-        contentType:'text/html',
-        body:`<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="entry/exam-handoff.css">
-          <script src="entry/exam-preference.js"></script><main><h1>Проверка маршрута ЕГЭ</h1>
-          <nav class="exam-switch" aria-label="Курс по физике">
-            <a href="oge.html" data-exam-choice="oge">ОГЭ</a>
-            <a href="ege.html" data-exam-choice="ege" aria-current="page">ЕГЭ</a>
-          </nav></main>`,
-      }));
-    }
     let releaseBank;
     const bankReady = new Promise(resolve => { releaseBank = resolve; });
     await context.route('**/bank/intro.js*', async route => {
@@ -213,13 +195,25 @@ async function checkExamPreference(browser, base) {
     await freshTab.close();
 
     await switcher.getByRole('link', {name:'ЕГЭ'}).click();
-    await page.waitForURL(base+'ege.html');
+    await page.waitForURL(base+'ege-bank.html');
     assert.equal(await switcher.getByRole('link', {name:'ЕГЭ'}).getAttribute('aria-current'), 'page');
+
+    await page.goto('ege.html');
+    await page.waitForURL(base+'ege-bank.html');
+    await page.goto('ege.html#route');
+    await page.getByRole('heading', {name:'План курса'}).waitFor();
+    assert.equal(page.url(), base+'ege.html#route');
+
+    await page.goto('lessons.html?exam=ege&view=homework');
+    await page.getByRole('heading', {name:'Домашние задания ЕГЭ'}).waitFor();
+    await page.locator('.lesson-row').first().click();
+    assert.equal(new URL(page.url()).searchParams.get('stage'), 'homework');
+    await page.getByRole('heading', {name:'Домашняя работа'}).waitFor();
     await page.goto(base+'index.html#set=impulse');
     await page.waitForURL(base+'oge.html#set=impulse');
     await waitForForm(page);
     await page.goto(base);
-    await page.waitForURL(base+'ege.html');
+    await page.waitForURL(base+'ege-bank.html');
     await switcher.getByRole('link', {name:'ОГЭ'}).click();
     await page.waitForURL(base+'oge.html', {waitUntil:'commit'});
     await page.reload();

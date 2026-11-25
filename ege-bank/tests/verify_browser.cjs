@@ -6,23 +6,61 @@ async function checkEgeBank(browser, baseURL) {
     try {
       const page = await context.newPage();
       const errors = [];
+      const requests = [];
       page.on('pageerror', error => errors.push(error.message));
+      page.on('request', request => requests.push(new URL(request.url()).pathname));
+      const loadedInventory = () => requests.some(path => path.endsWith('/ege-data/v1/catalog.json'));
+      const loadedBoard = () => requests.some(path => path.endsWith('/task-board.js'));
       const noOverflow = async () => assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
       await page.goto('index.html?choose=1');
       await page.getByRole('link', {name: 'Я ученик ЕГЭ, 11 класс'}).click();
-      await page.getByRole('link', {name: 'Открыть банк задач ЕГЭ'}).click();
-      await page.getByRole('heading', {name: 'Банк задач', exact: true}).waitFor();
-      assert.equal(await page.locator('.mods .mod').count(), 6);
+      await page.getByRole('heading', {name: 'Задачи по физике', exact: true}).waitFor();
+      assert.equal(new URL(page.url()).pathname.split('/').pop(), 'ege-bank.html');
+      const sections = page.getByRole('navigation', {name: 'Разделы физики'});
+      assert.equal(await sections.getByRole('link').count(), 6);
+      assert.equal(await sections.getByRole('link', {name: 'Механика', exact: true}).getAttribute('aria-current'), 'page');
       await noOverflow();
 
-      await page.getByRole('link', {name: /Механика.*задач/}).click();
-      await page.getByRole('link', {name: /Импульс, работа и энергия/}).click();
-      await page.getByRole('navigation', {name: 'Подтемы'}).getByRole('link', {name: /Импульс и закон его сохранения/}).click();
-      await page.getByRole('heading', {name: 'Импульс и закон его сохранения', exact: true}).waitFor();
+      assert.equal(loadedInventory(), false);
+      assert.equal(loadedBoard(), false);
+      await page.getByRole('searchbox', {name: 'Найти задачу'}).fill('нерастяжимой нити');
+      await page.getByRole('button', {name: 'Найти', exact: true}).click();
+      await page.locator('[data-task-card="ballistic-pendulum"]').waitFor();
+      assert.equal(loadedInventory(), false);
+      await page.goto('ege-bank.html?block=mechanics&topic=circle');
+      const opening = page.locator('#topic-circle');
+      await opening.waitFor();
+      await page.waitForFunction(() => {
+        const heading = document.querySelector('#topic-circle').getBoundingClientRect();
+        const top = document.querySelector('.topbar').getBoundingClientRect();
+        return heading.top >= top.bottom && heading.bottom <= innerHeight;
+      });
+      await page.goto('ege-bank.html');
+      const motion = page.getByRole('link', {name: /Движение по окружности/});
+      const momentum = page.getByRole('link', {name: /Импульс и закон его сохранения/});
+      const modules = page.getByRole('navigation', {name: 'Модули раздела'});
+      assert.equal(await modules.getByRole('link').count(), 7);
+      assert.equal(await modules.getByRole('link', {name: /Кинематика/}).getAttribute('aria-current'), 'true');
+      await motion.waitFor();
+      assert.equal(await momentum.count(), 0);
+      await modules.getByRole('link', {name: /Импульс и столкновения/}).click();
+      await momentum.waitFor();
+      assert.equal(new URL(page.url()).searchParams.get('module'), 'momentum');
+      assert.equal(await motion.count(), 0);
+      await momentum.click();
+      const practice = page.locator('.ege-practice-block.is-open');
+      await practice.getByRole('heading', {name: /Импульс и закон его сохранения/}).waitFor();
+      assert.ok(await practice.locator('article[data-task-card] .tt').count() >= 3);
+      assert.ok(await practice.getByRole('button', {name: 'Проверить', exact: true}).count() >= 2);
+      assert.equal(await practice.getByRole('link', {name: /Открыть условие на ФИПИ/}).count(), 0);
+      assert.equal(new URL(page.url()).searchParams.get('topic'), 'momentum');
+      assert.equal(loadedInventory(), false);
+      assert.equal(loadedBoard(), false);
       await noOverflow();
       await page.getByRole('link', {name: 'К уроку', exact: true}).click();
       await page.getByRole('link', {name: 'Задачи по теме', exact: true}).click();
       assert.equal(new URL(page.url()).searchParams.get('lesson'), 'momentum-energy');
+      await page.getByRole('link', {name: /Импульс и закон его сохранения/}).waitFor();
 
       await page.goto('ege-bank.html?task=impulse-force-graph');
       await page.locator('.mock-figure svg').waitFor();
@@ -61,20 +99,42 @@ async function checkEgeBank(browser, baseURL) {
       await noOverflow();
 
       await page.goto('ege-bank.html?task=ballistic-pendulum');
-      const draft = page.locator('textarea[data-draft]');
-      await draft.fill('Сначала закон сохранения горизонтальной проекции импульса.');
+      await page.locator('[data-task-card]').waitFor();
+      assert.equal(await page.locator('[data-task-card] textarea').count(), 0);
+      assert.equal(loadedBoard(), false);
+      await page.locator('input[name=answer]').fill('20');
+      await page.getByRole('button', {name: 'Проверить итог'}).click();
+      await page.getByText('Итог верен', {exact: true}).waitFor();
       await page.reload();
-      assert.match(await draft.inputValue(), /проекции импульса/);
+      assert.equal(await page.locator('input[name=answer]').inputValue(), '20');
       await page.getByText('Показать разбор', {exact: true}).click();
       await page.getByRole('button', {name: 'Отметить разобранной'}).click();
       await page.getByText('Разобрана', {exact: true}).last().waitFor();
       await page.getByRole('button', {name: 'Доска для решения'}).click();
       await page.locator('#bdCv').waitFor();
+      assert.equal(loadedBoard(), true);
       assert.match(await page.locator('#bdTb').innerText(), /нерастяжимой нити/);
       await page.getByRole('button', {name: 'Закрыть доску'}).click();
       assert.equal(await page.locator('#bd').isVisible(), false);
       await noOverflow();
 
+      await page.goto('ege-bank.html?view=progress');
+      await page.getByRole('heading', {name: 'Прогресс ЕГЭ'}).waitFor();
+      assert.match(await page.locator('.ege-progress-summary').innerText(), /Ответы проверены/);
+
+      assert.equal(loadedInventory(), false);
+      await page.goto('ege-bank.html');
+      await page.getByRole('link', {name: 'Каталог ФИПИ', exact: true}).click();
+      await page.getByRole('heading', {name: 'Каталог ФИПИ'}).waitFor();
+      assert.equal(loadedInventory(), true);
+      const referenceCount = page.locator('#task-list .mini-count');
+      assert.equal((await referenceCount.innerText()).replace(/\s/g, ''), '2344задачи');
+      await page.getByRole('combobox', {name: 'Раздел'}).selectOption('mechanics');
+      await page.waitForFunction(() => document.querySelector('#task-list .mini-count')?.textContent.includes('691'));
+      await page.getByRole('combobox', {name: 'Раздел'}).selectOption('');
+      await page.getByRole('searchbox', {name: 'Код или тема'}).fill('474F4B');
+      await page.getByRole('button', {name: 'Найти', exact: true}).click();
+      await page.getByRole('link', {name: /474F4B/}).waitFor();
       await page.goto('ege-bank.html?task=ege-fipi-474F4B');
       const original = page.getByRole('link', {name: /Открыть условие на ФИПИ/});
       await original.waitFor();
@@ -99,6 +159,8 @@ async function checkEgeBank(browser, baseURL) {
             'test-card.json': {id: row.id, parts: [{type: 'text', text: 'Условие из личной копии.'}]}},
           assets: {},
         };
+        await page.goto('ege-bank.html?view=fipi');
+        await page.getByRole('heading', {name: 'Каталог ФИПИ'}).waitFor();
         const bank = page.locator('[data-personal-bank]');
         await bank.locator('summary').click();
         await bank.locator('input').setInputFiles({
@@ -115,7 +177,7 @@ async function checkEgeBank(browser, baseURL) {
         await page.getByRole('link', {name: /Открыть условие на ФИПИ/}).waitFor();
       }
       assert.deepEqual(errors, []);
-      console.log('PASS: EGE bank links, topic and number filters, images, MathML, table, answers, drafts, and layout at ' + width + 'px.');
+      console.log('PASS: direct EGE entry, inline topic tasks, progress, lazy FIPI/board, legacy links, visuals, answers, and layout at ' + width + 'px.');
     } finally { await context.close(); }
   }
 }

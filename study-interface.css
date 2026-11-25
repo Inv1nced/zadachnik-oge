@@ -1,12 +1,21 @@
+@font-face {
+  font-family: Onest;
+  src: url('entry/onest.woff2') format('woff2');
+  font-display: swap;
+  font-weight: 100 900;
+}
+
 .study-site { margin: 0; --topbar-height: 64px; }
 .study-site .app { max-width: 1180px; padding-inline: clamp(16px, 3.5vw, 35px); }
-.study-site .site-nav { padding-inline: max(16px, calc((100% - 1110px)/2)); }
 .study-site .topbar {
   margin-inline: 0;
   padding-inline: 0;
   background: var(--bg);
 }
 .study-site .brand { letter-spacing: .05em; }
+.study-site .app > main { scroll-margin-top: calc(var(--topbar-height) + 8px); }
+html[data-theme=light] .study-site .notice { color: var(--amber); }
+html[data-theme=light] .study-site .src.K { color: var(--violet); }
 .study-site .btn, .study-site .chip { justify-content: center; }
 html[data-theme] .study-site .btn.primary, html[data-theme] .study-site .tab[aria-selected="true"] {
   background: var(--accent-fill);
@@ -174,6 +183,11 @@ html[data-theme] .study-site .task-controls .board { background: var(--accent-so
   .study-site .bank-overview { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; padding: 11px 12px; }
   .study-site .bank-overview > div, .study-site .bank-overview > div + div { display: flex; flex-direction: column-reverse; align-items: start; gap: 1px; border: 0; padding: 0; }
   .study-site .bank-overview dt { font-size: 12px; }
+}
+@media (max-width: 600px) {
+  .study-site.site-has-rail :is(.task-controls, .ege-attempt) .ansbox {
+    max-width: calc(100% - 58px);
+  }
 }
 @media (max-width: 510px) {
   .study-site .mods { grid-template-columns: repeat(2,minmax(0,1fr)); }

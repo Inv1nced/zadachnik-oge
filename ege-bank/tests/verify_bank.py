@@ -61,6 +61,9 @@ def verify(root):
     topics = {topic["slug"]: topic["parent"] for topic in catalog["topics"]}
     assert len(topics) == len(catalog["topics"])
     tasks = catalog["tasks"]
+    if report["mode"] == "references":
+        practice = data(base / "practice-catalog.json")
+        assert practice == {"tasks": [task for task in tasks if task["status"] == "ready"]}
     assert len({row["id"] for row in tasks}) == len({row["sourceCode"].upper() for row in tasks}) == len(tasks)
     counts = Counter(row["status"] for row in tasks)
     assert set(counts) <= {"ready", "partial", "reference"}, counts

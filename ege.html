@@ -6,9 +6,11 @@
   <meta name="description" content="Курс INVARIANT по физике для подготовки к ЕГЭ. Уроки, модели и задачи для 11 класса.">
   <title>Курс ЕГЭ по физике · INVARIANT</title>
   <link rel="stylesheet" href="lessons/course.css">
-  <script src="entry/exam-preference.js"></script>
+  <link rel="stylesheet" href="site-shell.css?v=study-rail-1">
+  <script src="site-shell.js?v=study-rail-1" defer></script>
+  <script src="entry/exam-preference.js?v=practice-first" data-legacy-course></script>
   <link rel="stylesheet" href="entry/exam-handoff.css">
-  <script type="module" src="lessons/course.js"></script>
+  <script type="module" src="lessons/course.js?v=study-rail-1"></script>
 </head>
 <body data-page="course">
   <header class="site-header">
@@ -16,12 +18,12 @@
     <div class="header-links">
       <nav class="exam-switch" aria-label="Курс по физике">
         <a href="oge.html" data-exam-choice="oge">ОГЭ</a>
-        <a href="ege.html" data-exam-choice="ege" aria-current="page">ЕГЭ</a>
+        <a href="ege-bank.html" data-exam-choice="ege" aria-current="page">ЕГЭ</a>
       </nav>
       <a href="teach.html?view=lessons&amp;exam=ege">Кабинет</a>
     </div>
   </header>
-  <main id="main" class="wrap">
+  <main id="main" class="wrap" tabindex="-1">
     <section class="hero">
       <div>
         <p class="kicker">11 класс · ЕГЭ</p>
