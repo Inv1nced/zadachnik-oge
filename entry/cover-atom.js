@@ -4,27 +4,17 @@
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const button = document.querySelector('.atom-motion');
-  const label = button.querySelector('.atom-motion-label');
+  const button = document.querySelector('.atom-toggle');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const turn = 2 * Math.PI;
   const cycle = 8000;
-  const samples = 72;
+  const samples = 96;
   const size = 480;
   const cameraDistance = 6;
   const cameraPitch = 0.21;
-  const phi = (1 + Math.sqrt(5)) / 2;
-  const vertices = [
-    [-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0],
-    [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi],
-    [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1],
-  ].map(vertex => vertex.map(component => component * 0.29));
-  const faces = [
-    [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
-    [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
-    [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
-    [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1],
-  ];
+  const pitchSin = Math.sin(cameraPitch);
+  const pitchCos = Math.cos(cameraPitch);
+  const core = [[-0.12, 0.04, 0.02], [0.06, 0.13, -0.08], [0.1, -0.06, 0.11]];
 
   function orbitPoint(angle, tilt, bearing, radius) {
     const x = Math.cos(angle) * radius;
@@ -37,9 +27,9 @@
   }
 
   const orbits = [
-    {tilt: 0.42, bearing: 0.94, phase: 0.24, radius: 1.91},
-    {tilt: 0.86, bearing: -0.68, phase: 2.50, radius: 1.87},
-    {tilt: 1.24, bearing: 0.14, phase: 4.72, radius: 1.94},
+    {tilt: 0.89, bearing: 0.89, phase: 2.40, radius: 1.94},
+    {tilt: 0.94, bearing: -0.96, phase: 2.76, radius: 1.91},
+    {tilt: 1.28, bearing: -0.07, phase: 1.36, radius: 1.96},
   ].map(orbit => ({
     ...orbit,
     points: Array.from({length: samples}, (_, index) =>
@@ -49,60 +39,95 @@
   function project([x, y, z], sin, cos) {
     const horizontal = x * cos + z * sin;
     const rotatedDepth = z * cos - x * sin;
-    const vertical = y * Math.cos(cameraPitch) - rotatedDepth * Math.sin(cameraPitch);
-    const depth = y * Math.sin(cameraPitch) + rotatedDepth * Math.cos(cameraPitch);
-    const scale = 111 * cameraDistance / (cameraDistance - depth);
+    const vertical = y * pitchCos - rotatedDepth * pitchSin;
+    const depth = y * pitchSin + rotatedDepth * pitchCos;
+    const scale = 106 * cameraDistance / (cameraDistance - depth);
     return {x: size / 2 + horizontal * scale, y: size / 2 - vertical * scale, depth, scale};
   }
 
   function drawOrbit(paths, front) {
-    ctx.lineWidth = front ? 10 : 6;
-    ctx.strokeStyle = front ? '#f0913426' : '#e3a0521b';
+    ctx.lineWidth = front ? 13 : 8;
+    ctx.strokeStyle = front ? '#a92dfb23' : '#932bfa15';
     ctx.stroke(paths);
-    ctx.lineWidth = front ? 4 : 3;
-    ctx.strokeStyle = front ? '#ed943e72' : '#e4a3514f';
+    ctx.lineWidth = front ? 5 : 3;
+    ctx.strokeStyle = front ? '#bc51fb76' : '#8c3fec65';
     ctx.stroke(paths);
-    ctx.lineWidth = front ? 1.8 : 1.4;
-    ctx.strokeStyle = front ? '#ffd89a' : '#b27b48';
+    ctx.lineWidth = front ? 1.7 : 1.25;
+    ctx.strokeStyle = front ? '#edd0ff' : '#a56cf2';
     ctx.stroke(paths);
   }
 
-  function drawElectron({x, y, scale, depth}) {
-    const radius = scale * 0.052;
-    const glow = ctx.createRadialGradient(x, y, 0, x, y, radius * 3.4);
-    glow.addColorStop(0, depth > 0 ? '#fff2c5' : '#f6ca91');
-    glow.addColorStop(0.24, '#ffd18cf0');
-    glow.addColorStop(0.44, '#ef9a486c');
-    glow.addColorStop(1, '#ef9a4800');
+  function drawGlow(x, y, radius, stops) {
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    for (const [position, color] of stops) glow.addColorStop(position, color);
     ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(x, y, radius * 3.4, 0, turn);
-    ctx.fill();
-    ctx.fillStyle = '#ffedc7';
-    ctx.fillRect(x - radius / 2, y - radius / 2, radius, radius);
+    ctx.fillRect(x - radius, y - radius, 2 * radius, 2 * radius);
   }
 
-  function drawNucleus(sin, cos) {
-    const points = vertices.map(vertex => project(vertex, sin, cos));
-    const visibleFaces = faces.map(face => face.map(index => points[index])).filter(([a, b, c]) =>
-      (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) < 0);
-    for (const [a, b, c] of visibleFaces) {
-      const ab = [b.x - a.x, a.y - b.y, (b.depth - a.depth) * 111];
-      const ac = [c.x - a.x, a.y - c.y, (c.depth - a.depth) * 111];
-      const nx = ab[1] * ac[2] - ab[2] * ac[1];
-      const ny = ab[2] * ac[0] - ab[0] * ac[2];
-      const nz = ab[0] * ac[1] - ab[1] * ac[0];
-      const light = Math.max(0, (-0.48 * nx + 0.64 * ny + 0.60 * nz) / Math.hypot(nx, ny, nz));
+  function drawElectron(track) {
+    const head = track[track.length - 1];
+    const radius = head.scale * 0.078;
+    const attenuation = 0.74 + 0.26 * Math.min(1, Math.max(0, head.depth + 0.5));
+    const tail = new Path2D();
+    tail.moveTo(track[0].x, track[0].y);
+    for (const point of track.slice(1)) tail.lineTo(point.x, point.y);
+
+    const fading = ctx.createLinearGradient(track[0].x, track[0].y, head.x, head.y);
+    fading.addColorStop(0, '#a32af300');
+    fading.addColorStop(0.40, '#a73aff56');
+    fading.addColorStop(0.78, '#cf84ffde');
+    fading.addColorStop(1, '#fff0ff');
+    const halo = ctx.createLinearGradient(track[0].x, track[0].y, head.x, head.y);
+    halo.addColorStop(0, '#8a29fa00');
+    halo.addColorStop(0.52, '#8a29fa20');
+    halo.addColorStop(1, '#a94fff66');
+    ctx.globalAlpha = attenuation;
+    ctx.lineWidth = radius * 3.15;
+    ctx.strokeStyle = halo;
+    ctx.stroke(tail);
+    ctx.lineWidth = radius * 1.33;
+    ctx.strokeStyle = fading;
+    ctx.stroke(tail);
+    ctx.lineWidth = radius * 0.30;
+    ctx.stroke(tail);
+    drawGlow(head.x, head.y, radius * 4, [
+      [0, '#ffffff'], [0.15, '#fff1ff'], [0.25, '#eac6ffec'],
+      [0.43, '#ae56fc9b'], [0.67, '#8b2be438'], [1, '#8b2be400'],
+    ]);
+    ctx.globalAlpha = 1;
+  }
+
+  function drawNucleus(sin, cos, progress) {
+    const center = size / 2;
+    const pulse = 1 + 0.075 * Math.sin(progress * 3);
+    drawGlow(center, center, 119 * pulse, [
+      [0, '#f1b0ffbf'], [0.23, '#cf59f890'], [0.47, '#a02dfb44'],
+      [0.72, '#871cef19'], [1, '#831bea00'],
+    ]);
+
+    const flare = ctx.createRadialGradient(center, center, 0, center, center, 83 * pulse);
+    flare.addColorStop(0, '#fff5ffcc');
+    flare.addColorStop(0.42, '#dc86ff5e');
+    flare.addColorStop(1, '#b852ff00');
+    ctx.fillStyle = flare;
+    for (let ray = 0; ray < 10; ray++) {
+      const angle = ray * turn / 10 + progress;
+      const length = (56 + 24 * Math.sin(3.1 * ray)) * pulse;
+      const x = Math.cos(angle);
+      const y = Math.sin(angle);
       ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.lineTo(c.x, c.y);
-      ctx.closePath();
-      ctx.fillStyle = `hsl(${25 + light * 14} 59% ${22 + light * 44}%)`;
+      ctx.moveTo(center - y * 7, center + x * 7);
+      ctx.lineTo(center + x * length, center + y * length);
+      ctx.lineTo(center + y * 7, center - x * 7);
       ctx.fill();
-      ctx.strokeStyle = `rgb(255 193 121 / ${0.22 + light * 0.30})`;
-      ctx.lineWidth = 0.9;
-      ctx.stroke();
+    }
+
+    for (const point of core) {
+      const {x, y} = project(point, sin, cos);
+      drawGlow(x, y, 31 * pulse, [
+        [0, '#ffffff'], [0.38, '#fff2ff'], [0.53, '#f2cafff0'],
+        [0.69, '#c960fb9c'], [1, '#a849f600'],
+      ]);
     }
   }
 
@@ -123,17 +148,21 @@
         path.moveTo(start.x, start.y);
         path.lineTo(end.x, end.y);
       }
-      const position = orbitPoint(orbit.phase + 2 * progress, orbit.tilt, orbit.bearing, orbit.radius);
-      electrons.push(project(position, sin, cos));
+      const heading = orbit.phase + 2 * progress;
+      const trail = Array.from({length: 15}, (_, index) => {
+        const angle = heading - 0.83 * (1 - index / 14);
+        return project(orbitPoint(angle, orbit.tilt, orbit.bearing, orbit.radius), sin, cos);
+      });
+      electrons.push(trail);
     }
 
     ctx.clearRect(0, 0, size, size);
     ctx.lineCap = 'round';
     drawOrbit(back, false);
-    electrons.filter(electron => electron.depth <= 0).forEach(drawElectron);
-    drawNucleus(sin, cos);
+    electrons.filter(trail => trail[trail.length - 1].depth <= 0).forEach(drawElectron);
+    drawNucleus(sin, cos, progress);
     drawOrbit(front, true);
-    electrons.filter(electron => electron.depth > 0).forEach(drawElectron);
+    electrons.filter(trail => trail[trail.length - 1].depth > 0).forEach(drawElectron);
   }
 
   let inView = !('IntersectionObserver' in window);
@@ -152,9 +181,9 @@
   function updatePlayback() {
     const playing = !paused && !reducedMotion.matches;
     button.hidden = reducedMotion.matches;
-    button.toggleAttribute('data-playing', playing);
-    label.textContent = playing ? 'Пауза' : 'Вращать атом';
-    button.setAttribute('aria-label', playing ? 'Приостановить вращение атома' : 'Запустить вращение атома');
+    const action = playing ? 'Приостановить вращение атома' : 'Запустить вращение атома';
+    button.setAttribute('aria-label', action);
+    button.title = action;
     if (playing && inView && !document.hidden) {
       if (!frame) frame = requestAnimationFrame(tick);
       return;

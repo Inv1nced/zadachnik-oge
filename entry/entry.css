@@ -5,13 +5,21 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: Tektur;
+  src: url("tektur.woff2") format("woff2");
+  font-weight: 400 900;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
-  --surface: #151618;
-  --text: #f7f3ed;
-  --muted: #c2bcb2;
-  --line: #414045;
-  --amber: #f1bd7c;
+  --surface: #100a19;
+  --text: #f7efff;
+  --muted: #c9b8dc;
+  --violet: #cf9dff;
+  --amber: #ffc583;
+  --display-font: Tektur, Onest, system-ui, sans-serif;
   font-family: Onest, system-ui, sans-serif;
 }
 
@@ -23,8 +31,21 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
+  isolation: isolate;
   color: var(--text);
-  background: radial-gradient(ellipse at 74% 18%, #29221e, transparent 47%), var(--surface);
+  background: radial-gradient(ellipse at 66% 29%, #211034, transparent 65%), var(--surface);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.86;
+  background:
+    linear-gradient(90deg, #10091a24, #11091bd6 24%, #10091a62 67%, #11091b10),
+    url("cover-halftone.webp") center / cover no-repeat;
 }
 
 a {
@@ -45,12 +66,46 @@ button:focus-visible {
   gap: 12px;
   min-height: 76px;
   padding: 16px clamp(20px, 4.45vw, 76px);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid #bd8efb38;
+  background: #100919bd;
 }
 
 .wordmark {
   width: clamp(132px, 16vw, 208px);
   height: auto;
+  filter: sepia(0.68) hue-rotate(218deg) saturate(1.65) drop-shadow(0 0 11px #b477f96b);
+}
+
+.quiet-link,
+.exam {
+  --rim: #ffae66;
+  --rim-hot: #ffe1b2;
+  position: relative;
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--rim) 60%, transparent);
+  border-radius: 100vw;
+  background: linear-gradient(180deg, #29160ee8, #160d19f2 45%, #20101df0);
+  box-shadow:
+    0 0 7px color-mix(in srgb, var(--rim) 33%, transparent),
+    0 0 22px color-mix(in srgb, var(--rim) 14%, transparent),
+    0 8px 23px #08040da6,
+    inset 0 0 9px color-mix(in srgb, var(--rim) 24%, transparent);
+  transition: border-color 150ms, box-shadow 150ms, transform 150ms;
+}
+
+.quiet-link::before,
+.exam::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border-radius: inherit;
+  border: 1px solid transparent;
+  background:
+    radial-gradient(ellipse at 50% 0, var(--rim-hot), transparent 57%) border-box,
+    radial-gradient(ellipse at 52% 100%, var(--rim-hot), transparent 63%) border-box;
+  mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
 }
 
 .quiet-link {
@@ -59,12 +114,12 @@ button:focus-visible {
   justify-content: center;
   gap: 10px;
   min-height: 44px;
-  border: 1px solid var(--line);
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 8px 20px;
+  color: #ffeed9;
+  font-family: var(--display-font);
   font-size: 0.875rem;
-  font-weight: 550;
-  transition: border-color 150ms, background-color 150ms;
+  font-weight: 630;
+  letter-spacing: 0.025em;
 }
 
 .entry {
@@ -85,19 +140,21 @@ button:focus-visible {
 
 .cover-copy h1 {
   margin: 0;
+  font-family: var(--display-font);
   font-size: clamp(3.625rem, 7.15vw, 6.95rem);
   line-height: 0.94;
-  font-weight: 790;
-  letter-spacing: -0.056em;
+  font-weight: 780;
+  letter-spacing: -0.05em;
+  text-shadow: 0 0 26px #b878ff3d;
 }
 
 .cover-copy h1 span {
   display: block;
   margin-top: 0.35em;
-  color: var(--amber);
+  color: var(--violet);
   font-size: 0.48em;
   font-weight: 580;
-  letter-spacing: -0.052em;
+  letter-spacing: -0.045em;
   line-height: 1;
 }
 
@@ -119,39 +176,38 @@ button:focus-visible {
   min-width: 0;
   min-height: 235px;
   aspect-ratio: 1.63;
-  border: 1px solid #574538;
-  border-radius: 22px;
-  background: radial-gradient(ellipse at 50% 48%, #2a2119 0%, #131110 67%);
-  box-shadow: inset 0 0 0 5px #201b17, 0 18px 60px #0004;
+  border: 1px solid #d09aff;
+  border-radius: 100vw;
+  background: radial-gradient(ellipse at 50% 48%, #290d43 0%, #13091e 58%, #10091b 78%);
+  box-shadow: 0 0 9px #b667ff95, 0 0 38px #9438f450, 0 25px 50px #06020b99, inset 0 0 21px #ac62f341;
 }
 
 .atom-screen::before,
 .atom-screen::after {
   position: absolute;
-  inset: 11px;
-  border-radius: 13px;
+  inset: 5px;
+  border-radius: inherit;
   pointer-events: none;
   content: "";
 }
 
 .atom-screen::before {
   background:
-    linear-gradient(#9a765e24 1px, transparent 1px),
-    linear-gradient(90deg, #9a765e24 1px, transparent 1px);
-  background-size: 29px 29px;
+    linear-gradient(#b381f023 1px, transparent 1px),
+    linear-gradient(90deg, #b381f023 1px, transparent 1px);
+  background-size: 36px 36px;
   background-position: center;
   mask-image: radial-gradient(ellipse, transparent 15%, #000 83%);
 }
 
 .atom-screen::after {
-  border: 1px solid #c4967133;
-  background: repeating-linear-gradient(0deg, #0000 0 3px, #0005 3px 4px);
-  box-shadow: inset 0 0 28px #0007;
+  border: 1px solid #c39eff45;
+  box-shadow: inset 0 0 18px #8317cc32;
 }
 
 .atom-screen-media {
   position: absolute;
-  inset: 5% 6%;
+  inset: 2% 6%;
   mix-blend-mode: screen;
 }
 
@@ -169,113 +225,68 @@ button:focus-visible {
 .atom-screen[data-has-frame] .atom-canvas { opacity: 1; }
 .atom-screen[data-has-frame] .atom-poster { opacity: 0; }
 
-.atom-motion {
+.atom-toggle {
   grid-area: screen;
-  place-self: end;
+  place-self: stretch;
   z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  margin: 16px;
-  padding: 6px 12px;
-  border: 1px solid #7a614b;
-  border-radius: 6px;
-  color: var(--text);
-  background: #211813;
-  font: 550 0.875rem Onest, system-ui, sans-serif;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 100vw;
+  background: transparent;
   cursor: pointer;
 }
 
-.atom-motion[hidden] { display: none; }
-@media (hover: hover) and (pointer: fine) {
-  .atom-motion:hover { background: #38291f; border-color: var(--amber); }
-}
-
-.atom-motion-icon {
-  width: 12px;
-  height: 12px;
-  background: var(--amber);
-  clip-path: polygon(15% 0, 100% 50%, 15% 100%);
-}
-
-.atom-motion[data-playing] .atom-motion-icon {
-  clip-path: polygon(8% 0, 38% 0, 38% 100%, 8% 100%, 8% 0, 62% 0, 92% 0, 92% 100%, 62% 100%, 62% 0);
-}
+.atom-toggle[hidden] { display: none; }
+.atom-toggle:focus-visible { outline-color: var(--violet); }
 
 .exam-chooser { grid-area: exams; min-width: 0; }
 
 .exam-chooser h2 {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
+  font-family: var(--display-font);
   font-size: clamp(1.125rem, 2.2vw, 1.5rem);
   line-height: 1.2;
-  font-weight: 640;
-  letter-spacing: -0.025em;
+  font-weight: 660;
+  letter-spacing: 0.015em;
 }
 
 .exams {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: clamp(14px, 2.4vw, 32px);
   width: 100%;
 }
 
 .exam {
-  --accent: #9ed7fb;
-  --tint: #202d3c;
-  position: relative;
-  isolation: isolate;
+  --accent: #ffd6a5;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  min-height: clamp(120px, 17vh, 166px);
-  padding: 20px clamp(20px, 4vw, 38px);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: radial-gradient(ellipse at 10% 100%, var(--tint), transparent 71%), #1b1b1e;
-  transition: border-color 150ms;
+  min-height: clamp(108px, 15vh, 148px);
+  padding: 20px clamp(30px, 5vw, 48px);
   touch-action: manipulation;
 }
 
-.exam::before,
-.exam::after {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border: solid var(--accent);
-  opacity: 0.6;
-  pointer-events: none;
-  content: "";
-}
-
-.exam::before {
-  top: 12px;
-  left: 12px;
-  border-width: 1px 0 0 1px;
-}
-
-.exam::after {
-  right: 12px;
-  bottom: 12px;
-  border-width: 0 1px 1px 0;
-}
-
 .exam--ege {
-  --accent: #f3ca88;
-  --tint: #382d23;
+  --accent: #ffc17f;
+  --rim: #ff9a55;
 }
 
 .exam-grade {
-  color: var(--muted);
+  color: #ffdcb9;
+  font-family: var(--display-font);
   font-size: 0.9375rem;
   line-height: 1.4;
   white-space: nowrap;
 }
 
 .exam-sign {
-  font-size: clamp(3.75rem, 6.8vw, 6.625rem);
-  font-weight: 840;
+  font-family: var(--display-font);
+  font-size: clamp(3.35rem, 5.8vw, 5.35rem);
+  font-weight: 820;
+  letter-spacing: 0.018em;
   line-height: 0.98;
   white-space: nowrap;
   color: var(--accent);
@@ -309,19 +320,25 @@ button:focus-visible {
 
 .exam:focus-visible { border-color: var(--accent); }
 @media (hover: hover) and (pointer: fine) {
-  .exam:hover { border-color: var(--accent); }
+  .exam:hover,
   .quiet-link:hover {
-    border-color: #7d8493;
-    background-color: #222731;
+    border-color: var(--rim-hot);
+    box-shadow: 0 0 11px color-mix(in srgb, var(--rim) 68%, transparent),
+      0 0 30px color-mix(in srgb, var(--rim) 27%, transparent),
+      0 12px 25px #07020bcc,
+      inset 0 0 13px color-mix(in srgb, var(--rim) 34%, transparent);
+    transform: translateY(-2px);
   }
 }
+
+.exam:active,
+.quiet-link:active { transform: translateY(1px); }
 
 .exam.is-choosing { border-color: var(--accent); }
 .exam.is-choosing .exam-word {
   color: #fff5e8;
   transition: color 90ms;
 }
-.exam--oge.is-choosing .exam-word { color: #e8f7ff; }
 .exam.is-dispersing .exam-word { opacity: 0; }
 
 .particles {
@@ -335,7 +352,6 @@ button:focus-visible {
 .mocks {
   grid-area: mocks;
   justify-self: start;
-  color: var(--text);
   min-width: 132px;
 }
 
@@ -364,20 +380,17 @@ button:focus-visible {
     min-height: 0;
     max-height: 258px;
     aspect-ratio: 1.85;
-    border-radius: 16px;
   }
-  .atom-screen::before,
-  .atom-screen::after { inset: 8px; border-radius: 9px; }
-  .atom-motion { margin: 11px; }
   .exams { grid-template-columns: minmax(0, 1fr); }
-  .exam { min-height: 106px; padding-block: 16px; }
-  .exam-sign { font-size: clamp(3.45rem, 11vw, 4.65rem); }
+  .exam { min-height: 98px; padding-block: 14px; }
+  .exam-sign { font-size: clamp(3.1rem, 10vw, 4.45rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .entry *, .masthead * { transition: none; }
+  .exam:is(:hover, :active), .quiet-link:is(:hover, :active) { transform: none; }
   .exam .exam-shine { display: none; }
-  .atom-motion { display: none; }
+  .atom-toggle { display: none; }
 }
 
 body::after {
