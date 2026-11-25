@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111419">
+  <meta name="theme-color" content="#151618">
   <meta name="description" content="Подготовка к ОГЭ и ЕГЭ по физике. Выбери свой экзамен, открой курс или реши пробник.">
   <title>INVARIANT · Подготовка к ОГЭ и ЕГЭ по физике</title>
   <script>
@@ -24,6 +24,7 @@
   <script src="entry/exam-preference.js" data-entry></script>
   <link rel="stylesheet" href="entry/entry.css">
   <script src="entry/entry.js?v=early-tap-1" defer></script>
+  <script src="entry/cover-atom.js" defer></script>
 </head>
 <body>
   <header class="masthead">
@@ -32,22 +33,34 @@
   </header>
 
   <main class="entry">
-    <h1>Выбери свой экзамен</h1>
-    <nav class="exams" aria-label="Экзамены по физике">
-      <a class="exam exam--oge" href="oge.html" data-exam-choice="oge" aria-label="Я ученик ОГЭ, 9 класс">
-        <span class="exam-intro">Я ученик</span>
-        <span class="exam-sign"><span class="exam-word">ОГЭ<span class="exam-shine" aria-hidden="true">ОГЭ</span></span><span class="baseline" aria-hidden="true"></span></span>
-        <span class="exam-grade">9 класс</span>
-        <canvas class="particles" aria-hidden="true" hidden></canvas>
-      </a>
-      <a class="exam exam--ege" href="ege.html" data-exam-choice="ege" aria-label="Я ученик ЕГЭ, 11 класс">
-        <span class="exam-intro">Я ученик</span>
-        <span class="exam-sign"><span class="exam-word">ЕГЭ<span class="exam-shine" aria-hidden="true">ЕГЭ</span></span><span class="baseline" aria-hidden="true"></span></span>
-        <span class="exam-grade">11 класс</span>
-        <canvas class="particles" aria-hidden="true" hidden></canvas>
-      </a>
-    </nav>
+    <div class="cover-copy">
+      <h1>Физика <span>для ОГЭ и ЕГЭ</span></h1>
+      <p>Разбирай теорию, решай задачи по темам и проверяй себя на пробниках.</p>
+    </div>
+    <div class="atom-screen" aria-hidden="true">
+      <div class="atom-screen-media">
+        <img class="atom-poster" src="entry/cover-atom.webp" alt="" width="480" height="480">
+        <canvas class="atom-canvas"></canvas>
+      </div>
+    </div>
+
+    <section class="exam-chooser" aria-labelledby="exam-chooser-title">
+      <h2 id="exam-chooser-title">Выбери свой экзамен</h2>
+      <nav class="exams" aria-label="Экзамены по физике">
+        <a class="exam exam--oge" href="oge.html" data-exam-choice="oge" aria-label="Я ученик ОГЭ, 9 класс">
+          <span class="exam-sign"><span class="exam-word">ОГЭ<span class="exam-shine" aria-hidden="true">ОГЭ</span></span><span class="baseline" aria-hidden="true"></span></span>
+          <span class="exam-grade">9 класс</span>
+          <canvas class="particles" aria-hidden="true" hidden></canvas>
+        </a>
+        <a class="exam exam--ege" href="ege.html" data-exam-choice="ege" aria-label="Я ученик ЕГЭ, 11 класс">
+          <span class="exam-sign"><span class="exam-word">ЕГЭ<span class="exam-shine" aria-hidden="true">ЕГЭ</span></span><span class="baseline" aria-hidden="true"></span></span>
+          <span class="exam-grade">11 класс</span>
+          <canvas class="particles" aria-hidden="true" hidden></canvas>
+        </a>
+      </nav>
+    </section>
     <a class="quiet-link mocks" href="mocks.html?exam=ege"><span class="mocks-icon" aria-hidden="true"></span>Пробники</a>
+    <button class="atom-motion" type="button" hidden><span class="atom-motion-icon" aria-hidden="true"></span><span class="atom-motion-label">Вращать атом</span></button>
   </main>
   <div class="entry-progress" aria-hidden="true">Открываем курс…</div>
 </body>

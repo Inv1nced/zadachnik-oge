@@ -7,10 +7,11 @@
 
 :root {
   color-scheme: dark;
-  --surface: #111419;
-  --text: #f2f1f4;
-  --muted: #b3b6c0;
-  --line: #343943;
+  --surface: #151618;
+  --text: #f7f3ed;
+  --muted: #c2bcb2;
+  --line: #414045;
+  --amber: #f1bd7c;
   font-family: Onest, system-ui, sans-serif;
 }
 
@@ -23,7 +24,7 @@ body {
   display: flex;
   flex-direction: column;
   color: var(--text);
-  background: radial-gradient(ellipse at 50% 42%, #1b1f26, var(--surface) 69%);
+  background: radial-gradient(ellipse at 74% 18%, #29221e, transparent 47%), var(--surface);
 }
 
 a {
@@ -31,8 +32,9 @@ a {
   text-decoration: none;
 }
 
-a:focus-visible {
-  outline: 2px solid #f1f4ff;
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--amber);
   outline-offset: 5px;
 }
 
@@ -40,9 +42,8 @@ a:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 12px;
-  min-height: 91px;
+  min-height: 76px;
   padding: 16px clamp(20px, 4.45vw, 76px);
   border-bottom: 1px solid var(--line);
 }
@@ -67,22 +68,149 @@ a:focus-visible {
 }
 
 .entry {
-  width: min(1100px, 100% - 96px);
+  width: min(1176px, 100% - 96px);
   margin: auto;
-  padding: clamp(44px, 7.5vh, 100px) 0;
+  padding: clamp(32px, 5vh, 62px) 0 32px;
   display: grid;
-  justify-items: center;
-  gap: clamp(24px, 4.8vh, 50px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+  grid-template-areas: "copy screen" "exams exams" "mocks mocks";
+  column-gap: clamp(24px, 5vw, 78px);
+  row-gap: clamp(20px, 3.6vh, 36px);
 }
 
-h1 {
+.cover-copy {
+  grid-area: copy;
+  align-self: center;
+}
+
+.cover-copy h1 {
   margin: 0;
-  font-size: clamp(2rem, 4.45vw, 4rem);
-  line-height: 1.05;
-  font-weight: 650;
-  letter-spacing: -0.047em;
-  text-align: center;
+  font-size: clamp(3.625rem, 7.15vw, 6.95rem);
+  line-height: 0.94;
+  font-weight: 790;
+  letter-spacing: -0.056em;
+}
+
+.cover-copy h1 span {
+  display: block;
+  margin-top: 0.35em;
+  color: var(--amber);
+  font-size: 0.48em;
+  font-weight: 580;
+  letter-spacing: -0.052em;
+  line-height: 1;
+}
+
+.cover-copy p {
+  max-width: 32ch;
+  margin: clamp(16px, 3vw, 29px) 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.5;
   text-wrap: balance;
+}
+
+.atom-screen {
+  position: relative;
+  grid-area: screen;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  min-height: 235px;
+  aspect-ratio: 1.63;
+  border: 1px solid #574538;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at 50% 48%, #2a2119 0%, #131110 67%);
+  box-shadow: inset 0 0 0 5px #201b17, 0 18px 60px #0004;
+}
+
+.atom-screen::before,
+.atom-screen::after {
+  position: absolute;
+  inset: 11px;
+  border-radius: 13px;
+  pointer-events: none;
+  content: "";
+}
+
+.atom-screen::before {
+  background:
+    linear-gradient(#9a765e24 1px, transparent 1px),
+    linear-gradient(90deg, #9a765e24 1px, transparent 1px);
+  background-size: 29px 29px;
+  background-position: center;
+  mask-image: radial-gradient(ellipse, transparent 15%, #000 83%);
+}
+
+.atom-screen::after {
+  border: 1px solid #c4967133;
+  background: repeating-linear-gradient(0deg, #0000 0 3px, #0005 3px 4px);
+  box-shadow: inset 0 0 28px #0007;
+}
+
+.atom-screen-media {
+  position: absolute;
+  inset: 5% 6%;
+  mix-blend-mode: screen;
+}
+
+.atom-poster,
+.atom-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.atom-canvas { opacity: 0; }
+.atom-screen[data-has-frame] .atom-canvas { opacity: 1; }
+.atom-screen[data-has-frame] .atom-poster { opacity: 0; }
+
+.atom-motion {
+  grid-area: screen;
+  place-self: end;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 16px;
+  padding: 6px 12px;
+  border: 1px solid #7a614b;
+  border-radius: 6px;
+  color: var(--text);
+  background: #211813;
+  font: 550 0.875rem Onest, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.atom-motion[hidden] { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .atom-motion:hover { background: #38291f; border-color: var(--amber); }
+}
+
+.atom-motion-icon {
+  width: 12px;
+  height: 12px;
+  background: var(--amber);
+  clip-path: polygon(15% 0, 100% 50%, 15% 100%);
+}
+
+.atom-motion[data-playing] .atom-motion-icon {
+  clip-path: polygon(8% 0, 38% 0, 38% 100%, 8% 100%, 8% 0, 62% 0, 92% 0, 92% 100%, 62% 100%, 62% 0);
+}
+
+.exam-chooser { grid-area: exams; min-width: 0; }
+
+.exam-chooser h2 {
+  margin: 0 0 12px;
+  font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+  line-height: 1.2;
+  font-weight: 640;
+  letter-spacing: -0.025em;
 }
 
 .exams {
@@ -98,13 +226,14 @@ h1 {
   position: relative;
   isolation: isolate;
   display: grid;
-  place-content: center;
-  justify-items: center;
-  min-height: clamp(228px, 30vh, 325px);
-  padding: 24px 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: clamp(120px, 17vh, 166px);
+  padding: 20px clamp(20px, 4vw, 38px);
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: radial-gradient(ellipse at 50% 70%, var(--tint), transparent 76%), #171b21;
+  background: radial-gradient(ellipse at 10% 100%, var(--tint), transparent 71%), #1b1b1e;
   transition: border-color 150ms;
   touch-action: manipulation;
 }
@@ -137,16 +266,15 @@ h1 {
   --tint: #382d23;
 }
 
-.exam-intro,
 .exam-grade {
   color: var(--muted);
   font-size: 0.9375rem;
   line-height: 1.4;
+  white-space: nowrap;
 }
 
 .exam-sign {
-  margin-block: 6px 10px;
-  font-size: clamp(4.25rem, 10.7vw, 9.375rem);
+  font-size: clamp(3.75rem, 6.8vw, 6.625rem);
   font-weight: 840;
   line-height: 0.98;
   white-space: nowrap;
@@ -205,6 +333,8 @@ h1 {
 }
 
 .mocks {
+  grid-area: mocks;
+  justify-self: start;
   color: var(--text);
   min-width: 132px;
 }
@@ -221,18 +351,33 @@ h1 {
 @media (max-width: 650px) {
   .entry {
     width: calc(100% - 36px);
-    padding-block: 33px;
+    padding-block: 24px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "copy" "screen" "exams" "mocks";
   }
   .masthead { min-height: 70px; }
   .tutor { padding-inline: 10px; }
+  .wordmark { width: clamp(108px, 34vw, 180px); }
+  .cover-copy h1 { font-size: clamp(3.5rem, 13.5vw, 5.5rem); }
+  .cover-copy p { margin-top: 14px; }
+  .atom-screen {
+    min-height: 0;
+    max-height: 258px;
+    aspect-ratio: 1.85;
+    border-radius: 16px;
+  }
+  .atom-screen::before,
+  .atom-screen::after { inset: 8px; border-radius: 9px; }
+  .atom-motion { margin: 11px; }
   .exams { grid-template-columns: minmax(0, 1fr); }
-  .exam { min-height: 172px; padding-block: 18px; }
-  .exam-sign { font-size: clamp(4.5rem, 15vw, 6.125rem); }
+  .exam { min-height: 106px; padding-block: 16px; }
+  .exam-sign { font-size: clamp(3.45rem, 11vw, 4.65rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .entry *, .masthead * { transition: none; }
   .exam .exam-shine { display: none; }
+  .atom-motion { display: none; }
 }
 
 body::after {
