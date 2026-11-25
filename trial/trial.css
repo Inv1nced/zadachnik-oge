@@ -134,3 +134,10 @@ html:fullscreen{overflow:auto}
   .rail select{width:100%}
   .rail select:disabled{opacity:.6}
 }
+@media(min-width:1000px){
+  html:fullscreen .stage,#trial.focus-mode .stage{padding-block:22px}
+  :is(html:fullscreen,#trial.focus-mode) .lesson-card:has(#interactive:not([hidden])) h1{font-size:2.45rem;max-width:none;margin-bottom:13px;text-wrap:wrap}
+  :is(html:fullscreen,#trial.focus-mode) .lesson-card:has(#interactive:not([hidden])) .prompt{font-size:1.12rem;max-width:91ch}
+  :is(html:fullscreen,#trial.focus-mode) #interactive{padding:15px}
+  :is(html:fullscreen,#trial.focus-mode) #model-graphs{max-width:485px;justify-self:stretch}
+}
