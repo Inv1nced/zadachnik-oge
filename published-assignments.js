@@ -1,7 +1,7 @@
 /* Public presets are shared by the short student links and the teacher's checker. */
 (function (root) {
   'use strict';
-  const names = ['impulse', 'dynamics', 'friction', 'ratio', 'energy', 'energy-ratios'];
+  const names = ['impulse', 'dynamics', 'friction', 'ratio', 'energy', 'energy-ratios', 'energy-second-part'];
   const cache = new Map();
 
   function load(name) {
